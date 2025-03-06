@@ -27,6 +27,30 @@ export type Database = {
         }
         Relationships: []
       }
+      Categorias: {
+        Row: {
+          cliente: string | null
+          created_at: string
+          id: number
+          nome: string
+          tipo: string
+        }
+        Insert: {
+          cliente?: string | null
+          created_at?: string
+          id?: number
+          nome: string
+          tipo: string
+        }
+        Update: {
+          cliente?: string | null
+          created_at?: string
+          id?: number
+          nome?: string
+          tipo?: string
+        }
+        Relationships: []
+      }
       "Informações Clientes": {
         Row: {
           ativo: boolean | null
