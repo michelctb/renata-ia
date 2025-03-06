@@ -30,7 +30,7 @@ import TransactionTable from '@/components/TransactionTable';
 import TransactionForm from '@/components/TransactionForm';
 
 const Dashboard = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const navigate = useNavigate();
   
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -39,14 +39,14 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<number | null>(null);
-  const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
+  const [dateRange, setDateRange] = useState<DateRange | null>(null);
   
   // Redirect if not logged in
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isAuthLoading && !user) {
       navigate('/');
     }
-  }, [user, isLoading, navigate]);
+  }, [user, isAuthLoading, navigate]);
   
   // Load transactions
   useEffect(() => {
