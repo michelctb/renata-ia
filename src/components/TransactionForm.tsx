@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Transaction } from '@/lib/supabase';
+import { Category, fetchCategories } from '@/lib/categories';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -39,20 +40,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-
-// Categories options (can be customized)
-const CATEGORIES = [
-  "Alimentação",
-  "Transporte",
-  "Moradia",
-  "Saúde",
-  "Educação",
-  "Lazer",
-  "Vestuário",
-  "Salário",
-  "Investimentos",
-  "Outros"
-];
 
 // Schema for form validation
 const formSchema = z.object({
@@ -87,6 +74,30 @@ export function TransactionForm({
   editingTransaction,
   userId,
 }: TransactionFormProps) {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  
+  // Carregar categorias
+  useEffect(() => {
+    const loadCategories = async () => {
+      if (!userId) return;
+      
+      try {
+        const data = await fetchCategories(userId);
+        setCategories(data);
+      } catch (error) {
+        console.error('Erro ao carregar categorias:', error);
+        toast.error('Erro ao carregar as categorias.');
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+    
+    if (isOpen) {
+      loadCategories();
+    }
+  }, [userId, isOpen]);
+  
   // Initialize form
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -98,6 +109,11 @@ export function TransactionForm({
       data: new Date(),
     },
   });
+
+  // Filtrar categorias baseado no tipo de operação selecionado
+  const filteredCategories = categories.filter(
+    cat => cat.tipo === 'ambos' || cat.tipo === form.watch('operação')
+  );
 
   // Update form values when editing transaction
   useEffect(() => {
@@ -214,9 +230,15 @@ export function TransactionForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {CATEGORIES.map((category) => (
-                        <SelectItem key={category} value={category}>{category}</SelectItem>
-                      ))}
+                      {isLoadingCategories ? (
+                        <SelectItem value="" disabled>Carregando categorias...</SelectItem>
+                      ) : filteredCategories.length > 0 ? (
+                        filteredCategories.map((category) => (
+                          <SelectItem key={category.id} value={category.nome}>{category.nome}</SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="" disabled>Nenhuma categoria disponível</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />

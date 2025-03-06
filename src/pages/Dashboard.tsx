@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,12 +23,14 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { PlusIcon } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DashboardHeader from '@/components/DashboardHeader';
 import SummaryCards from '@/components/SummaryCards';
 import DashboardCharts from '@/components/DashboardCharts';
 import { DateRangePicker } from '@/components/DateRangePicker';
 import TransactionTable from '@/components/TransactionTable';
 import TransactionForm from '@/components/TransactionForm';
+import CategoriesTab from '@/components/CategoriesTab';
 
 const Dashboard = () => {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -40,6 +43,7 @@ const Dashboard = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<number | null>(null);
   const [dateRange, setDateRange] = useState<DateRange | null>(null);
+  const [activeTab, setActiveTab] = useState("transactions");
   
   useEffect(() => {
     if (!isAuthLoading && !user) {
@@ -138,39 +142,56 @@ const Dashboard = () => {
           <h1 className="text-3xl font-bold">Dashboard Financeiro</h1>
           
           <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
-            <DateRangePicker 
-              dateRange={dateRange} 
-              onDateRangeChange={setDateRange} 
-            />
-            
-            <Button 
-              onClick={handleAddNew}
-              className="whitespace-nowrap"
-            >
-              <PlusIcon className="h-4 w-4 mr-1" />
-              Nova Transação
-            </Button>
+            {activeTab === "transactions" && (
+              <>
+                <DateRangePicker 
+                  dateRange={dateRange} 
+                  onDateRangeChange={setDateRange} 
+                />
+                
+                <Button 
+                  onClick={handleAddNew}
+                  className="whitespace-nowrap"
+                >
+                  <PlusIcon className="h-4 w-4 mr-1" />
+                  Nova Transação
+                </Button>
+              </>
+            )}
           </div>
         </div>
         
-        <SummaryCards 
-          transactions={transactions}
-          dateRange={dateRange}
-        />
-        
-        <DashboardCharts
-          transactions={transactions}
-          dateRange={dateRange}
-        />
-        
-        <div className="mt-8">
-          <TransactionTable
-            transactions={transactions}
-            dateRange={dateRange}
-            onEdit={handleEdit}
-            onDelete={handleDeleteRequest}
-          />
-        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-6">
+            <TabsTrigger value="transactions">Transações</TabsTrigger>
+            <TabsTrigger value="categories">Categorias</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="transactions">
+            <SummaryCards 
+              transactions={transactions}
+              dateRange={dateRange}
+            />
+            
+            <DashboardCharts
+              transactions={transactions}
+              dateRange={dateRange}
+            />
+            
+            <div className="mt-8">
+              <TransactionTable
+                transactions={transactions}
+                dateRange={dateRange}
+                onEdit={handleEdit}
+                onDelete={handleDeleteRequest}
+              />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="categories">
+            <CategoriesTab />
+          </TabsContent>
+        </Tabs>
       </div>
       
       {user && (
