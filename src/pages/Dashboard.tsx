@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { PlusIcon } from 'lucide-react';
 import DashboardHeader from '@/components/DashboardHeader';
 import SummaryCards from '@/components/SummaryCards';
+import DashboardCharts from '@/components/DashboardCharts';
 import { DateRangePicker } from '@/components/DateRangePicker';
 import TransactionTable from '@/components/TransactionTable';
 import TransactionForm from '@/components/TransactionForm';
@@ -41,14 +41,12 @@ const Dashboard = () => {
   const [transactionToDelete, setTransactionToDelete] = useState<number | null>(null);
   const [dateRange, setDateRange] = useState<DateRange | null>(null);
   
-  // Redirect if not logged in
   useEffect(() => {
     if (!isAuthLoading && !user) {
       navigate('/');
     }
   }, [user, isAuthLoading, navigate]);
   
-  // Load transactions
   useEffect(() => {
     const loadTransactions = async () => {
       if (!user) return;
@@ -68,19 +66,16 @@ const Dashboard = () => {
     loadTransactions();
   }, [user]);
   
-  // Handle adding/updating transaction
   const handleSubmitTransaction = async (transaction: Transaction) => {
     if (!user) return;
     
     try {
       if (transaction.id) {
-        // Update existing transaction
         const updated = await updateTransaction(transaction);
         setTransactions(prev => 
           prev.map(t => (t.id === transaction.id ? updated : t))
         );
       } else {
-        // Add new transaction
         const added = await addTransaction(transaction);
         setTransactions(prev => [...prev, added]);
       }
@@ -90,13 +85,11 @@ const Dashboard = () => {
     }
   };
   
-  // Handle transaction edit
   const handleEdit = (transaction: Transaction) => {
     setEditingTransaction(transaction);
     setIsTransactionFormOpen(true);
   };
   
-  // Handle transaction delete
   const handleDeleteRequest = (id: number) => {
     setTransactionToDelete(id);
     setDeleteConfirmOpen(true);
@@ -118,13 +111,11 @@ const Dashboard = () => {
     }
   };
   
-  // Open the form for a new transaction
   const handleAddNew = () => {
     setEditingTransaction(null);
     setIsTransactionFormOpen(true);
   };
   
-  // Close the transaction form
   const handleCloseForm = () => {
     setIsTransactionFormOpen(false);
     setEditingTransaction(null);
@@ -163,6 +154,11 @@ const Dashboard = () => {
         </div>
         
         <SummaryCards 
+          transactions={transactions}
+          dateRange={dateRange}
+        />
+        
+        <DashboardCharts
           transactions={transactions}
           dateRange={dateRange}
         />
