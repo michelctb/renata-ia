@@ -125,9 +125,13 @@ export function TransactionForm({
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       const transaction: Transaction = {
-        ...values,
+        id: values.id,
         cliente: userId,
         data: format(values.data, 'yyyy-MM-dd'),
+        operação: values.operação,
+        descrição: values.descrição,
+        categoria: values.categoria,
+        valor: values.valor,
       };
       
       await onSubmit(transaction);

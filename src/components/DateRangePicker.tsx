@@ -22,8 +22,8 @@ import {
 } from "@/components/ui/select";
 
 interface DateRangePickerProps {
-  dateRange: DateRange;
-  onDateRangeChange: (range: DateRange) => void;
+  dateRange: DateRange | null;
+  onDateRangeChange: (range: DateRange | null) => void;
 }
 
 export function DateRangePicker({ dateRange, onDateRangeChange }: DateRangePickerProps) {
@@ -81,7 +81,7 @@ export function DateRangePicker({ dateRange, onDateRangeChange }: DateRangePicke
         break;
       }
       case "clear":
-        onDateRangeChange({ from: undefined, to: undefined });
+        onDateRangeChange(null);
         break;
     }
   };
@@ -109,11 +109,11 @@ export function DateRangePicker({ dateRange, onDateRangeChange }: DateRangePicke
             variant={"outline"}
             className={cn(
               "w-[280px] justify-start text-left font-normal",
-              !dateRange.from && "text-muted-foreground"
+              !dateRange?.from && "text-muted-foreground"
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {dateRange.from ? (
+            {dateRange?.from ? (
               dateRange.to ? (
                 <>
                   {format(dateRange.from, "dd/MM/yyyy", { locale: ptBR })} -{" "}
@@ -131,10 +131,10 @@ export function DateRangePicker({ dateRange, onDateRangeChange }: DateRangePicke
           <Calendar
             initialFocus
             mode="range"
-            defaultMonth={dateRange.from}
-            selected={dateRange}
+            defaultMonth={dateRange?.from}
+            selected={dateRange || undefined}
             onSelect={(range) => {
-              onDateRangeChange(range || { from: undefined, to: undefined });
+              onDateRangeChange(range);
               if (range?.from && range?.to) {
                 setIsOpen(false);
               }

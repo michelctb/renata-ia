@@ -4,10 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ArrowDownIcon, ArrowUpIcon, TrendingUpIcon } from 'lucide-react';
 import { Transaction } from '@/lib/supabase';
 import { formatCurrency } from '@/lib/utils';
+import { DateRange } from 'react-day-picker';
 
 type SummaryCardsProps = {
   transactions: Transaction[];
-  dateRange: { from: Date | undefined; to: Date | undefined };
+  dateRange: DateRange | null;
 };
 
 const SummaryCards = ({ transactions, dateRange }: SummaryCardsProps) => {
@@ -23,7 +24,7 @@ const SummaryCards = ({ transactions, dateRange }: SummaryCardsProps) => {
     
     // Filter transactions by date range if provided
     const filteredTransactions = transactions.filter(transaction => {
-      if (!dateRange.from && !dateRange.to) return true;
+      if (!dateRange || !dateRange.from) return true;
       
       const transactionDate = new Date(transaction.data);
       
@@ -33,10 +34,6 @@ const SummaryCards = ({ transactions, dateRange }: SummaryCardsProps) => {
       
       if (dateRange.from) {
         return transactionDate >= dateRange.from;
-      }
-      
-      if (dateRange.to) {
-        return transactionDate <= dateRange.to;
       }
       
       return true;

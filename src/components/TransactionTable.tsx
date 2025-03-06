@@ -26,7 +26,7 @@ import { formatCurrency } from '@/lib/utils';
 
 interface TransactionTableProps {
   transactions: Transaction[];
-  dateRange: DateRange;
+  dateRange: DateRange | null;
   onEdit: (transaction: Transaction) => void;
   onDelete: (id: number) => void;
 }
@@ -45,19 +45,19 @@ const TransactionTable = ({
     let filtered = [...transactions];
     
     // Filter by date range
-    if (dateRange.from || dateRange.to) {
+    if (dateRange?.from || dateRange?.to) {
       filtered = filtered.filter(transaction => {
         const transactionDate = new Date(transaction.data);
         
-        if (dateRange.from && dateRange.to) {
+        if (dateRange?.from && dateRange?.to) {
           return transactionDate >= dateRange.from && transactionDate <= dateRange.to;
         }
         
-        if (dateRange.from) {
+        if (dateRange?.from) {
           return transactionDate >= dateRange.from;
         }
         
-        if (dateRange.to) {
+        if (dateRange?.to) {
           return transactionDate <= dateRange.to;
         }
         
