@@ -2,7 +2,7 @@
 import { useMemo } from 'react';
 import { Transaction } from '@/lib/supabase';
 import { DateRange } from 'react-day-picker';
-import { format, parse, isWithinInterval, isSameMonth, startOfMonth } from 'date-fns';
+import { format, parse, isWithinInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,7 +30,7 @@ type DashboardChartsProps = {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A569BD', '#5DADE2', '#F4D03F', '#EC7063'];
 
 const DashboardCharts = ({ transactions, dateRange }: DashboardChartsProps) => {
-  // Filter transactions by date range
+  // Filter transactions by date range - usando a coluna 'data' conforme solicitado
   const filteredTransactions = useMemo(() => {
     if (!dateRange || !dateRange.from) return transactions;
     
@@ -169,9 +169,9 @@ const DashboardCharts = ({ transactions, dateRange }: DashboardChartsProps) => {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
       {/* Bar Chart for Monthly Income/Expenses */}
-      <Card className="border-none shadow-md animate-fade-up col-span-1 lg:col-span-2" style={{ animationDelay: '0.1s' }}>
+      <Card className="border-none shadow-md animate-fade-up col-span-1 lg:col-span-3" style={{ animationDelay: '0.1s' }}>
         <CardHeader className="pb-2">
           <CardTitle>Entradas e Saídas por Mês</CardTitle>
           <CardDescription>Visualização mensal de valores recebidos e pagos</CardDescription>
@@ -203,7 +203,7 @@ const DashboardCharts = ({ transactions, dateRange }: DashboardChartsProps) => {
       </Card>
 
       {/* Pie Chart for Expenses by Category */}
-      <Card className="border-none shadow-md animate-fade-up" style={{ animationDelay: '0.2s' }}>
+      <Card className="border-none shadow-md animate-fade-up col-span-1 lg:col-span-2" style={{ animationDelay: '0.2s' }}>
         <CardHeader className="pb-2">
           <CardTitle>Saídas por Categoria</CardTitle>
           <CardDescription>Distribuição de gastos por categoria no período</CardDescription>
@@ -232,6 +232,40 @@ const DashboardCharts = ({ transactions, dateRange }: DashboardChartsProps) => {
             </ResponsiveContainer>
           ) : (
             <div className="h-full flex items-center justify-center text-muted-foreground">
+              Sem dados de saída para exibir no período selecionado
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Ranking de Categorias de Saída */}
+      <Card className="border-none shadow-md animate-fade-up" style={{ animationDelay: '0.3s' }}>
+        <CardHeader className="pb-2">
+          <CardTitle>Ranking de Categorias</CardTitle>
+          <CardDescription>Maiores gastos por categoria no período</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {categoryData.length > 0 ? (
+            <div className="space-y-2">
+              {categoryData.map((category, index) => (
+                <div key={index} className="flex items-center justify-between p-2 border-b">
+                  <div className="flex items-center">
+                    <div 
+                      className="w-3 h-3 rounded-full mr-2" 
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                    />
+                    <span className="font-medium truncate max-w-[120px]">
+                      {category.name}
+                    </span>
+                  </div>
+                  <span className="text-expense font-medium">
+                    {formatCurrency(category.value)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="h-[290px] flex items-center justify-center text-muted-foreground">
               Sem dados de saída para exibir no período selecionado
             </div>
           )}

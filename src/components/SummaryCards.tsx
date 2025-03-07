@@ -22,7 +22,7 @@ const SummaryCards = ({ transactions, dateRange }: SummaryCardsProps) => {
     let income = 0;
     let expenses = 0;
     
-    // Filter transactions by date range if provided
+    // Filter transactions by date range if provided - usando a coluna 'data'
     const filteredTransactions = transactions.filter(transaction => {
       if (!dateRange || !dateRange.from) return true;
       
