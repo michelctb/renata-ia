@@ -86,14 +86,18 @@ export function CategoryForm({
       console.log('Form submitted with values:', values);
       console.log('Current userId:', userId);
       
+      // Garantir que o cliente (userId) está sendo passado corretamente
       const category: Category = {
         id: values.id,
         nome: values.nome,
         tipo: values.tipo,
         cliente: userId,
+        padrao: false // Garantir que novas categorias nunca são padrão
       };
       
+      console.log('Submitting category to backend:', category);
       await onSubmit(category);
+      
       toast.success(
         editingCategory 
           ? 'Categoria atualizada com sucesso!' 
@@ -103,7 +107,8 @@ export function CategoryForm({
       onClose();
     } catch (error) {
       console.error('Erro ao salvar categoria:', error);
-      toast.error('Erro ao salvar a categoria. Tente novamente.');
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast.error(`Erro ao salvar a categoria: ${errorMessage}`);
     }
   };
 

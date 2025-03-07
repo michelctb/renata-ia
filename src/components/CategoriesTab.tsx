@@ -10,7 +10,7 @@ import {
   deleteCategory 
 } from '@/lib/categories';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, PencilIcon, TrashIcon, EyeOffIcon } from 'lucide-react';
+import { PlusIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import CategoryForm from './CategoryForm';
 import {
   AlertDialog,
@@ -44,11 +44,17 @@ const CategoriesTab = () => {
   // Carregar categorias
   useEffect(() => {
     const loadCategories = async () => {
-      if (!user) return;
+      if (!user) {
+        console.log('No user found, skipping category fetch');
+        setIsLoading(false);
+        return;
+      }
       
+      console.log('Loading categories for user:', user.id);
       setIsLoading(true);
       try {
         const data = await fetchCategories(user.id);
+        console.log('Categories loaded:', data);
         setCategories(data);
       } catch (error) {
         console.error('Erro ao carregar categorias:', error);
@@ -107,7 +113,13 @@ const CategoriesTab = () => {
   };
 
   const handleSubmitCategory = async (category: Category) => {
-    if (!user) return;
+    if (!user) {
+      console.error('Nenhum usuário logado');
+      toast.error('Você precisa estar logado para adicionar categorias');
+      return;
+    }
+    
+    console.log('Preparing to save category:', category);
     
     try {
       if (category.id) {
@@ -117,21 +129,34 @@ const CategoriesTab = () => {
           throw new Error('Categorias padrão não podem ser editadas');
         }
 
+        console.log('Updating existing category:', category);
         const updated = await updateCategory(category);
         setCategories(prev => 
           prev.map(c => (c.id === category.id ? updated : c))
         );
         toast.success('Categoria atualizada com sucesso!');
       } else {
-        const added = await addCategory(category);
+        console.log('Adding new category with user ID:', user.id);
+        // Garantir que estamos passando o client ID corretamente
+        const categoryToAdd: Category = {
+          ...category,
+          cliente: user.id,
+          padrao: false
+        };
+        
+        console.log('Sending category to backend:', categoryToAdd);
+        const added = await addCategory(categoryToAdd);
+        console.log('Category added, response:', added);
+        
         setCategories(prev => [...prev, added]);
         toast.success('Categoria adicionada com sucesso!');
       }
       handleCloseForm();
     } catch (error) {
       console.error('Erro com categoria:', error);
-      toast.error('Erro ao salvar a categoria: ' + (error instanceof Error ? error.message : 'Erro desconhecido'));
-      throw error;
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast.error(`Erro ao salvar a categoria: ${errorMessage}`);
+      // Não fechar o formulário para permitir correção
     }
   };
 
