@@ -10,27 +10,10 @@ import {
   deleteCategory 
 } from '@/lib/categories';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, PencilIcon, TrashIcon } from 'lucide-react';
+import { PlusIcon } from 'lucide-react';
 import CategoryForm from './CategoryForm';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Badge } from "@/components/ui/badge";
+import { CategoryList } from './categories/CategoryList';
+import { DeleteCategoryDialog } from './categories/DeleteCategoryDialog';
 
 const CategoriesTab = () => {
   const { user } = useAuth();
@@ -41,20 +24,16 @@ const CategoriesTab = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<number | null>(null);
 
-  // Carregar categorias
   useEffect(() => {
     const loadCategories = async () => {
       if (!user) {
-        console.log('No user found, skipping category fetch');
         setIsLoading(false);
         return;
       }
       
-      console.log('Loading categories for user:', user.id);
       setIsLoading(true);
       try {
         const data = await fetchCategories(user.id);
-        console.log('Categories loaded:', data);
         setCategories(data);
       } catch (error) {
         console.error('Erro ao carregar categorias:', error);
@@ -67,7 +46,6 @@ const CategoriesTab = () => {
     loadCategories();
   }, [user]);
 
-  // Funções de gerenciamento
   const handleEdit = (category: Category) => {
     if (category.padrao) {
       toast.error('Categorias padrão não podem ser editadas.');
@@ -102,6 +80,43 @@ const CategoriesTab = () => {
     }
   };
 
+  const handleSubmitCategory = async (category: Category) => {
+    if (!user) {
+      toast.error('Você precisa estar logado para adicionar categorias');
+      return;
+    }
+    
+    try {
+      if (category.id) {
+        const existingCategory = categories.find(c => c.id === category.id);
+        if (existingCategory?.padrao) {
+          throw new Error('Categorias padrão não podem ser editadas');
+        }
+
+        const updated = await updateCategory(category);
+        setCategories(prev => 
+          prev.map(c => (c.id === category.id ? updated : c))
+        );
+        toast.success('Categoria atualizada com sucesso!');
+      } else {
+        const categoryToAdd: Category = {
+          ...category,
+          cliente: user.id,
+          padrao: false
+        };
+        
+        const added = await addCategory(categoryToAdd);
+        setCategories(prev => [...prev, added]);
+        toast.success('Categoria adicionada com sucesso!');
+      }
+      handleCloseForm();
+    } catch (error) {
+      console.error('Erro com categoria:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast.error(`Erro ao salvar a categoria: ${errorMessage}`);
+    }
+  };
+
   const handleAddNew = () => {
     setEditingCategory(null);
     setIsCategoryFormOpen(true);
@@ -111,63 +126,6 @@ const CategoriesTab = () => {
     setIsCategoryFormOpen(false);
     setEditingCategory(null);
   };
-
-  const handleSubmitCategory = async (category: Category) => {
-    if (!user) {
-      console.error('Nenhum usuário logado');
-      toast.error('Você precisa estar logado para adicionar categorias');
-      return;
-    }
-    
-    console.log('Preparing to save category:', category);
-    
-    try {
-      if (category.id) {
-        // Verificação adicional para categorias padrão
-        const existingCategory = categories.find(c => c.id === category.id);
-        if (existingCategory?.padrao) {
-          throw new Error('Categorias padrão não podem ser editadas');
-        }
-
-        console.log('Updating existing category:', category);
-        const updated = await updateCategory(category);
-        setCategories(prev => 
-          prev.map(c => (c.id === category.id ? updated : c))
-        );
-        toast.success('Categoria atualizada com sucesso!');
-      } else {
-        console.log('Adding new category with user ID:', user.id);
-        // Garantir que estamos passando o client ID corretamente
-        const categoryToAdd: Category = {
-          ...category,
-          cliente: user.id,
-          padrao: false
-        };
-        
-        console.log('Sending category to backend:', categoryToAdd);
-        const added = await addCategory(categoryToAdd);
-        console.log('Category added, response:', added);
-        
-        setCategories(prev => [...prev, added]);
-        toast.success('Categoria adicionada com sucesso!');
-      }
-      handleCloseForm();
-    } catch (error) {
-      console.error('Erro com categoria:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      toast.error(`Erro ao salvar a categoria: ${errorMessage}`);
-      // Não fechar o formulário para permitir correção
-    }
-  };
-
-  // Mostrar indicador de carregamento
-  if (isLoading) {
-    return (
-      <div className="p-4 flex justify-center">
-        <div className="animate-pulse-slow text-lg">Carregando categorias...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="p-4">
@@ -179,65 +137,12 @@ const CategoriesTab = () => {
         </Button>
       </div>
 
-      {categories.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          Nenhuma categoria cadastrada. Clique em "Nova Categoria" para adicionar.
-        </div>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {categories.map((category) => (
-              <TableRow key={category.id} className={category.padrao ? "bg-slate-50" : ""}>
-                <TableCell className="font-medium">{category.nome}</TableCell>
-                <TableCell>
-                  {category.tipo === 'entrada' && 'Entrada'}
-                  {category.tipo === 'saída' && 'Saída'}
-                  {category.tipo === 'ambos' && 'Ambos'}
-                </TableCell>
-                <TableCell>
-                  {category.padrao ? (
-                    <Badge variant="secondary">Padrão</Badge>
-                  ) : (
-                    <Badge variant="outline">Personalizada</Badge>
-                  )}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEdit(category)}
-                    className="h-8 w-8 p-0 mr-1"
-                    disabled={category.padrao}
-                    title={category.padrao ? "Categorias padrão não podem ser editadas" : "Editar categoria"}
-                  >
-                    <PencilIcon className="h-4 w-4" />
-                    <span className="sr-only">Editar</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteRequest(category.id!, category.padrao || false)}
-                    className={`h-8 w-8 p-0 ${category.padrao ? "text-muted-foreground" : "text-destructive hover:text-destructive"}`}
-                    disabled={category.padrao}
-                    title={category.padrao ? "Categorias padrão não podem ser excluídas" : "Excluir categoria"}
-                  >
-                    <TrashIcon className="h-4 w-4" />
-                    <span className="sr-only">Excluir</span>
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
+      <CategoryList
+        categories={categories}
+        onEdit={handleEdit}
+        onDelete={handleDeleteRequest}
+        isLoading={isLoading}
+      />
 
       {user && (
         <CategoryForm
@@ -249,22 +154,11 @@ const CategoriesTab = () => {
         />
       )}
 
-      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta ação não pode ser desfeita. Isso excluirá permanentemente esta categoria.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteCategoryDialog
+        isOpen={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 };
