@@ -151,11 +151,6 @@ export function TransactionForm({
       };
       
       await onSubmit(transaction);
-      toast.success(
-        editingTransaction 
-          ? 'Transação atualizada com sucesso!' 
-          : 'Transação adicionada com sucesso!'
-      );
       
       onClose();
     } catch (error) {
@@ -234,7 +229,9 @@ export function TransactionForm({
                         <SelectItem value="" disabled>Carregando categorias...</SelectItem>
                       ) : filteredCategories.length > 0 ? (
                         filteredCategories.map((category) => (
-                          <SelectItem key={category.id} value={category.nome}>{category.nome}</SelectItem>
+                          <SelectItem key={category.id} value={category.nome}>
+                            {category.nome} {category.padrao && "(Padrão)"}
+                          </SelectItem>
                         ))
                       ) : (
                         <SelectItem value="" disabled>Nenhuma categoria disponível</SelectItem>

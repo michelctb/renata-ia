@@ -33,6 +33,7 @@ export type Database = {
           created_at: string
           id: number
           nome: string
+          padrao: boolean | null
           tipo: string
         }
         Insert: {
@@ -40,6 +41,7 @@ export type Database = {
           created_at?: string
           id?: number
           nome: string
+          padrao?: boolean | null
           tipo: string
         }
         Update: {
@@ -47,6 +49,7 @@ export type Database = {
           created_at?: string
           id?: number
           nome?: string
+          padrao?: boolean | null
           tipo?: string
         }
         Relationships: []

@@ -10,7 +10,7 @@ import {
   deleteCategory 
 } from '@/lib/categories';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, PencilIcon, TrashIcon } from 'lucide-react';
+import { PlusIcon, PencilIcon, TrashIcon, EyeOffIcon } from 'lucide-react';
 import CategoryForm from './CategoryForm';
 import {
   AlertDialog,
@@ -30,6 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Badge } from "@/components/ui/badge";
 
 const CategoriesTab = () => {
   const { user } = useAuth();
@@ -62,11 +63,19 @@ const CategoriesTab = () => {
 
   // Funções de gerenciamento
   const handleEdit = (category: Category) => {
+    if (category.padrao) {
+      toast.error('Categorias padrão não podem ser editadas.');
+      return;
+    }
     setEditingCategory(category);
     setIsCategoryFormOpen(true);
   };
 
-  const handleDeleteRequest = (id: number) => {
+  const handleDeleteRequest = (id: number, isPadrao: boolean) => {
+    if (isPadrao) {
+      toast.error('Categorias padrão não podem ser excluídas.');
+      return;
+    }
     setCategoryToDelete(id);
     setDeleteConfirmOpen(true);
   };
@@ -102,16 +111,26 @@ const CategoriesTab = () => {
     
     try {
       if (category.id) {
+        // Verificação adicional para categorias padrão
+        const existingCategory = categories.find(c => c.id === category.id);
+        if (existingCategory?.padrao) {
+          throw new Error('Categorias padrão não podem ser editadas');
+        }
+
         const updated = await updateCategory(category);
         setCategories(prev => 
           prev.map(c => (c.id === category.id ? updated : c))
         );
+        toast.success('Categoria atualizada com sucesso!');
       } else {
         const added = await addCategory(category);
         setCategories(prev => [...prev, added]);
+        toast.success('Categoria adicionada com sucesso!');
       }
+      handleCloseForm();
     } catch (error) {
       console.error('Erro com categoria:', error);
+      toast.error('Erro ao salvar a categoria: ' + (error instanceof Error ? error.message : 'Erro desconhecido'));
       throw error;
     }
   };
@@ -145,17 +164,25 @@ const CategoriesTab = () => {
             <TableRow>
               <TableHead>Nome</TableHead>
               <TableHead>Tipo</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {categories.map((category) => (
-              <TableRow key={category.id}>
+              <TableRow key={category.id} className={category.padrao ? "bg-slate-50" : ""}>
                 <TableCell className="font-medium">{category.nome}</TableCell>
                 <TableCell>
                   {category.tipo === 'entrada' && 'Entrada'}
                   {category.tipo === 'saída' && 'Saída'}
                   {category.tipo === 'ambos' && 'Ambos'}
+                </TableCell>
+                <TableCell>
+                  {category.padrao ? (
+                    <Badge variant="secondary">Padrão</Badge>
+                  ) : (
+                    <Badge variant="outline">Personalizada</Badge>
+                  )}
                 </TableCell>
                 <TableCell className="text-right">
                   <Button
@@ -163,6 +190,8 @@ const CategoriesTab = () => {
                     size="sm"
                     onClick={() => handleEdit(category)}
                     className="h-8 w-8 p-0 mr-1"
+                    disabled={category.padrao}
+                    title={category.padrao ? "Categorias padrão não podem ser editadas" : "Editar categoria"}
                   >
                     <PencilIcon className="h-4 w-4" />
                     <span className="sr-only">Editar</span>
@@ -170,8 +199,10 @@ const CategoriesTab = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleDeleteRequest(category.id!)}
-                    className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                    onClick={() => handleDeleteRequest(category.id!, category.padrao || false)}
+                    className={`h-8 w-8 p-0 ${category.padrao ? "text-muted-foreground" : "text-destructive hover:text-destructive"}`}
+                    disabled={category.padrao}
+                    title={category.padrao ? "Categorias padrão não podem ser excluídas" : "Excluir categoria"}
                   >
                     <TrashIcon className="h-4 w-4" />
                     <span className="sr-only">Excluir</span>
