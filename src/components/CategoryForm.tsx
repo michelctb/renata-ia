@@ -28,6 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 
 // Schema para validação do formulário
@@ -82,6 +83,9 @@ export function CategoryForm({
   // Gerenciar envio do formulário
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      console.log('Form submitted with values:', values);
+      console.log('Current userId:', userId);
+      
       const category: Category = {
         id: values.id,
         nome: values.nome,
@@ -108,6 +112,11 @@ export function CategoryForm({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{editingCategory ? 'Editar Categoria' : 'Nova Categoria'}</DialogTitle>
+          <DialogDescription>
+            {editingCategory 
+              ? 'Edite os dados da categoria selecionada.'
+              : 'Preencha os dados para criar uma nova categoria.'}
+          </DialogDescription>
         </DialogHeader>
         
         <Form {...form}>

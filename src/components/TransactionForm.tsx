@@ -38,6 +38,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
@@ -83,7 +84,9 @@ export function TransactionForm({
       if (!userId) return;
       
       try {
+        console.log('Loading categories for transaction form, userId:', userId);
         const data = await fetchCategories(userId);
+        console.log('Categories loaded:', data);
         setCategories(data);
       } catch (error) {
         console.error('Erro ao carregar categorias:', error);
@@ -140,6 +143,9 @@ export function TransactionForm({
   // Handle form submission
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      console.log('Transaction form submitted with values:', values);
+      console.log('Current userId:', userId);
+      
       const transaction: Transaction = {
         id: values.id,
         cliente: userId,
@@ -150,7 +156,14 @@ export function TransactionForm({
         valor: values.valor,
       };
       
+      console.log('Transaction object to submit:', transaction);
       await onSubmit(transaction);
+      
+      toast.success(
+        editingTransaction 
+          ? 'Transação atualizada com sucesso!' 
+          : 'Transação adicionada com sucesso!'
+      );
       
       onClose();
     } catch (error) {
@@ -164,6 +177,11 @@ export function TransactionForm({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{editingTransaction ? 'Editar Transação' : 'Nova Transação'}</DialogTitle>
+          <DialogDescription>
+            {editingTransaction 
+              ? 'Edite os dados da transação selecionada.'
+              : 'Preencha os dados para registrar uma nova transação financeira.'}
+          </DialogDescription>
         </DialogHeader>
         
         <Form {...form}>

@@ -25,6 +25,8 @@ export type Transaction = {
 
 // Fetch transactions for a specific user
 export async function fetchTransactions(userId: string) {
+  console.log('Fetching transactions for user:', userId);
+  
   const { data, error } = await supabase
     .from(FINANCIAL_TABLE)
     .select('*')
@@ -41,6 +43,8 @@ export async function fetchTransactions(userId: string) {
 
 // Add a new transaction
 export async function addTransaction(transaction: Transaction) {
+  console.log('Adding transaction:', transaction);
+  
   const { data, error } = await supabase
     .from(FINANCIAL_TABLE)
     .insert([transaction])
@@ -56,6 +60,8 @@ export async function addTransaction(transaction: Transaction) {
 
 // Update an existing transaction
 export async function updateTransaction(transaction: Transaction) {
+  console.log('Updating transaction:', transaction);
+  
   const { data, error } = await supabase
     .from(FINANCIAL_TABLE)
     .update(transaction)
@@ -72,6 +78,8 @@ export async function updateTransaction(transaction: Transaction) {
 
 // Delete a transaction
 export async function deleteTransaction(id: number) {
+  console.log('Deleting transaction:', id);
+  
   const { error } = await supabase
     .from(FINANCIAL_TABLE)
     .delete()

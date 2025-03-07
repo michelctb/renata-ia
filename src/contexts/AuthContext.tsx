@@ -31,7 +31,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const storedUser = localStorage.getItem('financialDashboardUser');
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        console.log('Retrieved user from localStorage:', parsedUser);
+        setUser(parsedUser);
       } catch (error) {
         console.error('Error parsing stored user:', error);
         localStorage.removeItem('financialDashboardUser');
@@ -43,12 +45,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = (userId: string) => {
     // Simple login with userId
     const newUser = { id: userId };
+    console.log('Logging in user with ID:', userId);
     setUser(newUser);
     localStorage.setItem('financialDashboardUser', JSON.stringify(newUser));
     toast.success('Login realizado com sucesso');
   };
 
   const logout = () => {
+    console.log('Logging out user');
     setUser(null);
     localStorage.removeItem('financialDashboardUser');
     toast.success('Logout realizado com sucesso');

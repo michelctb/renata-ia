@@ -16,6 +16,8 @@ const CATEGORIES_TABLE = 'Categorias';
 
 // Buscar todas as categorias de um usuário
 export async function fetchCategories(userId: string) {
+  console.log('Fetching categories for user:', userId);
+  
   const { data, error } = await supabase
     .from(CATEGORIES_TABLE)
     .select('*')
@@ -32,9 +34,17 @@ export async function fetchCategories(userId: string) {
 
 // Adicionar uma nova categoria
 export async function addCategory(category: Category) {
+  console.log('Adding category:', category);
+  
+  // Certifique-se de que a categoria não é marcada como padrão
+  const newCategory = {
+    ...category,
+    padrao: false
+  };
+  
   const { data, error } = await supabase
     .from(CATEGORIES_TABLE)
-    .insert([category])
+    .insert([newCategory])
     .select();
 
   if (error) {
@@ -47,6 +57,8 @@ export async function addCategory(category: Category) {
 
 // Atualizar uma categoria existente
 export async function updateCategory(category: Category) {
+  console.log('Updating category:', category);
+  
   // Verificar se é uma categoria padrão
   if (category.padrao) {
     console.error('Categorias padrão não podem ser editadas');
@@ -69,6 +81,8 @@ export async function updateCategory(category: Category) {
 
 // Excluir uma categoria
 export async function deleteCategory(id: number) {
+  console.log('Deleting category:', id);
+  
   // Primeiro, verificar se a categoria é padrão
   const { data: categoryData, error: fetchError } = await supabase
     .from(CATEGORIES_TABLE)
