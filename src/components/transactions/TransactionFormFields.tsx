@@ -1,10 +1,10 @@
 
-import { useEffect } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CalendarIcon } from 'lucide-react';
-import { Category } from '@/lib/categories';
+import { UseFormReturn } from 'react-hook-form';
 import { cn } from '@/lib/utils';
+import { Category } from '@/lib/categories';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -27,25 +27,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { UseFormReturn } from 'react-hook-form';
+import { TransactionFormValues } from './useTransactionForm';
 
 interface TransactionFormFieldsProps {
-  form: UseFormReturn<any>;
-  categories: Category[];
+  form: UseFormReturn<TransactionFormValues>;
+  filteredCategories: Category[];
   isLoadingCategories: boolean;
 }
 
-export function TransactionFormFields({ 
-  form, 
-  categories, 
-  isLoadingCategories 
+export function TransactionFormFields({
+  form,
+  filteredCategories,
+  isLoadingCategories
 }: TransactionFormFieldsProps) {
-  const operationType = form.watch('operação');
-  
-  const filteredCategories = categories.filter(
-    cat => cat.tipo === 'ambos' || cat.tipo === operationType
-  );
-
   return (
     <>
       <FormField
