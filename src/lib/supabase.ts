@@ -27,10 +27,10 @@ export type Transaction = {
 export async function fetchTransactions(userId: string) {
   console.log('Fetching transactions for user:', userId);
   
+  // Use RLS policy for filtering by user ID
   const { data, error } = await supabase
     .from(FINANCIAL_TABLE)
     .select('*')
-    .eq('cliente', userId)
     .order('data', { ascending: false });
 
   if (error) {
@@ -38,6 +38,7 @@ export async function fetchTransactions(userId: string) {
     throw error;
   }
 
+  console.log('Transactions fetched:', data?.length || 0);
   return data || [];
 }
 
@@ -55,6 +56,7 @@ export async function addTransaction(transaction: Transaction) {
     throw error;
   }
 
+  console.log('Transaction added successfully:', data?.[0]);
   return data?.[0];
 }
 
@@ -73,6 +75,7 @@ export async function updateTransaction(transaction: Transaction) {
     throw error;
   }
 
+  console.log('Transaction updated successfully:', data?.[0]);
   return data?.[0];
 }
 
@@ -90,5 +93,6 @@ export async function deleteTransaction(id: number) {
     throw error;
   }
 
+  console.log('Transaction deleted successfully');
   return true;
 }

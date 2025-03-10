@@ -49,17 +49,28 @@ const TransactionsTab = ({
   const [transactionToDelete, setTransactionToDelete] = useState<number | null>(null);
 
   const handleSubmitTransaction = async (transaction: Transaction) => {
-    if (!user) return;
+    if (!user) {
+      toast.error('Você precisa estar logado para realizar esta operação.');
+      return;
+    }
     
     try {
       if (transaction.id) {
-        const updated = await updateTransaction(transaction);
+        // Make sure cliente field is set for RLS policy
+        const updated = await updateTransaction({
+          ...transaction,
+          cliente: user.id
+        });
         setTransactions(prev => 
           prev.map(t => (t.id === transaction.id ? updated : t))
         );
         toast.success('Transação atualizada com sucesso!');
       } else {
-        const added = await addTransaction(transaction);
+        // Make sure cliente field is set for RLS policy
+        const added = await addTransaction({
+          ...transaction,
+          cliente: user.id
+        });
         setTransactions(prev => [...prev, added]);
         toast.success('Transação adicionada com sucesso!');
       }
