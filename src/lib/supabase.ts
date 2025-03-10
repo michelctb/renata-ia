@@ -46,6 +46,11 @@ export async function fetchTransactions(userId: string) {
 export async function addTransaction(transaction: Transaction) {
   console.log('Adding transaction:', transaction);
   
+  if (!transaction.cliente) {
+    console.error('Error: cliente field is required');
+    throw new Error('Cliente field is required');
+  }
+  
   const { data, error } = await supabase
     .from(FINANCIAL_TABLE)
     .insert([transaction])
@@ -63,6 +68,16 @@ export async function addTransaction(transaction: Transaction) {
 // Update an existing transaction
 export async function updateTransaction(transaction: Transaction) {
   console.log('Updating transaction:', transaction);
+  
+  if (!transaction.cliente) {
+    console.error('Error: cliente field is required');
+    throw new Error('Cliente field is required');
+  }
+  
+  if (!transaction.id) {
+    console.error('Error: transaction id is required for update');
+    throw new Error('Transaction ID is required for update');
+  }
   
   const { data, error } = await supabase
     .from(FINANCIAL_TABLE)

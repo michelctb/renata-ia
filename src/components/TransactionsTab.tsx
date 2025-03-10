@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { DateRange } from 'react-day-picker';
@@ -47,6 +48,7 @@ const TransactionsTab = ({
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<number | null>(null);
 
+  // Handle adding or updating a transaction
   const handleSubmitTransaction = async (transaction: Transaction) => {
     if (!user) {
       toast.error('Você precisa estar logado para realizar esta operação.');
@@ -54,49 +56,61 @@ const TransactionsTab = ({
     }
     
     try {
+      console.log('Processing transaction:', transaction);
+      console.log('Processing transaction with user ID:', user.id);
+      
+      // Ensure cliente field is set correctly
       const transactionWithClient = {
         ...transaction,
         cliente: user.id
       };
       
-      console.log('Processing transaction with user ID:', user.id);
-      
       if (transaction.id) {
+        // Update existing transaction
+        console.log('Updating transaction with ID:', transaction.id);
         const updated = await updateTransaction(transactionWithClient);
         console.log('Updated transaction:', updated);
         
-        setTransactions(prev => 
-          prev.map(t => (t.id === transaction.id ? updated : t))
-        );
-        toast.success('Transação atualizada com sucesso!');
+        if (updated) {
+          setTransactions(prev => 
+            prev.map(t => (t.id === transaction.id ? updated : t))
+          );
+          toast.success('Transação atualizada com sucesso!');
+          handleCloseForm();
+        }
       } else {
+        // Add new transaction
+        console.log('Adding new transaction');
         const added = await addTransaction(transactionWithClient);
         console.log('Added transaction:', added);
         
         if (added) {
-          setTransactions(prev => [...prev, added]);
+          setTransactions(prev => [added, ...prev]);
           toast.success('Transação adicionada com sucesso!');
+          handleCloseForm();
         }
       }
-      handleCloseForm();
     } catch (error) {
       console.error('Error with transaction:', error);
       toast.error('Erro ao salvar a transação. Tente novamente.');
     }
   };
   
+  // Edit a transaction
   const handleEdit = (transaction: Transaction) => {
     console.log('Editing transaction:', transaction);
     setEditingTransaction(transaction);
     setIsTransactionFormOpen(true);
   };
   
+  // Request to delete a transaction
   const handleDeleteRequest = (id: number) => {
     console.log('Request to delete transaction ID:', id);
     setTransactionToDelete(id);
     setDeleteConfirmOpen(true);
   };
   
+  // Confirm deletion of a transaction
   const confirmDelete = async () => {
     if (!transactionToDelete) return;
     
@@ -117,13 +131,16 @@ const TransactionsTab = ({
     }
   };
   
+  // Open form to add a new transaction
   const handleAddNew = () => {
     console.log('Opening form to add new transaction');
     setEditingTransaction(null);
     setIsTransactionFormOpen(true);
   };
   
+  // Close the transaction form
   const handleCloseForm = () => {
+    console.log('Closing transaction form');
     setIsTransactionFormOpen(false);
     setEditingTransaction(null);
   };

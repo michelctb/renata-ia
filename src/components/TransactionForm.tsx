@@ -159,13 +159,7 @@ export function TransactionForm({
       console.log('Transaction object to submit:', transaction);
       await onSubmit(transaction);
       
-      toast.success(
-        editingTransaction 
-          ? 'Transação atualizada com sucesso!' 
-          : 'Transação adicionada com sucesso!'
-      );
-      
-      onClose();
+      form.reset();
     } catch (error) {
       console.error('Error submitting transaction:', error);
       toast.error('Erro ao salvar a transação. Tente novamente.');
@@ -173,7 +167,9 @@ export function TransactionForm({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) onClose();
+    }}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{editingTransaction ? 'Editar Transação' : 'Nova Transação'}</DialogTitle>
