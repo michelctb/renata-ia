@@ -27,10 +27,10 @@ export type Transaction = {
 export async function fetchTransactions(userId: string) {
   console.log('Fetching transactions for user:', userId);
   
-  // Use RLS policy for filtering by user ID
   const { data, error } = await supabase
     .from(FINANCIAL_TABLE)
     .select('*')
+    .eq('cliente', userId)  // Explicitly filter by user ID despite RLS
     .order('data', { ascending: false });
 
   if (error) {

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { DateRange } from 'react-day-picker';
@@ -55,39 +54,45 @@ const TransactionsTab = ({
     }
     
     try {
+      const transactionWithClient = {
+        ...transaction,
+        cliente: user.id
+      };
+      
+      console.log('Processing transaction with user ID:', user.id);
+      
       if (transaction.id) {
-        // Make sure cliente field is set for RLS policy
-        const updated = await updateTransaction({
-          ...transaction,
-          cliente: user.id
-        });
+        const updated = await updateTransaction(transactionWithClient);
+        console.log('Updated transaction:', updated);
+        
         setTransactions(prev => 
           prev.map(t => (t.id === transaction.id ? updated : t))
         );
         toast.success('Transação atualizada com sucesso!');
       } else {
-        // Make sure cliente field is set for RLS policy
-        const added = await addTransaction({
-          ...transaction,
-          cliente: user.id
-        });
-        setTransactions(prev => [...prev, added]);
-        toast.success('Transação adicionada com sucesso!');
+        const added = await addTransaction(transactionWithClient);
+        console.log('Added transaction:', added);
+        
+        if (added) {
+          setTransactions(prev => [...prev, added]);
+          toast.success('Transação adicionada com sucesso!');
+        }
       }
+      handleCloseForm();
     } catch (error) {
       console.error('Error with transaction:', error);
       toast.error('Erro ao salvar a transação. Tente novamente.');
-    } finally {
-      handleCloseForm();
     }
   };
   
   const handleEdit = (transaction: Transaction) => {
+    console.log('Editing transaction:', transaction);
     setEditingTransaction(transaction);
     setIsTransactionFormOpen(true);
   };
   
   const handleDeleteRequest = (id: number) => {
+    console.log('Request to delete transaction ID:', id);
     setTransactionToDelete(id);
     setDeleteConfirmOpen(true);
   };
@@ -96,9 +101,13 @@ const TransactionsTab = ({
     if (!transactionToDelete) return;
     
     try {
-      await deleteTransaction(transactionToDelete);
-      setTransactions(prev => prev.filter(t => t.id !== transactionToDelete));
-      toast.success('Transação excluída com sucesso!');
+      console.log('Confirming deletion of transaction ID:', transactionToDelete);
+      const success = await deleteTransaction(transactionToDelete);
+      
+      if (success) {
+        setTransactions(prev => prev.filter(t => t.id !== transactionToDelete));
+        toast.success('Transação excluída com sucesso!');
+      }
     } catch (error) {
       console.error('Error deleting transaction:', error);
       toast.error('Erro ao excluir a transação. Tente novamente.');
@@ -109,6 +118,7 @@ const TransactionsTab = ({
   };
   
   const handleAddNew = () => {
+    console.log('Opening form to add new transaction');
     setEditingTransaction(null);
     setIsTransactionFormOpen(true);
   };
