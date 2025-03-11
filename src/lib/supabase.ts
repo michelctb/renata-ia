@@ -91,8 +91,10 @@ export async function updateTransaction(transaction: Transaction) {
     throw new Error('Transaction ID is required for update');
   }
   
-  // Ensure the transaction ID is a number - fix the null check
-  const id = transaction.id && typeof transaction.id === 'object' && 
+  // Fixed type check for transaction.id
+  const id = transaction.id !== null && 
+    typeof transaction.id === 'object' && 
+    '_type' in transaction.id && 
     transaction.id._type === 'undefined' 
       ? undefined 
       : transaction.id;
