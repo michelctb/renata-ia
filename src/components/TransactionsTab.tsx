@@ -46,7 +46,7 @@ const TransactionsTab = ({
   // Edit a transaction
   const handleEdit = (transaction: Transaction) => {
     console.log('Editing transaction:', transaction);
-    setEditingTransaction(transaction);
+    setEditingTransaction({...transaction});
     setIsTransactionFormOpen(true);
   };
   
