@@ -91,13 +91,21 @@ export async function updateTransaction(transaction: Transaction) {
     throw new Error('Transaction ID is required for update');
   }
   
-  // Fixed type check for transaction.id
-  const id = transaction.id !== null && 
-    typeof transaction.id === 'object' && 
-    '_type' in transaction.id && 
-    transaction.id._type === 'undefined' 
-      ? undefined 
-      : transaction.id;
+  // First check if transaction.id exists before trying to check its properties
+  let id: number | undefined;
+  if (transaction.id !== null && transaction.id !== undefined) {
+    // Now safely check if it's an object with a _type property
+    if (typeof transaction.id === 'object' && 
+        transaction.id !== null && 
+        '_type' in transaction.id && 
+        transaction.id._type === 'undefined') {
+      id = undefined;
+    } else {
+      id = transaction.id;
+    }
+  } else {
+    id = undefined;
+  }
     
   if (!id) {
     console.error('Error: Invalid ID format', transaction.id);
