@@ -59,9 +59,13 @@ export async function addTransaction(transaction: Transaction) {
     throw new Error('Campos obrigatórios faltando');
   }
   
+  // Create a transaction object without the ID field to let the database auto-generate it
+  const { id, ...transactionWithoutId } = transaction;
+  console.log('Submitting transaction without ID:', transactionWithoutId);
+  
   const { data: insertedData, error } = await supabase
     .from(FINANCIAL_TABLE)
-    .insert([transaction])
+    .insert([transactionWithoutId])
     .select();
 
   if (error) {

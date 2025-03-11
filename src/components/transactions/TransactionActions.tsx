@@ -46,6 +46,8 @@ export function useTransactionActions({
         cliente: user.id
       };
       
+      console.log('Final transaction to submit:', transactionWithClient);
+      
       if (transaction.id) {
         // Update existing transaction
         console.log('Updating transaction with ID:', transaction.id);
@@ -60,9 +62,11 @@ export function useTransactionActions({
           onCloseForm();
         }
       } else {
-        // Add new transaction
-        console.log('Adding new transaction');
-        const added = await addTransaction(transactionWithClient);
+        // Add new transaction - ensure we're not sending an ID
+        console.log('Adding new transaction without ID');
+        const { id, ...transactionWithoutId } = transactionWithClient;
+        
+        const added = await addTransaction(transactionWithoutId as Transaction);
         console.log('Added transaction:', added);
         
         if (added) {
