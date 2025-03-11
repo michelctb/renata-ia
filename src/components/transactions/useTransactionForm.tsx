@@ -97,10 +97,13 @@ export function useTransactionForm(
       console.log('Transaction form submitted with values:', values);
       console.log('Current userId:', userId);
       
+      // Garantir que a data seja formatada corretamente
+      const formattedDate = values.data.toISOString().split('T')[0]; // formato yyyy-MM-dd
+      
       const transaction: Transaction = {
         id: values.id,
         cliente: userId,
-        data: values.data.toISOString().split('T')[0], // format as yyyy-MM-dd
+        data: formattedDate,
         operação: values.operação,
         descrição: values.descrição,
         categoria: values.categoria,
@@ -114,6 +117,7 @@ export function useTransactionForm(
     } catch (error) {
       console.error('Error submitting transaction:', error);
       toast.error('Erro ao salvar a transação. Tente novamente.');
+      throw error; // Propagar o erro para que o componente pai possa tratá-lo
     }
   };
 

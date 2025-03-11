@@ -51,7 +51,15 @@ export async function addTransaction(transaction: Transaction) {
     throw new Error('Cliente field is required');
   }
   
-  const { data, error } = await supabase
+  // Garantir que todos os campos necessários estejam presentes
+  const { cliente, data, operação, descrição, categoria, valor } = transaction;
+  
+  if (!cliente || !data || !operação || !descrição || !categoria || valor === undefined) {
+    console.error('Error: missing required fields', transaction);
+    throw new Error('Campos obrigatórios faltando');
+  }
+  
+  const { data: insertedData, error } = await supabase
     .from(FINANCIAL_TABLE)
     .insert([transaction])
     .select();
@@ -61,8 +69,8 @@ export async function addTransaction(transaction: Transaction) {
     throw error;
   }
 
-  console.log('Transaction added successfully:', data?.[0]);
-  return data?.[0];
+  console.log('Transaction added successfully:', insertedData?.[0]);
+  return insertedData?.[0];
 }
 
 // Update an existing transaction

@@ -33,7 +33,14 @@ export function useTransactionActions({
       console.log('Processing transaction:', transaction);
       console.log('Processing transaction with user ID:', user.id);
       
-      // Ensure cliente field is set correctly
+      // Garantir que todos os campos obrigatórios estejam presentes
+      if (!transaction.data || !transaction.descrição || !transaction.operação || !transaction.categoria) {
+        console.error('Dados de transação incompletos:', transaction);
+        toast.error('Por favor, preencha todos os campos obrigatórios.');
+        return;
+      }
+      
+      // Garantir que o cliente está definido corretamente
       const transactionWithClient = {
         ...transaction,
         cliente: user.id
