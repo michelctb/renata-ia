@@ -91,10 +91,11 @@ export async function updateTransaction(transaction: Transaction) {
     throw new Error('Transaction ID is required for update');
   }
   
-  // Ensure the transaction ID is a number
-  const id = typeof transaction.id === 'object' && transaction.id?._type === 'undefined' 
-    ? undefined 
-    : transaction.id;
+  // Ensure the transaction ID is a number - fix the null check
+  const id = transaction.id && typeof transaction.id === 'object' && 
+    transaction.id._type === 'undefined' 
+      ? undefined 
+      : transaction.id;
     
   if (!id) {
     console.error('Error: Invalid ID format', transaction.id);
