@@ -72,12 +72,15 @@ export function useTransactionForm(
   // Update form values when editing transaction
   useEffect(() => {
     if (editingTransaction) {
+      console.log('Setting form values for editing transaction:', editingTransaction);
+      const id = typeof editingTransaction.id === 'number' ? editingTransaction.id : undefined;
+      
       form.reset({
-        id: editingTransaction.id,
+        id: id,
         operação: editingTransaction.operação,
-        descrição: editingTransaction.descrição,
-        categoria: editingTransaction.categoria,
-        valor: editingTransaction.valor,
+        descrição: editingTransaction.descrição || '',
+        categoria: editingTransaction.categoria || '',
+        valor: editingTransaction.valor || 0,
         data: new Date(editingTransaction.data),
       });
     } else {

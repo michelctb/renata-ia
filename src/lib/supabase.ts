@@ -91,10 +91,29 @@ export async function updateTransaction(transaction: Transaction) {
     throw new Error('Transaction ID is required for update');
   }
   
+  // Ensure the transaction ID is a number
+  const id = typeof transaction.id === 'object' && transaction.id?._type === 'undefined' 
+    ? undefined 
+    : transaction.id;
+    
+  if (!id) {
+    console.error('Error: Invalid ID format', transaction.id);
+    throw new Error('Invalid ID format');
+  }
+  
+  console.log('Using ID for update:', id);
+  
   const { data, error } = await supabase
     .from(FINANCIAL_TABLE)
-    .update(transaction)
-    .eq('id', transaction.id)
+    .update({
+      cliente: transaction.cliente,
+      data: transaction.data,
+      operação: transaction.operação,
+      descrição: transaction.descrição,
+      categoria: transaction.categoria,
+      valor: transaction.valor
+    })
+    .eq('id', id)
     .select();
 
   if (error) {

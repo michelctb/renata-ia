@@ -100,7 +100,7 @@ export function TransactionFormFields({
               </FormControl>
               <SelectContent>
                 {isLoadingCategories ? (
-                  <SelectItem value="" disabled>Carregando categorias...</SelectItem>
+                  <SelectItem value="loading" disabled>Carregando categorias...</SelectItem>
                 ) : filteredCategories.length > 0 ? (
                   filteredCategories.map((category) => (
                     <SelectItem key={category.id} value={category.nome}>
@@ -108,7 +108,7 @@ export function TransactionFormFields({
                     </SelectItem>
                   ))
                 ) : (
-                  <SelectItem value="" disabled>Nenhuma categoria disponível</SelectItem>
+                  <SelectItem value="no-categories" disabled>Nenhuma categoria disponível</SelectItem>
                 )}
               </SelectContent>
             </Select>

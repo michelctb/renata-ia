@@ -45,8 +45,16 @@ const TransactionsTab = ({
   
   // Edit a transaction
   const handleEdit = (transaction: Transaction) => {
-    console.log('Editing transaction:', transaction);
-    setEditingTransaction({...transaction});
+    console.log('Editing transaction with data:', transaction);
+    
+    // Make sure we have a proper id in the transaction object
+    const transactionCopy = {
+      ...transaction,
+      id: typeof transaction.id === 'number' ? transaction.id : undefined
+    };
+    
+    console.log('Prepared transaction for edit:', transactionCopy);
+    setEditingTransaction(transactionCopy);
     setIsTransactionFormOpen(true);
   };
   
