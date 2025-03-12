@@ -4,7 +4,7 @@ import { Transaction } from '@/lib/supabase';
 import { DateRange } from 'react-day-picker';
 import { format, parseISO, isWithinInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { zonedTimeToUtc } from 'date-fns-tz';
+import { toZonedTime } from 'date-fns-tz';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MonthlyChart } from './charts/MonthlyChart';
 import { ExpensesPieChart } from './charts/ExpensesPieChart';
@@ -26,7 +26,7 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
       const transactionDate = parseISO(transactionDateStr);
       
       // Adjust the transaction date to America/Sao_Paulo timezone
-      const zonedDate = zonedTimeToUtc(transactionDate, 'America/Sao_Paulo');
+      const zonedDate = toZonedTime(transactionDate, 'America/Sao_Paulo');
       
       if (dateRange.from && dateRange.to) {
         return isWithinInterval(zonedDate, { 
@@ -53,7 +53,7 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
       const date = parseISO(dateStr);
       
       // Adjust the date to America/Sao_Paulo timezone
-      const zonedDate = zonedTimeToUtc(date, 'America/Sao_Paulo');
+      const zonedDate = toZonedTime(date, 'America/Sao_Paulo');
       
       const monthKey = format(zonedDate, 'yyyy-MM');
       const monthLabel = format(zonedDate, 'MMM yyyy', { locale: ptBR });
@@ -78,9 +78,22 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
     
     return Array.from(months.values())
       .sort((a, b) => {
-        const dateA = parseISO(`${a.name.split(' ')[1]}-${ptBR.localize?.month(new Date(`${a.name.split(' ')[0]} 1, 2000`).getMonth())}-01`);
-        const dateB = parseISO(`${b.name.split(' ')[1]}-${ptBR.localize?.month(new Date(`${b.name.split(' ')[0]} 1, 2000`).getMonth())}-01`);
-        return dateA.getTime() - dateB.getTime();
+        // Fix the Month type error by correctly parsing the month names to dates
+        const getMonthNumber = (monthName: string) => {
+          const months = {
+            'jan': 0, 'fev': 1, 'mar': 2, 'abr': 3, 'mai': 4, 'jun': 5,
+            'jul': 6, 'ago': 7, 'set': 8, 'out': 9, 'nov': 10, 'dez': 11
+          };
+          return months[monthName.toLowerCase().substring(0, 3)] || 0;
+        };
+        
+        const [monthA, yearA] = a.name.split(' ');
+        const [monthB, yearB] = b.name.split(' ');
+        
+        const yearDiff = parseInt(yearA) - parseInt(yearB);
+        if (yearDiff !== 0) return yearDiff;
+        
+        return getMonthNumber(monthA) - getMonthNumber(monthB);
       });
   }, [filteredTransactions]);
 

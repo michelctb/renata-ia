@@ -6,7 +6,7 @@ import { Transaction } from '@/lib/supabase';
 import { formatCurrency } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
 import { parseISO } from 'date-fns';
-import { zonedTimeToUtc } from 'date-fns-tz';
+import { toZonedTime } from 'date-fns-tz';
 
 type SummaryCardsProps = {
   transactions: Transaction[];
@@ -33,7 +33,7 @@ const SummaryCards = ({ transactions, dateRange }: SummaryCardsProps) => {
       const transactionDate = parseISO(transactionDateStr);
       
       // Adjust the transaction date to America/Sao_Paulo timezone
-      const zonedDate = zonedTimeToUtc(transactionDate, 'America/Sao_Paulo');
+      const zonedDate = toZonedTime(transactionDate, 'America/Sao_Paulo');
       
       if (dateRange.from && dateRange.to) {
         return zonedDate >= dateRange.from && zonedDate <= dateRange.to;
