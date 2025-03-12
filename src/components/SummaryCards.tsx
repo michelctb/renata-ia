@@ -39,11 +39,13 @@ const SummaryCards = ({ transactions, dateRange }: SummaryCardsProps) => {
       return true;
     });
     
-    // Calculate totals
+    // Calculate totals - making operation check case-insensitive
     filteredTransactions.forEach(transaction => {
-      if (transaction.operação === 'entrada') {
+      const operationType = transaction.operação?.toLowerCase() || '';
+      
+      if (operationType === 'entrada') {
         income += transaction.valor;
-      } else {
+      } else if (operationType === 'saída') {
         expenses += transaction.valor;
       }
     });

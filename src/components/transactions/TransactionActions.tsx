@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Transaction } from '@/lib/supabase';
 import { toast } from 'sonner';
@@ -40,10 +39,19 @@ export function useTransactionActions({
         return;
       }
       
+      // Normalize the operation type to lowercase
+      let operationType = transaction.operação;
+      if (operationType) {
+        if (operationType.toLowerCase() === 'entrada' || operationType.toLowerCase() === 'saída') {
+          operationType = operationType.toLowerCase();
+        }
+      }
+      
       // Garantir que o cliente está definido corretamente
       const transactionWithClient = {
         ...transaction,
-        cliente: user.id
+        cliente: user.id,
+        operação: operationType
       };
       
       console.log('Final transaction to submit:', transactionWithClient);

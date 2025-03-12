@@ -45,6 +45,7 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
       const date = new Date(transaction.data);
       const monthKey = format(date, 'yyyy-MM');
       const monthLabel = format(date, 'MMM yyyy', { locale: ptBR });
+      const operationType = transaction.operação?.toLowerCase() || '';
       
       if (!months.has(monthKey)) {
         months.set(monthKey, { 
@@ -56,9 +57,9 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
       
       const monthData = months.get(monthKey);
       
-      if (transaction.operação === 'entrada') {
+      if (operationType === 'entrada') {
         monthData.entrada += Number(transaction.valor);
-      } else {
+      } else if (operationType === 'saída') {
         monthData.saída += Number(transaction.valor);
       }
     });
@@ -75,9 +76,9 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
   const categoryData = useMemo(() => {
     const categories = new Map();
     
-    // Process all expense transactions
+    // Process all expense transactions with case-insensitive check
     filteredTransactions
-      .filter(t => t.operação === 'saída')
+      .filter(t => t.operação?.toLowerCase() === 'saída')
       .forEach(transaction => {
         // Handle empty or undefined category
         const category = transaction.categoria?.trim() || 'Sem categoria';
@@ -101,6 +102,8 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
   // Log category data for debugging
   console.log('Category data processed:', categoryData);
   console.log('Total categories found:', categoryData.length);
+  console.log('Filtered transactions with expense type:', filteredTransactions.filter(t => t.operação?.toLowerCase() === 'saída').length);
+  console.log('All transaction operation types:', [...new Set(filteredTransactions.map(t => t.operação))]);
   
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">

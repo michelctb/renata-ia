@@ -7,7 +7,7 @@ import { Transaction } from '@/lib/supabase';
 import { Category, fetchCategories } from '@/lib/categories';
 import { toast } from 'sonner';
 
-// Schema for form validation
+// Schema for form validation with case-insensitive operation type
 const formSchema = z.object({
   id: z.number().optional(),
   operação: z.enum(['entrada', 'saída']),
@@ -75,9 +75,19 @@ export function useTransactionForm(
       console.log('Setting form values for editing transaction:', editingTransaction);
       const id = typeof editingTransaction.id === 'number' ? editingTransaction.id : undefined;
       
+      // Normalize operation type for the form
+      let operationType = editingTransaction.operação;
+      if (operationType) {
+        if (operationType.toLowerCase() === 'entrada') {
+          operationType = 'entrada';
+        } else if (operationType.toLowerCase() === 'saída') {
+          operationType = 'saída';
+        }
+      }
+      
       form.reset({
         id: id,
-        operação: editingTransaction.operação,
+        operação: operationType as 'entrada' | 'saída',
         descrição: editingTransaction.descrição || '',
         categoria: editingTransaction.categoria || '',
         valor: editingTransaction.valor || 0,
@@ -126,7 +136,10 @@ export function useTransactionForm(
 
   // Filtrar categorias baseado no tipo de operação selecionado
   const filteredCategories = categories.filter(
-    cat => cat.tipo === 'ambos' || cat.tipo === form.watch('operação')
+    cat => {
+      const formOperation = form.watch('operação');
+      return cat.tipo === 'ambos' || cat.tipo.toLowerCase() === formOperation.toLowerCase();
+    }
   );
 
   return {

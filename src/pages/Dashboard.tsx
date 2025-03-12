@@ -34,11 +34,29 @@ const Dashboard = () => {
         const data = await fetchTransactions(user.id);
         console.log(`Loaded ${data.length} transactions for user ${user.id}`);
         
-        // Verify all categories in transactions
-        const categories = [...new Set(data.map(t => t.categoria))];
-        console.log('Categories found in transactions:', categories);
+        // Normalize transaction operation types for case-insensitivity
+        const normalizedData = data.map(transaction => {
+          let operationType = transaction.operação;
+          
+          // Normalize the operation type to lowercase
+          if (operationType) {
+            if (operationType.toLowerCase() === 'entrada' || operationType.toLowerCase() === 'saída') {
+              operationType = operationType.toLowerCase();
+            }
+          }
+          
+          return {
+            ...transaction,
+            operação: operationType
+          };
+        });
         
-        setTransactions(data);
+        // Verify all categories in transactions
+        const categories = [...new Set(normalizedData.map(t => t.categoria))];
+        console.log('Categories found in transactions:', categories);
+        console.log('Operation types found:', [...new Set(normalizedData.map(t => t.operação))]);
+        
+        setTransactions(normalizedData);
       } catch (error) {
         console.error('Error loading transactions:', error);
         toast.error('Erro ao carregar transações. Atualize a página.');
