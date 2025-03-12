@@ -76,13 +76,12 @@ export function useTransactionForm(
       const id = typeof editingTransaction.id === 'number' ? editingTransaction.id : undefined;
       
       // Normalize operation type for the form
-      let operationType = editingTransaction.operação;
-      if (operationType) {
-        if (operationType.toLowerCase() === 'entrada') {
-          operationType = 'entrada';
-        } else if (operationType.toLowerCase() === 'saída') {
-          operationType = 'saída';
-        }
+      let operationType = editingTransaction.operação.toLowerCase();
+      
+      // Ensure it's one of our allowed types
+      if (operationType !== 'entrada' && operationType !== 'saída') {
+        console.warn('Invalid operation type normalized:', operationType);
+        operationType = 'saída'; // Default to expense if invalid
       }
       
       form.reset({

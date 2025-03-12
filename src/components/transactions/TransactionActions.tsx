@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Transaction } from '@/lib/supabase';
 import { toast } from 'sonner';
@@ -39,49 +40,50 @@ export function useTransactionActions({
         return;
       }
       
-      // Normalize the operation type to lowercase
-      let operationType = transaction.operação;
-      if (operationType) {
-        if (operationType.toLowerCase() === 'entrada' || operationType.toLowerCase() === 'saída') {
-          operationType = operationType.toLowerCase();
-        }
-      }
+      // Normalize the operation type to lowercase for consistency
+      let operationType = transaction.operação.toLowerCase();
       
-      // Garantir que o cliente está definido corretamente
-      const transactionWithClient = {
-        ...transaction,
-        cliente: user.id,
-        operação: operationType
-      };
-      
-      console.log('Final transaction to submit:', transactionWithClient);
-      
-      if (transaction.id) {
-        // Update existing transaction
-        console.log('Updating transaction with ID:', transaction.id);
-        const updated = await updateTransaction(transactionWithClient);
-        console.log('Updated transaction:', updated);
+      // Ensure it's one of our allowed types
+      if (operationType === 'entrada' || operationType === 'saída') {
+        // Create a new transaction object with the normalized operation
+        const transactionWithClient = {
+          ...transaction,
+          cliente: user.id,
+          operação: operationType as 'entrada' | 'saída'
+        };
         
-        if (updated) {
-          setTransactions(prev => 
-            prev.map(t => (t.id === transaction.id ? updated : t))
-          );
-          toast.success('Transação atualizada com sucesso!');
-          onCloseForm();
+        console.log('Final transaction to submit:', transactionWithClient);
+        
+        if (transaction.id) {
+          // Update existing transaction
+          console.log('Updating transaction with ID:', transaction.id);
+          const updated = await updateTransaction(transactionWithClient);
+          console.log('Updated transaction:', updated);
+          
+          if (updated) {
+            setTransactions(prev => 
+              prev.map(t => (t.id === transaction.id ? updated : t))
+            );
+            toast.success('Transação atualizada com sucesso!');
+            onCloseForm();
+          }
+        } else {
+          // Add new transaction - ensure we're not sending an ID
+          console.log('Adding new transaction without ID');
+          const { id, ...transactionWithoutId } = transactionWithClient;
+          
+          const added = await addTransaction(transactionWithoutId as Transaction);
+          console.log('Added transaction:', added);
+          
+          if (added) {
+            setTransactions(prev => [added, ...prev]);
+            toast.success('Transação adicionada com sucesso!');
+            onCloseForm();
+          }
         }
       } else {
-        // Add new transaction - ensure we're not sending an ID
-        console.log('Adding new transaction without ID');
-        const { id, ...transactionWithoutId } = transactionWithClient;
-        
-        const added = await addTransaction(transactionWithoutId as Transaction);
-        console.log('Added transaction:', added);
-        
-        if (added) {
-          setTransactions(prev => [added, ...prev]);
-          toast.success('Transação adicionada com sucesso!');
-          onCloseForm();
-        }
+        console.error('Tipo de operação inválido:', operationType);
+        toast.error('Tipo de operação inválido. Use "entrada" ou "saída".');
       }
     } catch (error) {
       console.error('Error with transaction:', error);

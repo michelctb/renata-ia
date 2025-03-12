@@ -1,8 +1,9 @@
 
 import { useState, useEffect } from 'react';
 import { DateRange } from 'react-day-picker';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { format as formatTZ } from 'date-fns-tz';
 import { Transaction } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -122,7 +123,10 @@ const TransactionTable = ({
               sortedTransactions.map((transaction) => (
                 <TableRow key={transaction.id} className="transaction-card">
                   <TableCell className="font-medium">
-                    {format(new Date(transaction.data), 'dd/MM/yyyy', { locale: ptBR })}
+                    {formatTZ(parseISO(transaction.data), 'dd/MM/yyyy', { 
+                      timeZone: 'America/Sao_Paulo',
+                      locale: ptBR 
+                    })}
                   </TableCell>
                   <TableCell>{transaction.descrição}</TableCell>
                   <TableCell>
@@ -132,9 +136,9 @@ const TransactionTable = ({
                   </TableCell>
                   <TableCell className="text-right">
                     <span className={`inline-flex items-center ${
-                      transaction.operação === 'entrada' ? 'text-income' : 'text-expense'
+                      transaction.operação?.toLowerCase() === 'entrada' ? 'text-income' : 'text-expense'
                     }`}>
-                      {transaction.operação === 'entrada' ? (
+                      {transaction.operação?.toLowerCase() === 'entrada' ? (
                         <ArrowUpIcon className="h-4 w-4 mr-1" />
                       ) : (
                         <ArrowDownIcon className="h-4 w-4 mr-1" />

@@ -2,8 +2,9 @@
 import { useMemo } from 'react';
 import { Transaction } from '@/lib/supabase';
 import { DateRange } from 'react-day-picker';
-import { format, parse, isWithinInterval } from 'date-fns';
+import { format, parseISO, isWithinInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { zonedTimeToUtc } from 'date-fns-tz';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MonthlyChart } from './charts/MonthlyChart';
 import { ExpensesPieChart } from './charts/ExpensesPieChart';
@@ -20,17 +21,22 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
     if (!dateRange || !dateRange.from) return transactions;
     
     return transactions.filter(transaction => {
-      const transactionDate = new Date(transaction.data);
+      // Parse the date with timezone consideration
+      const transactionDateStr = transaction.data;
+      const transactionDate = parseISO(transactionDateStr);
+      
+      // Adjust the transaction date to America/Sao_Paulo timezone
+      const zonedDate = zonedTimeToUtc(transactionDate, 'America/Sao_Paulo');
       
       if (dateRange.from && dateRange.to) {
-        return isWithinInterval(transactionDate, { 
+        return isWithinInterval(zonedDate, { 
           start: dateRange.from, 
           end: dateRange.to 
         });
       }
       
       if (dateRange.from) {
-        return transactionDate >= dateRange.from;
+        return zonedDate >= dateRange.from;
       }
       
       return true;
@@ -42,9 +48,15 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
     const months = new Map();
     
     filteredTransactions.forEach(transaction => {
-      const date = new Date(transaction.data);
-      const monthKey = format(date, 'yyyy-MM');
-      const monthLabel = format(date, 'MMM yyyy', { locale: ptBR });
+      // Parse the date with timezone consideration
+      const dateStr = transaction.data;
+      const date = parseISO(dateStr);
+      
+      // Adjust the date to America/Sao_Paulo timezone
+      const zonedDate = zonedTimeToUtc(date, 'America/Sao_Paulo');
+      
+      const monthKey = format(zonedDate, 'yyyy-MM');
+      const monthLabel = format(zonedDate, 'MMM yyyy', { locale: ptBR });
       const operationType = transaction.operação?.toLowerCase() || '';
       
       if (!months.has(monthKey)) {
@@ -66,8 +78,8 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
     
     return Array.from(months.values())
       .sort((a, b) => {
-        const dateA = parse(a.name, 'MMM yyyy', new Date(), { locale: ptBR });
-        const dateB = parse(b.name, 'MMM yyyy', new Date(), { locale: ptBR });
+        const dateA = parseISO(`${a.name.split(' ')[1]}-${ptBR.localize?.month(new Date(`${a.name.split(' ')[0]} 1, 2000`).getMonth())}-01`);
+        const dateB = parseISO(`${b.name.split(' ')[1]}-${ptBR.localize?.month(new Date(`${b.name.split(' ')[0]} 1, 2000`).getMonth())}-01`);
         return dateA.getTime() - dateB.getTime();
       });
   }, [filteredTransactions]);
@@ -138,4 +150,4 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
       </Card>
     </div>
   );
-}
+};

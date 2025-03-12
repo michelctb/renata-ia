@@ -5,6 +5,8 @@ import { ArrowDownIcon, ArrowUpIcon, TrendingUpIcon } from 'lucide-react';
 import { Transaction } from '@/lib/supabase';
 import { formatCurrency } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
+import { parseISO } from 'date-fns';
+import { zonedTimeToUtc } from 'date-fns-tz';
 
 type SummaryCardsProps = {
   transactions: Transaction[];
@@ -26,14 +28,19 @@ const SummaryCards = ({ transactions, dateRange }: SummaryCardsProps) => {
     const filteredTransactions = transactions.filter(transaction => {
       if (!dateRange || !dateRange.from) return true;
       
-      const transactionDate = new Date(transaction.data);
+      // Parse the date with timezone consideration
+      const transactionDateStr = transaction.data;
+      const transactionDate = parseISO(transactionDateStr);
+      
+      // Adjust the transaction date to America/Sao_Paulo timezone
+      const zonedDate = zonedTimeToUtc(transactionDate, 'America/Sao_Paulo');
       
       if (dateRange.from && dateRange.to) {
-        return transactionDate >= dateRange.from && transactionDate <= dateRange.to;
+        return zonedDate >= dateRange.from && zonedDate <= dateRange.to;
       }
       
       if (dateRange.from) {
-        return transactionDate >= dateRange.from;
+        return zonedDate >= dateRange.from;
       }
       
       return true;
