@@ -75,9 +75,11 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
   const categoryData = useMemo(() => {
     const categories = new Map();
     
+    // Process all expense transactions
     filteredTransactions
       .filter(t => t.operação === 'saída')
       .forEach(transaction => {
+        // Handle empty or undefined category
         const category = transaction.categoria || 'Sem categoria';
         
         if (!categories.has(category)) {
@@ -91,6 +93,7 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
         categoryData.value += Number(transaction.valor);
       });
     
+    // Convert the Map to Array and sort by value (highest first)
     return Array.from(categories.values())
       .sort((a, b) => b.value - a.value);
   }, [filteredTransactions]);

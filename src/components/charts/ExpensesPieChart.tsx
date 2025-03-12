@@ -10,8 +10,15 @@ import {
   TooltipProps,
 } from 'recharts';
 
-// Colors for the pie chart
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A569BD', '#5DADE2', '#F4D03F', '#EC7063'];
+// Colors for the pie chart - expanded color palette
+const COLORS = [
+  '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A569BD', 
+  '#5DADE2', '#F4D03F', '#EC7063', '#45B39D', '#AF7AC5', 
+  '#5499C7', '#F5B041', '#EB984E', '#58D68D', '#3498DB'
+];
+
+// Define a catch-all color for "other" categories
+const OTHER_COLOR = '#95A5A6';
 
 interface ExpensesPieChartProps {
   data: Array<{
@@ -41,6 +48,7 @@ const CustomPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, i
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
   
+  // Only show percentage label if it's significant (greater than 5%)
   if (percent < 0.05) return null;
   
   return (
@@ -67,11 +75,51 @@ export function ExpensesPieChart({ data }: ExpensesPieChartProps) {
     );
   }
 
+  // Process the data to group small categories as "Outros" if there are too many categories
+  const processedData = (() => {
+    if (data.length <= 10) return data;
+    
+    // Sort by value (highest first)
+    const sortedData = [...data].sort((a, b) => b.value - a.value);
+    
+    // Take top 9 categories
+    const topCategories = sortedData.slice(0, 9);
+    
+    // Group the rest as "Outros"
+    const otherCategories = sortedData.slice(9);
+    const otherSum = otherCategories.reduce((sum, category) => sum + category.value, 0);
+    
+    if (otherSum > 0) {
+      return [
+        ...topCategories,
+        {
+          name: `Outros (${otherCategories.length})`,
+          value: otherSum
+        }
+      ];
+    }
+    
+    return topCategories;
+  })();
+
+  // Ensure we have enough colors
+  const renderColors = [...COLORS];
+  // If we have an "Outros" category, use a specific color for it
+  if (processedData.length > 9) {
+    renderColors[9] = OTHER_COLOR;
+  }
+
+  // Custom legend formatter to handle long category names
+  const formatLegendText = (value: string) => {
+    // Truncate long category names in the legend
+    return value.length > 15 ? `${value.substring(0, 15)}...` : value;
+  };
+
   return (
     <ResponsiveContainer width="100%" height="100%">
       <PieChart>
         <Pie
-          data={data}
+          data={processedData}
           cx="50%"
           cy="50%"
           labelLine={false}
@@ -80,12 +128,12 @@ export function ExpensesPieChart({ data }: ExpensesPieChartProps) {
           fill="#8884d8"
           dataKey="value"
         >
-          {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          {processedData.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={renderColors[index % renderColors.length]} />
           ))}
         </Pie>
         <Tooltip content={<CustomPieTooltip />} />
-        <Legend />
+        <Legend formatter={formatLegendText} />
       </PieChart>
     </ResponsiveContainer>
   );

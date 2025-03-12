@@ -19,16 +19,19 @@ export function ExpensesRanking({ data }: ExpensesRankingProps) {
     );
   }
 
+  // Show only top categories if there are too many
+  const dataToShow = data.slice(0, 10); // Show at most 10 categories
+
   return (
-    <div className="space-y-2">
-      {data.map((category, index) => (
+    <div className="space-y-2 max-h-[320px] overflow-y-auto">
+      {dataToShow.map((category, index) => (
         <div key={index} className="flex items-center justify-between p-2 border-b">
-          <div className="flex items-center">
+          <div className="flex items-center gap-2">
             <div 
-              className="w-3 h-3 rounded-full mr-2" 
+              className="w-3 h-3 rounded-full" 
               style={{ backgroundColor: COLORS[index % COLORS.length] }}
             />
-            <span className="font-medium truncate max-w-[120px]">
+            <span className="font-medium truncate max-w-[120px] text-sm" title={category.name}>
               {category.name}
             </span>
           </div>
@@ -37,6 +40,11 @@ export function ExpensesRanking({ data }: ExpensesRankingProps) {
           </span>
         </div>
       ))}
+      {data.length > 10 && (
+        <div className="text-center text-sm text-muted-foreground pt-2">
+          Mostrando 10 de {data.length} categorias
+        </div>
+      )}
     </div>
   );
 }
