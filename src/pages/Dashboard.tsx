@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DashboardHeader from '@/components/DashboardHeader';
 import TransactionsTab from '@/components/TransactionsTab';
 import CategoriesTab from '@/components/CategoriesTab';
+import { toast } from 'sonner';
 
 const Dashboard = () => {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -31,9 +32,16 @@ const Dashboard = () => {
       setIsLoading(true);
       try {
         const data = await fetchTransactions(user.id);
+        console.log(`Loaded ${data.length} transactions for user ${user.id}`);
+        
+        // Verify all categories in transactions
+        const categories = [...new Set(data.map(t => t.categoria))];
+        console.log('Categories found in transactions:', categories);
+        
         setTransactions(data);
       } catch (error) {
         console.error('Error loading transactions:', error);
+        toast.error('Erro ao carregar transações. Atualize a página.');
       } finally {
         setIsLoading(false);
       }

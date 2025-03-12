@@ -1,7 +1,14 @@
 
 import { formatCurrency } from '@/lib/utils';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A569BD', '#5DADE2', '#F4D03F', '#EC7063'];
+// Expanded color palette to match the pie chart
+const COLORS = [
+  '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A569BD', 
+  '#5DADE2', '#F4D03F', '#EC7063', '#45B39D', '#AF7AC5', 
+  '#5499C7', '#F5B041', '#EB984E', '#58D68D', '#3498DB',
+  '#1ABC9C', '#9B59B6', '#2ECC71', '#E67E22', '#E74C3C',
+  '#34495E', '#16A085', '#27AE60', '#8E44AD', '#F39C12'
+];
 
 interface ExpensesRankingProps {
   data: Array<{
@@ -11,7 +18,9 @@ interface ExpensesRankingProps {
 }
 
 export function ExpensesRanking({ data }: ExpensesRankingProps) {
-  if (data.length === 0) {
+  console.log('Raw data received in ranking:', data);
+  
+  if (!data || data.length === 0) {
     return (
       <div className="h-[290px] flex items-center justify-center text-muted-foreground">
         Sem dados de saída para exibir no período selecionado
@@ -19,8 +28,13 @@ export function ExpensesRanking({ data }: ExpensesRankingProps) {
     );
   }
 
+  // Show all categories sorted by value (highest first)
+  const sortedData = [...data].sort((a, b) => b.value - a.value);
+  
   // Show only top categories if there are too many
-  const dataToShow = data.slice(0, 10); // Show at most 10 categories
+  const dataToShow = sortedData.slice(0, 15); // Show at most 15 categories
+
+  console.log('Processed data for ranking:', dataToShow);
 
   return (
     <div className="space-y-2 max-h-[320px] overflow-y-auto">
@@ -31,7 +45,7 @@ export function ExpensesRanking({ data }: ExpensesRankingProps) {
               className="w-3 h-3 rounded-full" 
               style={{ backgroundColor: COLORS[index % COLORS.length] }}
             />
-            <span className="font-medium truncate max-w-[120px] text-sm" title={category.name}>
+            <span className="font-medium truncate max-w-[140px] text-sm" title={category.name}>
               {category.name}
             </span>
           </div>
@@ -40,9 +54,9 @@ export function ExpensesRanking({ data }: ExpensesRankingProps) {
           </span>
         </div>
       ))}
-      {data.length > 10 && (
+      {data.length > 15 && (
         <div className="text-center text-sm text-muted-foreground pt-2">
-          Mostrando 10 de {data.length} categorias
+          Mostrando 15 de {data.length} categorias
         </div>
       )}
     </div>

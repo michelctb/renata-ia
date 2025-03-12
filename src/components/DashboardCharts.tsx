@@ -80,7 +80,7 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
       .filter(t => t.operação === 'saída')
       .forEach(transaction => {
         // Handle empty or undefined category
-        const category = transaction.categoria || 'Sem categoria';
+        const category = transaction.categoria?.trim() || 'Sem categoria';
         
         if (!categories.has(category)) {
           categories.set(category, { 
@@ -90,7 +90,7 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
         }
         
         const categoryData = categories.get(category);
-        categoryData.value += Number(transaction.valor);
+        categoryData.value += Number(transaction.valor || 0);
       });
     
     // Convert the Map to Array and sort by value (highest first)
@@ -98,6 +98,10 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
       .sort((a, b) => b.value - a.value);
   }, [filteredTransactions]);
 
+  // Log category data for debugging
+  console.log('Category data processed:', categoryData);
+  console.log('Total categories found:', categoryData.length);
+  
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
       <Card className="border-none shadow-md animate-fade-up col-span-1 lg:col-span-3" style={{ animationDelay: '0.1s' }}>

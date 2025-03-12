@@ -10,11 +10,13 @@ import {
   TooltipProps,
 } from 'recharts';
 
-// Colors for the pie chart - expanded color palette
+// Expanded color palette for the pie chart
 const COLORS = [
   '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A569BD', 
   '#5DADE2', '#F4D03F', '#EC7063', '#45B39D', '#AF7AC5', 
-  '#5499C7', '#F5B041', '#EB984E', '#58D68D', '#3498DB'
+  '#5499C7', '#F5B041', '#EB984E', '#58D68D', '#3498DB',
+  '#1ABC9C', '#9B59B6', '#2ECC71', '#E67E22', '#E74C3C',
+  '#34495E', '#16A085', '#27AE60', '#8E44AD', '#F39C12'
 ];
 
 // Define a catch-all color for "other" categories
@@ -67,7 +69,9 @@ const CustomPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, i
 };
 
 export function ExpensesPieChart({ data }: ExpensesPieChartProps) {
-  if (data.length === 0) {
+  console.log('Raw data received in pie chart:', data);
+  
+  if (!data || data.length === 0) {
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground">
         Sem dados de saída para exibir no período selecionado
@@ -101,6 +105,8 @@ export function ExpensesPieChart({ data }: ExpensesPieChartProps) {
     
     return topCategories;
   })();
+
+  console.log('Processed data for pie chart:', processedData);
 
   // Ensure we have enough colors
   const renderColors = [...COLORS];
