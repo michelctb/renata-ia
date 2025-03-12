@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import DirectAccess from "./pages/DirectAccess";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/:userId" element={<DirectAccess />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
