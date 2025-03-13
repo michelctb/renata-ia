@@ -17,7 +17,7 @@ export function TransactionsHeader({
 }: TransactionsHeaderProps) {
   return (
     <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <h1 className="text-3xl font-bold">Renata.ia</h1>
+      <h1 className="text-3xl font-bold">Dashboard Financeiro</h1>
       
       <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
         <DateRangePicker 
