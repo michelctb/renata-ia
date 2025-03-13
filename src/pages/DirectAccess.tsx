@@ -22,6 +22,8 @@ const DirectAccess = () => {
       const phoneNumberPart = userId.substring(0, 13);
       const fullUserId = `${phoneNumberPart}@s.whatsapp.net`;
       
+      console.log('Login com ID completo:', fullUserId); // Debug log
+      
       // Efetuar login com o ID completo
       login(fullUserId);
       
