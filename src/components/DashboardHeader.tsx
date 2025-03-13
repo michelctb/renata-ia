@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { LogOut, User } from 'lucide-react';
@@ -27,7 +26,7 @@ const DashboardHeader = () => {
     <div className="flex items-center justify-between py-4 px-6 border-b bg-white/50 backdrop-blur-sm sticky top-0 z-10">
       <div className="flex items-center">
         <div className="text-2xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-          Dashboard Financeiro
+          Renata.ia
         </div>
       </div>
       
