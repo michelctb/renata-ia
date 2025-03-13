@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DashboardHeader from '@/components/DashboardHeader';
 import TransactionsTab from '@/components/TransactionsTab';
 import CategoriesTab from '@/components/CategoriesTab';
+import LembretesTab from '@/components/LembretesTab';
 import { toast } from 'sonner';
 
 const Dashboard = () => {
@@ -85,6 +86,7 @@ const Dashboard = () => {
           <TabsList className="mb-6">
             <TabsTrigger value="transactions">Transações</TabsTrigger>
             <TabsTrigger value="categories">Categorias</TabsTrigger>
+            <TabsTrigger value="lembretes">Lembretes</TabsTrigger>
           </TabsList>
           
           <TabsContent value="transactions">
@@ -98,6 +100,10 @@ const Dashboard = () => {
           
           <TabsContent value="categories">
             <CategoriesTab />
+          </TabsContent>
+          
+          <TabsContent value="lembretes">
+            <LembretesTab />
           </TabsContent>
         </Tabs>
       </div>
