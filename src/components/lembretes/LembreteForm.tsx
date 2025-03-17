@@ -79,12 +79,13 @@ export function LembreteForm({
   const handleSubmit = async (values: LembreteFormValues) => {
     try {
       const lembreteData: Lembrete = {
-        ...values,
-        // Usar a mesma data para vencimento e lembrar
-        lembrar: values.vencimento.toISOString().split('T')[0],
-        vencimento: values.vencimento.toISOString().split('T')[0],
+        lembrete: values.lembrete, // Ensuring lembrete is required and set
+        tipo: values.tipo,
+        valor: values.valor,
         telefone: userId,
         cliente: userId,
+        vencimento: values.vencimento.toISOString().split('T')[0],
+        lembrar: values.vencimento.toISOString().split('T')[0],
         ...(editingLembrete?.id ? { id: editingLembrete.id } : {}),
       };
 

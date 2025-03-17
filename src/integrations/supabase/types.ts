@@ -57,7 +57,9 @@ export type Database = {
       "Informações Clientes": {
         Row: {
           ativo: boolean | null
+          cpf: number | null
           created_at: string
+          email: string | null
           id: number
           Lembrete: string | null
           Nome: string | null
@@ -65,7 +67,9 @@ export type Database = {
         }
         Insert: {
           ativo?: boolean | null
+          cpf?: number | null
           created_at: string
+          email?: string | null
           id?: number
           Lembrete?: string | null
           Nome?: string | null
@@ -73,7 +77,9 @@ export type Database = {
         }
         Update: {
           ativo?: boolean | null
+          cpf?: number | null
           created_at?: string
+          email?: string | null
           id?: number
           Lembrete?: string | null
           Nome?: string | null
