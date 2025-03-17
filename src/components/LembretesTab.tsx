@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { fetchLembretes, Lembrete } from '@/lib/lembretes';
+import { fetchLembretes, Lembrete, deleteLembrete } from '@/lib/lembretes';
 import { Button } from '@/components/ui/button';
 import { PlusIcon } from 'lucide-react';
 import { toast } from 'sonner';
