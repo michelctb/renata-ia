@@ -13,13 +13,15 @@ interface LembretesListProps {
   onEdit: (lembrete: Lembrete) => void;
   onDelete: (id: number) => void;
   isUserActive?: boolean;
+  isProcessing?: boolean;
 }
 
 export default function LembretesList({
   lembretes,
   onEdit,
   onDelete,
-  isUserActive = true
+  isUserActive = true,
+  isProcessing = false
 }: LembretesListProps) {
   if (lembretes.length === 0) {
     return (
@@ -64,6 +66,7 @@ export default function LembretesList({
                   onEdit={() => onEdit(lembrete)}
                   onDelete={() => lembrete.id && onDelete(lembrete.id)}
                   isUserActive={isUserActive}
+                  isProcessing={isProcessing}
                 />
               </div>
             </CardHeader>

@@ -41,7 +41,7 @@ export async function addLembrete(lembrete: Lembrete) {
   console.log('Adding lembrete:', lembrete);
   
   // Create a lembrete object without the ID field since it's auto-generated
-  // Remove id and id_cliente fields for insert as they're managed by the database
+  // Remove id field for insert as it's auto-generated
   const { id, ...lembreteDataForInsert } = lembrete;
   
   console.log('Submitting lembrete data:', lembreteDataForInsert);
@@ -78,10 +78,19 @@ export async function updateLembrete(lembrete: Lembrete) {
   
   console.log('Using ID for update:', id);
   
-  // Remove id from the update payload since it's the primary key
-  const { id: _, ...updateData } = lembrete;
-  
   try {
+    // Create a complete update payload
+    const updateData = {
+      lembrete: lembrete.lembrete,
+      tipo: lembrete.tipo,
+      valor: lembrete.valor,
+      telefone: lembrete.telefone,
+      cliente: lembrete.cliente,
+      vencimento: lembrete.vencimento,
+      lembrar: lembrete.lembrar,
+      id_cliente: lembrete.id_cliente
+    };
+    
     const { data, error } = await supabase
       .from(LEMBRETES_TABLE)
       .update(updateData)
@@ -105,16 +114,21 @@ export async function updateLembrete(lembrete: Lembrete) {
 export async function deleteLembrete(id: number) {
   console.log('Deleting lembrete:', id);
   
-  const { error } = await supabase
-    .from(LEMBRETES_TABLE)
-    .delete()
-    .eq('id', id);
+  try {
+    const { error } = await supabase
+      .from(LEMBRETES_TABLE)
+      .delete()
+      .eq('id', id);
 
-  if (error) {
-    console.error('Error deleting lembrete:', error);
-    throw error;
+    if (error) {
+      console.error('Error deleting lembrete:', error);
+      throw error;
+    }
+
+    console.log('Lembrete deleted successfully');
+    return true;
+  } catch (err) {
+    console.error('Exception deleting lembrete:', err);
+    throw err;
   }
-
-  console.log('Lembrete deleted successfully');
-  return true;
 }

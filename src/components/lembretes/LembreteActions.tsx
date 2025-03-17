@@ -17,30 +17,36 @@ interface LembreteActionsProps {
   onEdit: () => void;
   onDelete: () => void;
   isUserActive?: boolean;
+  isProcessing?: boolean;
 }
 
-export function LembreteActions({ lembrete, onEdit, onDelete, isUserActive = true }: LembreteActionsProps) {
+export function LembreteActions({ 
+  lembrete, 
+  onEdit, 
+  onDelete, 
+  isUserActive = true,
+  isProcessing = false
+}: LembreteActionsProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleEdit = () => {
+    if (isProcessing) return;
+    onEdit();
+  };
 
   const handleDelete = async () => {
-    if (isDeleting) return;
+    if (isProcessing) return;
     
     try {
-      setIsDeleting(true);
-      
       if (!lembrete.id) {
         throw new Error('ID do lembrete não encontrado');
       }
       
-      await deleteLembrete(lembrete.id);
-      toast.success('Lembrete excluído com sucesso');
       onDelete();
     } catch (error) {
       console.error('Error deleting lembrete:', error);
       toast.error('Erro ao excluir o lembrete. Tente novamente.');
     } finally {
-      setIsDeleting(false);
       setIsDeleteDialogOpen(false);
     }
   };
@@ -49,7 +55,7 @@ export function LembreteActions({ lembrete, onEdit, onDelete, isUserActive = tru
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" disabled={isProcessing}>
             <MoreHorizontal className="h-4 w-4" />
             <span className="sr-only">Abrir menu</span>
           </Button>
@@ -57,13 +63,14 @@ export function LembreteActions({ lembrete, onEdit, onDelete, isUserActive = tru
         <DropdownMenuContent align="end">
           {isUserActive && (
             <>
-              <DropdownMenuItem onClick={onEdit}>
+              <DropdownMenuItem onClick={handleEdit} disabled={isProcessing}>
                 <Pencil className="mr-2 h-4 w-4" />
                 Editar
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setIsDeleteDialogOpen(true)}
                 className="text-red-600 focus:text-red-600"
+                disabled={isProcessing}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Excluir

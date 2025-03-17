@@ -14,6 +14,7 @@ const LembretesTab = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingLembrete, setEditingLembrete] = useState<Lembrete | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const loadLembretes = async () => {
     if (!user) return;
@@ -54,7 +55,7 @@ const LembretesTab = () => {
     }
     
     console.log('Editing lembrete:', lembrete);
-    setEditingLembrete(lembrete);
+    setEditingLembrete({...lembrete}); // Use uma cópia para evitar referências
     setIsFormOpen(true);
   };
 
@@ -64,13 +65,18 @@ const LembretesTab = () => {
   };
 
   const handleFormSubmit = async (data: Lembrete) => {
+    if (isProcessing) return;
+    
     try {
+      setIsProcessing(true);
       console.log('Form submitted with data:', data);
       // Always reload the list after adding or updating a lembrete
       await loadLembretes();
     } catch (error) {
       console.error('Error updating lembretes list:', error);
       toast.error('Erro ao atualizar a lista de lembretes.');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -81,13 +87,18 @@ const LembretesTab = () => {
       return;
     }
     
+    if (isProcessing) return;
+    
     try {
+      setIsProcessing(true);
       await deleteLembrete(id);
-      setLembretes(prevLembretes => prevLembretes.filter(item => item.id !== id));
+      await loadLembretes(); // Recarrega a lista após exclusão
       toast.success('Lembrete excluído com sucesso');
     } catch (error) {
       console.error('Error deleting lembrete:', error);
       toast.error('Erro ao excluir o lembrete. Tente novamente.');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -103,7 +114,7 @@ const LembretesTab = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Lembretes</h2>
-        <Button onClick={handleAddNew} disabled={!isUserActive()}>
+        <Button onClick={handleAddNew} disabled={!isUserActive() || isProcessing}>
           <PlusIcon className="h-4 w-4 mr-2" />
           Novo Lembrete
         </Button>
@@ -114,6 +125,7 @@ const LembretesTab = () => {
         onEdit={handleEdit}
         onDelete={handleDelete}
         isUserActive={isUserActive()}
+        isProcessing={isProcessing}
       />
 
       <LembreteForm

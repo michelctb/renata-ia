@@ -14,13 +14,23 @@ interface UseLembreteFormProps {
 }
 
 export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: UseLembreteFormProps) {
+  // Garantir que as datas sejam convertidas corretamente para objetos Date
+  const getInitialVencimento = () => {
+    if (editingLembrete?.vencimento) {
+      // Garantir que temos um objeto Date válido
+      const date = new Date(editingLembrete.vencimento);
+      return isNaN(date.getTime()) ? new Date() : date;
+    }
+    return new Date();
+  };
+
   const form = useForm<LembreteFormValues>({
     resolver: zodResolver(lembreteSchema),
     defaultValues: {
       lembrete: editingLembrete?.lembrete || "",
       tipo: editingLembrete?.tipo || "fixo",
       valor: editingLembrete?.valor || undefined,
-      vencimento: editingLembrete?.vencimento ? new Date(editingLembrete.vencimento) : new Date(),
+      vencimento: getInitialVencimento(),
     },
   });
 
