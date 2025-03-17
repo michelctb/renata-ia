@@ -65,18 +65,24 @@ const LembretesTab = () => {
 
   const handleFormSubmit = async (data: Lembrete) => {
     try {
-      // Atualiza a lista local após salvar no banco
-      setLembretes(prevLembretes => {
-        if (editingLembrete) {
-          // Update existing lembrete
+      console.log('Form submitted with data:', data);
+      
+      // Ensure the data has an ID if it's from a newly added lembrete
+      if (!data.id && data.id !== 0) {
+        console.log('Refreshing lembretes list to get the newly added item with ID');
+        // Refresh the whole list if we don't have an ID
+        if (user) {
+          const updatedLembretes = await fetchLembretes(user.id);
+          setLembretes(updatedLembretes);
+        }
+      } else {
+        // Update existing lembrete
+        setLembretes(prevLembretes => {
           return prevLembretes.map(item => 
             item.id === data.id ? data : item
           );
-        } else {
-          // Add new lembrete
-          return [...prevLembretes, data];
-        }
-      });
+        });
+      }
       
       setIsFormOpen(false);
       setEditingLembrete(null);

@@ -25,6 +25,9 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
 
   const handleSubmit = async (values: LembreteFormValues) => {
     try {
+      // Format the date to YYYY-MM-DD
+      const formattedDate = values.vencimento.toISOString().split('T')[0];
+      
       const lembreteData: Lembrete = {
         lembrete: values.lembrete,
         tipo: values.tipo,
@@ -32,21 +35,27 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
         telefone: userId, // Mantido para compatibilidade
         cliente: userId, // Mantido para compatibilidade
         id_cliente: userId, // Usando o ID do usuário como id_cliente
-        vencimento: values.vencimento.toISOString().split('T')[0],
-        lembrar: values.vencimento.toISOString().split('T')[0], 
+        vencimento: formattedDate,
+        lembrar: formattedDate, 
         ...(editingLembrete?.id ? { id: editingLembrete.id } : {}),
       };
 
+      console.log('Submitting lembrete data:', lembreteData);
+
       if (editingLembrete) {
-        await updateLembrete(lembreteData);
+        // For existing lembrete, update it
+        const updatedLembrete = await updateLembrete(lembreteData);
         toast.success('Lembrete atualizado com sucesso');
+        onSubmit(updatedLembrete || lembreteData);
       } else {
-        await addLembrete(lembreteData);
+        // For new lembrete, add it
+        const newLembrete = await addLembrete(lembreteData);
         toast.success('Lembrete adicionado com sucesso');
+        onSubmit(newLembrete || lembreteData);
       }
 
-      onSubmit(lembreteData);
       form.reset();
+      onClose();
     } catch (error) {
       console.error('Error saving lembrete:', error);
       toast.error(editingLembrete ? 'Erro ao atualizar lembrete' : 'Erro ao adicionar lembrete');
