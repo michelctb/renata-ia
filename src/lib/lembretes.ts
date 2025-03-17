@@ -76,8 +76,6 @@ export async function updateLembrete(lembrete: Lembrete) {
     throw new Error('Lembrete ID is required for update');
   }
   
-  // Since we've already checked that lembrete.id exists and isn't falsy,
-  // we can safely assert it as a number for TypeScript
   const id = lembrete.id as number;
   
   console.log('Using ID for update:', id);

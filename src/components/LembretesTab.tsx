@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { fetchLembretes, Lembrete } from '@/lib/lembretes';
+import { fetchLembretes, Lembrete, deleteLembrete } from '@/lib/lembretes';
 import { Button } from '@/components/ui/button';
 import { PlusIcon } from 'lucide-react';
 import { toast } from 'sonner';
@@ -41,7 +41,7 @@ const LembretesTab = () => {
   };
 
   const handleEdit = (lembrete: Lembrete) => {
-    console.log('Editing lembrete:', lembrete); // Debug log
+    console.log('Editing lembrete:', lembrete);
     setEditingLembrete(lembrete);
     setIsFormOpen(true);
   };
@@ -52,23 +52,37 @@ const LembretesTab = () => {
   };
 
   const handleFormSubmit = async (data: Lembrete) => {
-    setLembretes(prevLembretes => {
-      if (editingLembrete) {
-        // Update existing lembrete
-        return prevLembretes.map(item => 
-          item.id === data.id ? data : item
-        );
-      } else {
-        // Add new lembrete
-        return [...prevLembretes, data];
-      }
-    });
-    setIsFormOpen(false);
-    setEditingLembrete(null);
+    try {
+      // Atualiza a lista local após salvar no banco
+      setLembretes(prevLembretes => {
+        if (editingLembrete) {
+          // Update existing lembrete
+          return prevLembretes.map(item => 
+            item.id === data.id ? data : item
+          );
+        } else {
+          // Add new lembrete
+          return [...prevLembretes, data];
+        }
+      });
+      
+      setIsFormOpen(false);
+      setEditingLembrete(null);
+    } catch (error) {
+      console.error('Error updating lembretes list:', error);
+      toast.error('Erro ao atualizar a lista de lembretes.');
+    }
   };
 
   const handleDelete = async (id: number) => {
-    setLembretes(prevLembretes => prevLembretes.filter(item => item.id !== id));
+    try {
+      await deleteLembrete(id);
+      setLembretes(prevLembretes => prevLembretes.filter(item => item.id !== id));
+      toast.success('Lembrete excluído com sucesso');
+    } catch (error) {
+      console.error('Error deleting lembrete:', error);
+      toast.error('Erro ao excluir o lembrete. Tente novamente.');
+    }
   };
 
   if (isLoading && lembretes.length === 0) {

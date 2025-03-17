@@ -20,9 +20,14 @@ interface LembreteActionsProps {
 
 export function LembreteActions({ lembrete, onEdit, onDelete }: LembreteActionsProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
+    if (isDeleting) return;
+    
     try {
+      setIsDeleting(true);
+      
       if (!lembrete.id) {
         throw new Error('ID do lembrete não encontrado');
       }
@@ -34,6 +39,7 @@ export function LembreteActions({ lembrete, onEdit, onDelete }: LembreteActionsP
       console.error('Error deleting lembrete:', error);
       toast.error('Erro ao excluir o lembrete. Tente novamente.');
     } finally {
+      setIsDeleting(false);
       setIsDeleteDialogOpen(false);
     }
   };

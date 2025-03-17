@@ -13,7 +13,6 @@ interface UseLembreteFormProps {
 }
 
 export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: UseLembreteFormProps) {
-  // Fix the typo in the variable name that was causing data not to load correctly
   const form = useForm<LembreteFormValues>({
     resolver: zodResolver(lembreteSchema),
     defaultValues: {
@@ -33,7 +32,7 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
         telefone: userId,
         cliente: userId,
         vencimento: values.vencimento.toISOString().split('T')[0],
-        lembrar: values.vencimento.toISOString().split('T')[0], // Fix typo in toISOString()
+        lembrar: values.vencimento.toISOString().split('T')[0], 
         ...(editingLembrete?.id ? { id: editingLembrete.id } : {}),
       };
 
@@ -46,7 +45,7 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
       }
 
       onSubmit(lembreteData);
-      form.reset(); // Make sure to reset the form
+      form.reset();
     } catch (error) {
       console.error('Error saving lembrete:', error);
       toast.error(editingLembrete ? 'Erro ao atualizar lembrete' : 'Erro ao adicionar lembrete');
@@ -54,7 +53,7 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
   };
 
   const handleClose = () => {
-    form.reset(); // Ensure form is completely reset before closing
+    form.reset();
     onClose();
   };
 
