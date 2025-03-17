@@ -46,7 +46,8 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
         telefone: clienteData?.telefone || userId, // Telephone from client record
         cliente: clienteData?.nome || userId, // Name from client record
         vencimento: formattedDate,
-        lembrar: formattedDate // Same as vencimento
+        lembrar: formattedDate, // Same as vencimento
+        id_cliente: userId // Set the user ID directly
       };
 
       // Only include id for updates

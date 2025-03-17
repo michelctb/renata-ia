@@ -15,23 +15,23 @@ const LembretesTab = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingLembrete, setEditingLembrete] = useState<Lembrete | null>(null);
 
-  useEffect(() => {
-    const loadLembretes = async () => {
-      if (!user) return;
-      
-      try {
-        setIsLoading(true);
-        const data = await fetchLembretes(user.id);
-        console.log(`Loaded ${data.length} lembretes for user ${user.id}`);
-        setLembretes(data);
-      } catch (error) {
-        console.error('Error loading lembretes:', error);
-        toast.error('Erro ao carregar lembretes. Atualize a página.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const loadLembretes = async () => {
+    if (!user) return;
     
+    try {
+      setIsLoading(true);
+      const data = await fetchLembretes(user.id);
+      console.log(`Loaded ${data.length} lembretes for user ${user.id}`);
+      setLembretes(data);
+    } catch (error) {
+      console.error('Error loading lembretes:', error);
+      toast.error('Erro ao carregar lembretes. Atualize a página.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadLembretes();
   }, [user]);
 
@@ -66,22 +66,8 @@ const LembretesTab = () => {
   const handleFormSubmit = async (data: Lembrete) => {
     try {
       console.log('Form submitted with data:', data);
-      
-      // If this is a new item that was just added, reload the entire list
-      // to get the proper IDs from the database
-      if (!editingLembrete) {
-        if (user) {
-          const updatedLembretes = await fetchLembretes(user.id);
-          setLembretes(updatedLembretes);
-        }
-      } else {
-        // Update existing lembrete in the list
-        setLembretes(prevLembretes => {
-          return prevLembretes.map(item => 
-            item.id === data.id ? data : item
-          );
-        });
-      }
+      // Always reload the list after adding or updating a lembrete
+      await loadLembretes();
     } catch (error) {
       console.error('Error updating lembretes list:', error);
       toast.error('Erro ao atualizar a lista de lembretes.');

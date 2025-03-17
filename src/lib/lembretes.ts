@@ -40,9 +40,10 @@ export async function fetchLembretes(userId: string) {
 export async function addLembrete(lembrete: Lembrete) {
   console.log('Adding lembrete:', lembrete);
   
-  // Create a lembrete object without the ID field
-  // id and id_cliente will be set by the database
-  const { id, id_cliente, ...lembreteDataForInsert } = lembrete;
+  // Create a lembrete object without the ID field since it's auto-generated
+  // Remove id and id_cliente fields for insert as they're managed by the database
+  const { id, ...lembreteDataForInsert } = lembrete;
+  
   console.log('Submitting lembrete data:', lembreteDataForInsert);
   
   try {
@@ -77,8 +78,8 @@ export async function updateLembrete(lembrete: Lembrete) {
   
   console.log('Using ID for update:', id);
   
-  // Remove id and id_cliente from the update payload since they're managed by the database
-  const { id: _, id_cliente, ...updateData } = lembrete;
+  // Remove id from the update payload since it's the primary key
+  const { id: _, ...updateData } = lembrete;
   
   try {
     const { data, error } = await supabase
