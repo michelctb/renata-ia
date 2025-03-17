@@ -67,12 +67,12 @@ const LembretesList: React.FC<LembretesListProps> = ({
               return (
                 <TableRow key={lembrete.id} className={overdue ? 'bg-red-50' : ''}>
                   <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      {overdue && (
+                    {lembrete.lembrete}
+                    {overdue && (
+                      <span className="inline-flex items-center ml-2">
                         <AlertCircleIcon className="h-4 w-4 text-red-500" />
-                      )}
-                      {lembrete.lembrete}
-                    </div>
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell>{lembrete.tipo}</TableCell>
                   <TableCell>

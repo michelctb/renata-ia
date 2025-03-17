@@ -63,6 +63,7 @@ export type Database = {
           id: number
           Lembrete: string | null
           Nome: string | null
+          plano: string | null
           Telefone: string | null
         }
         Insert: {
@@ -73,6 +74,7 @@ export type Database = {
           id?: number
           Lembrete?: string | null
           Nome?: string | null
+          plano?: string | null
           Telefone?: string | null
         }
         Update: {
@@ -83,6 +85,7 @@ export type Database = {
           id?: number
           Lembrete?: string | null
           Nome?: string | null
+          plano?: string | null
           Telefone?: string | null
         }
         Relationships: []
