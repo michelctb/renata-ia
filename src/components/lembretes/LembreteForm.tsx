@@ -104,9 +104,15 @@ export function LembreteForm({
     }
   };
 
+  // Função para lidar com o fechamento explícito do modal
+  const handleClose = () => {
+    form.reset(); // Resetar o formulário antes de fechar
+    onClose();
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
-      if (!open) onClose();
+      if (!open) handleClose(); // Usar o método handleClose em vez de onClose diretamente
     }}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
@@ -222,7 +228,7 @@ export function LembreteForm({
             />
             
             <DialogFooter className="mt-6">
-              <Button type="button" variant="outline" onClick={onClose}>
+              <Button type="button" variant="outline" onClick={handleClose}>
                 Cancelar
               </Button>
               <Button type="submit">
