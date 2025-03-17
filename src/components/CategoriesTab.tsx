@@ -16,7 +16,7 @@ import { CategoryList } from './categories/CategoryList';
 import { DeleteCategoryDialog } from './categories/DeleteCategoryDialog';
 
 const CategoriesTab = () => {
-  const { user } = useAuth();
+  const { user, isUserActive } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCategoryFormOpen, setIsCategoryFormOpen] = useState(false);
@@ -47,6 +47,12 @@ const CategoriesTab = () => {
   }, [user]);
 
   const handleEdit = (category: Category) => {
+    // Block inactive users from editing categories
+    if (!isUserActive()) {
+      toast.error('Sua assinatura está inativa. Você não pode editar categorias.');
+      return;
+    }
+    
     if (category.padrao) {
       toast.error('Categorias padrão não podem ser editadas.');
       return;
@@ -56,6 +62,12 @@ const CategoriesTab = () => {
   };
 
   const handleDeleteRequest = (id: number, isPadrao: boolean) => {
+    // Block inactive users from deleting categories
+    if (!isUserActive()) {
+      toast.error('Sua assinatura está inativa. Você não pode excluir categorias.');
+      return;
+    }
+    
     if (isPadrao) {
       toast.error('Categorias padrão não podem ser excluídas.');
       return;
@@ -118,6 +130,12 @@ const CategoriesTab = () => {
   };
 
   const handleAddNew = () => {
+    // Block inactive users from adding categories
+    if (!isUserActive()) {
+      toast.error('Sua assinatura está inativa. Você não pode adicionar categorias.');
+      return;
+    }
+    
     setEditingCategory(null);
     setIsCategoryFormOpen(true);
   };
@@ -131,7 +149,7 @@ const CategoriesTab = () => {
     <div className="p-4">
       <div className="mb-6 flex justify-between items-center">
         <h2 className="text-2xl font-bold">Gerenciar Categorias</h2>
-        <Button onClick={handleAddNew}>
+        <Button onClick={handleAddNew} disabled={!isUserActive()}>
           <PlusIcon className="h-4 w-4 mr-1" />
           Nova Categoria
         </Button>
@@ -142,6 +160,7 @@ const CategoriesTab = () => {
         onEdit={handleEdit}
         onDelete={handleDeleteRequest}
         isLoading={isLoading}
+        isUserActive={isUserActive()}
       />
 
       {user && (

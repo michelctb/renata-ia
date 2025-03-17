@@ -9,7 +9,7 @@ import LembreteForm from '@/components/lembretes/LembreteForm';
 import LembretesList from '@/components/lembretes/LembretesList';
 
 const LembretesTab = () => {
-  const { user } = useAuth();
+  const { user, isUserActive } = useAuth();
   const [lembretes, setLembretes] = useState<Lembrete[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -36,11 +36,23 @@ const LembretesTab = () => {
   }, [user]);
 
   const handleAddNew = () => {
+    // Block inactive users from adding lembretes
+    if (!isUserActive()) {
+      toast.error('Sua assinatura está inativa. Você não pode adicionar lembretes.');
+      return;
+    }
+    
     setEditingLembrete(null);
     setIsFormOpen(true);
   };
 
   const handleEdit = (lembrete: Lembrete) => {
+    // Block inactive users from editing lembretes
+    if (!isUserActive()) {
+      toast.error('Sua assinatura está inativa. Você não pode editar lembretes.');
+      return;
+    }
+    
     console.log('Editing lembrete:', lembrete);
     setEditingLembrete(lembrete);
     setIsFormOpen(true);
@@ -75,6 +87,12 @@ const LembretesTab = () => {
   };
 
   const handleDelete = async (id: number) => {
+    // Block inactive users from deleting lembretes
+    if (!isUserActive()) {
+      toast.error('Sua assinatura está inativa. Você não pode excluir lembretes.');
+      return;
+    }
+    
     try {
       await deleteLembrete(id);
       setLembretes(prevLembretes => prevLembretes.filter(item => item.id !== id));
@@ -97,7 +115,7 @@ const LembretesTab = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Lembretes</h2>
-        <Button onClick={handleAddNew}>
+        <Button onClick={handleAddNew} disabled={!isUserActive()}>
           <PlusIcon className="h-4 w-4 mr-2" />
           Novo Lembrete
         </Button>
@@ -107,6 +125,7 @@ const LembretesTab = () => {
         lembretes={lembretes}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        isUserActive={isUserActive()}
       />
 
       <LembreteForm

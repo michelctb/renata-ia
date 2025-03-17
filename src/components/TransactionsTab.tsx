@@ -10,6 +10,7 @@ import TransactionForm from '@/components/TransactionForm';
 import { TransactionsHeader } from '@/components/transactions/TransactionsHeader';
 import { useTransactionActions } from '@/components/transactions/TransactionActions';
 import { DeleteTransactionDialog } from '@/components/transactions/DeleteTransactionDialog';
+import { toast } from 'sonner';
 
 type TransactionsTabProps = {
   transactions: Transaction[];
@@ -24,13 +25,19 @@ const TransactionsTab = ({
   dateRange, 
   setDateRange 
 }: TransactionsTabProps) => {
-  const { user } = useAuth();
+  const { user, isUserActive } = useAuth();
   
   const [isTransactionFormOpen, setIsTransactionFormOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   
   // Open form to add a new transaction
   const handleAddNew = () => {
+    // Block inactive users from adding transactions
+    if (!isUserActive()) {
+      toast.error('Sua assinatura está inativa. Você não pode adicionar transações.');
+      return;
+    }
+    
     console.log('Opening form to add new transaction');
     setEditingTransaction(null);
     setIsTransactionFormOpen(true);
@@ -45,6 +52,12 @@ const TransactionsTab = ({
   
   // Edit a transaction
   const handleEdit = (transaction: Transaction) => {
+    // Block inactive users from editing transactions
+    if (!isUserActive()) {
+      toast.error('Sua assinatura está inativa. Você não pode editar transações.');
+      return;
+    }
+    
     console.log('Editing transaction with data:', transaction);
     
     // Make sure we have a proper id in the transaction object
@@ -68,6 +81,17 @@ const TransactionsTab = ({
     setTransactions, 
     onCloseForm: handleCloseForm 
   });
+  
+  // Wrapper function for delete request that checks active status
+  const handleDeleteWrapper = (id: number) => {
+    // Block inactive users from deleting transactions
+    if (!isUserActive()) {
+      toast.error('Sua assinatura está inativa. Você não pode excluir transações.');
+      return;
+    }
+    
+    handleDeleteRequest(id);
+  };
 
   return (
     <>
@@ -75,6 +99,7 @@ const TransactionsTab = ({
         dateRange={dateRange}
         setDateRange={setDateRange}
         onAddNew={handleAddNew}
+        isUserActive={isUserActive()}
       />
 
       <SummaryCards 
@@ -92,7 +117,8 @@ const TransactionsTab = ({
           transactions={transactions}
           dateRange={dateRange}
           onEdit={handleEdit}
-          onDelete={handleDeleteRequest}
+          onDelete={handleDeleteWrapper}
+          isUserActive={isUserActive()}
         />
       </div>
 

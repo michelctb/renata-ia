@@ -16,9 +16,10 @@ interface LembreteActionsProps {
   lembrete: Lembrete;
   onEdit: () => void;
   onDelete: () => void;
+  isUserActive?: boolean;
 }
 
-export function LembreteActions({ lembrete, onEdit, onDelete }: LembreteActionsProps) {
+export function LembreteActions({ lembrete, onEdit, onDelete, isUserActive = true }: LembreteActionsProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -54,17 +55,27 @@ export function LembreteActions({ lembrete, onEdit, onDelete }: LembreteActionsP
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={onEdit}>
-            <Pencil className="mr-2 h-4 w-4" />
-            Editar
-          </DropdownMenuItem>
-          <DropdownMenuItem 
-            onClick={() => setIsDeleteDialogOpen(true)}
-            className="text-red-600 focus:text-red-600"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Excluir
-          </DropdownMenuItem>
+          {isUserActive && (
+            <>
+              <DropdownMenuItem onClick={onEdit}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Editar
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setIsDeleteDialogOpen(true)}
+                className="text-red-600 focus:text-red-600"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Excluir
+              </DropdownMenuItem>
+            </>
+          )}
+          {!isUserActive && (
+            <DropdownMenuItem disabled className="text-muted-foreground">
+              <span className="mr-2">🔒</span>
+              Acesso somente leitura
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 

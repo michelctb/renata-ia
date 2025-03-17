@@ -25,8 +25,6 @@ const DirectAccess = () => {
       
       // Redirecionar para o dashboard
       navigate('/dashboard');
-      
-      toast.success(`Acesso direto para o usuário: ${userId}`);
     } catch (error) {
       console.error('Erro no acesso direto:', error);
       toast.error('Não foi possível acessar com o ID fornecido');

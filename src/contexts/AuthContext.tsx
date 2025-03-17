@@ -9,6 +9,7 @@ export type User = {
   id: string;
   email?: string;
   name?: string;
+  isActive?: boolean; // New field to track if user is active
 };
 
 // Context type
@@ -17,6 +18,7 @@ type AuthContextType = {
   isLoading: boolean;
   login: (userId: string) => void;
   logout: () => void;
+  isUserActive: () => boolean; // New helper function
 };
 
 // Create context
@@ -35,18 +37,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const parsedUser = JSON.parse(storedUser);
         console.log('Retrieved user from localStorage:', parsedUser);
         
-        // Fetch client's name from the database
+        // Fetch client's data from the database
         if (parsedUser && parsedUser.id) {
           fetchClienteById(parsedUser.id)
             .then(clienteData => {
               if (clienteData) {
-                // Update user with name from Clientes table
+                // Update user with name and active status from Clientes table
                 const updatedUser = {
                   ...parsedUser,
-                  name: clienteData.nome
+                  name: clienteData.nome,
+                  isActive: clienteData.ativo
                 };
                 setUser(updatedUser);
-                // Update localStorage with the name info
+                // Update localStorage with the updated info
                 localStorage.setItem('financialDashboardUser', JSON.stringify(updatedUser));
               } else {
                 setUser(parsedUser);
@@ -77,26 +80,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Use userId directly without appending WhatsApp suffix
     console.log('Logging in user with ID:', userId);
     
-    // Fetch client data to get the name
+    // Fetch client data to get the name and active status
     fetchClienteById(userId)
       .then(clienteData => {
-        // Create user object with client name if available
+        if (!clienteData) {
+          throw new Error('Cliente não encontrado');
+        }
+        
+        // Create user object with client data
         const newUser = { 
           id: userId,
-          name: clienteData?.nome 
+          name: clienteData?.nome,
+          isActive: clienteData?.ativo 
         };
         
         setUser(newUser);
         localStorage.setItem('financialDashboardUser', JSON.stringify(newUser));
-        toast.success('Login realizado com sucesso');
+        
+        // Show different toast messages based on active status
+        if (clienteData?.ativo) {
+          toast.success('Login realizado com sucesso');
+        } else {
+          toast.warning('Sua assinatura está inativa. Acesso somente para visualização.');
+        }
       })
       .catch(error => {
         console.error('Error fetching client data during login:', error);
-        // If error, still login but without the name
-        const newUser = { id: userId };
-        setUser(newUser);
-        localStorage.setItem('financialDashboardUser', JSON.stringify(newUser));
-        toast.success('Login realizado com sucesso');
+        toast.error('Erro ao fazer login: ' + (error.message || 'Tente novamente'));
       });
   };
 
@@ -106,12 +116,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('financialDashboardUser');
     toast.success('Logout realizado com sucesso');
   };
+  
+  // Helper function to check if user is active
+  const isUserActive = () => {
+    return user?.isActive === true;
+  };
 
   const value = {
     user,
     isLoading,
     login,
     logout,
+    isUserActive,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
