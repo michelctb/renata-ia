@@ -27,6 +27,7 @@ interface ExpensesPieChartProps {
     name: string;
     value: number;
   }>;
+  transactionType: 'entrada' | 'saída';
 }
 
 // Custom tooltip for pie chart
@@ -68,13 +69,16 @@ const CustomPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, i
   );
 };
 
-export function ExpensesPieChart({ data }: ExpensesPieChartProps) {
-  console.log('Raw data received in pie chart:', data);
+export function ExpensesPieChart({ data, transactionType }: ExpensesPieChartProps) {
+  console.log(`Raw data received in pie chart (${transactionType}):`, data);
   
   if (!data || data.length === 0) {
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground">
-        Sem dados de saída para exibir no período selecionado
+        {transactionType === 'saída' 
+          ? 'Sem dados de saída para exibir no período selecionado'
+          : 'Sem dados de entrada para exibir no período selecionado'
+        }
       </div>
     );
   }
@@ -106,7 +110,7 @@ export function ExpensesPieChart({ data }: ExpensesPieChartProps) {
     return topCategories;
   })();
 
-  console.log('Processed data for pie chart:', processedData);
+  console.log(`Processed data for pie chart (${transactionType}):`, processedData);
 
   // Ensure we have enough colors
   const renderColors = [...COLORS];

@@ -1,5 +1,4 @@
-
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Transaction } from '@/lib/supabase';
 import { DateRange } from 'react-day-picker';
 import { format, parseISO, isWithinInterval } from 'date-fns';
@@ -9,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { MonthlyChart } from './charts/MonthlyChart';
 import { ExpensesPieChart } from './charts/ExpensesPieChart';
 import { ExpensesRanking } from './charts/ExpensesRanking';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 type DashboardChartsProps = {
   transactions: Transaction[];
@@ -16,6 +16,8 @@ type DashboardChartsProps = {
 };
 
 export default function DashboardCharts({ transactions, dateRange }: DashboardChartsProps) {
+  const [transactionType, setTransactionType] = useState<'saída' | 'entrada'>('saída');
+  
   // Filter transactions by date range
   const filteredTransactions = useMemo(() => {
     if (!dateRange || !dateRange.from) return transactions;
@@ -108,15 +110,15 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
       });
   }, [filteredTransactions]);
 
-  // Prepare data for expenses by category pie chart
+  // Prepare data for expenses or income by category pie chart
   const categoryData = useMemo(() => {
     const categories = new Map();
     
-    // Process all expense transactions with case-insensitive check
+    // Process transactions based on selected transaction type with case-insensitive check
     filteredTransactions
       .filter(t => {
         const opType = t.operação?.toLowerCase() || '';
-        return opType === 'saída' || opType === 'saida';
+        return opType === transactionType || opType === transactionType.replace('í', 'i');
       })
       .forEach(transaction => {
         // Handle empty or undefined category
@@ -136,17 +138,17 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
     // Convert the Map to Array and sort by value (highest first)
     return Array.from(categories.values())
       .sort((a, b) => b.value - a.value);
-  }, [filteredTransactions]);
+  }, [filteredTransactions, transactionType]);
 
-  // Log category data for debugging
-  console.log('Category data processed:', categoryData);
-  console.log('Total categories found:', categoryData.length);
-  console.log('Filtered transactions with expense type:', filteredTransactions.filter(t => {
-    const opType = t.operação?.toLowerCase() || '';
-    return opType === 'saída' || opType === 'saida';
-  }).length);
-  console.log('All transaction operation types:', [...new Set(filteredTransactions.map(t => t.operação))]);
-  
+  const chartTitle = transactionType === 'saída' ? 'Saídas por Categoria' : 'Entradas por Categoria';
+  const rankingTitle = transactionType === 'saída' ? 'Ranking de Categorias (Saídas)' : 'Ranking de Categorias (Entradas)';
+  const chartDescription = transactionType === 'saída' 
+    ? 'Distribuição de gastos por categoria no período' 
+    : 'Distribuição de receitas por categoria no período';
+  const rankingDescription = transactionType === 'saída' 
+    ? 'Maiores gastos por categoria no período' 
+    : 'Maiores receitas por categoria no período';
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
       <Card className="border-none shadow-md animate-fade-up col-span-1 lg:col-span-3" style={{ animationDelay: '0.1s' }}>
@@ -160,22 +162,32 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
       </Card>
 
       <Card className="border-none shadow-md animate-fade-up col-span-1 lg:col-span-2" style={{ animationDelay: '0.2s' }}>
-        <CardHeader className="pb-2">
-          <CardTitle>Saídas por Categoria</CardTitle>
-          <CardDescription>Distribuição de gastos por categoria no período</CardDescription>
+        <CardHeader className="pb-2 flex flex-row justify-between items-center">
+          <div>
+            <CardTitle>{chartTitle}</CardTitle>
+            <CardDescription>{chartDescription}</CardDescription>
+          </div>
+          <ToggleGroup type="single" value={transactionType} onValueChange={(value) => value && setTransactionType(value as 'saída' | 'entrada')}>
+            <ToggleGroupItem value="saída" aria-label="Mostrar saídas" className={transactionType === 'saída' ? 'bg-expense text-white hover:text-white' : ''}>
+              Saídas
+            </ToggleGroupItem>
+            <ToggleGroupItem value="entrada" aria-label="Mostrar entradas" className={transactionType === 'entrada' ? 'bg-income text-white hover:text-white' : ''}>
+              Entradas
+            </ToggleGroupItem>
+          </ToggleGroup>
         </CardHeader>
         <CardContent className="h-[350px]">
-          <ExpensesPieChart data={categoryData} />
+          <ExpensesPieChart data={categoryData} transactionType={transactionType} />
         </CardContent>
       </Card>
 
       <Card className="border-none shadow-md animate-fade-up" style={{ animationDelay: '0.3s' }}>
         <CardHeader className="pb-2">
-          <CardTitle>Ranking de Categorias</CardTitle>
-          <CardDescription>Maiores gastos por categoria no período</CardDescription>
+          <CardTitle>{rankingTitle}</CardTitle>
+          <CardDescription>{rankingDescription}</CardDescription>
         </CardHeader>
         <CardContent>
-          <ExpensesRanking data={categoryData} />
+          <ExpensesRanking data={categoryData} transactionType={transactionType} />
         </CardContent>
       </Card>
     </div>

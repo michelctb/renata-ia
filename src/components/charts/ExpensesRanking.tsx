@@ -15,15 +15,19 @@ interface ExpensesRankingProps {
     name: string;
     value: number;
   }>;
+  transactionType: 'entrada' | 'saída';
 }
 
-export function ExpensesRanking({ data }: ExpensesRankingProps) {
-  console.log('Raw data received in ranking:', data);
+export function ExpensesRanking({ data, transactionType }: ExpensesRankingProps) {
+  console.log(`Raw data received in ranking (${transactionType}):`, data);
   
   if (!data || data.length === 0) {
     return (
       <div className="h-[290px] flex items-center justify-center text-muted-foreground">
-        Sem dados de saída para exibir no período selecionado
+        {transactionType === 'saída' 
+          ? 'Sem dados de saída para exibir no período selecionado'
+          : 'Sem dados de entrada para exibir no período selecionado'
+        }
       </div>
     );
   }
@@ -34,7 +38,10 @@ export function ExpensesRanking({ data }: ExpensesRankingProps) {
   // Show only top categories if there are too many
   const dataToShow = sortedData.slice(0, 15); // Show at most 15 categories
 
-  console.log('Processed data for ranking:', dataToShow);
+  console.log(`Processed data for ranking (${transactionType}):`, dataToShow);
+
+  // Determine text color based on transaction type
+  const valueTextColor = transactionType === 'saída' ? 'text-expense' : 'text-income';
 
   return (
     <div className="space-y-2 max-h-[320px] overflow-y-auto">
@@ -49,7 +56,7 @@ export function ExpensesRanking({ data }: ExpensesRankingProps) {
               {category.name}
             </span>
           </div>
-          <span className="text-expense font-medium">
+          <span className={`font-medium ${valueTextColor}`}>
             {formatCurrency(category.value)}
           </span>
         </div>

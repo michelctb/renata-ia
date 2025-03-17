@@ -81,7 +81,7 @@ const SummaryCards = ({ transactions, dateRange }: SummaryCardsProps) => {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
       <Card className="border-none shadow-md animate-fade-up" style={{ animationDelay: '0.1s' }}>
         <CardHeader className="pb-2 pt-4">
-          <CardDescription>Total de Entradas</CardDescription>
+          <CardDescription>Entradas</CardDescription>
           <CardTitle className="text-2xl flex items-center text-income">
             <ArrowUpIcon className="mr-2 h-5 w-5" />
             {formatCurrency(summary.income)}
@@ -94,7 +94,7 @@ const SummaryCards = ({ transactions, dateRange }: SummaryCardsProps) => {
       
       <Card className="border-none shadow-md animate-fade-up" style={{ animationDelay: '0.2s' }}>
         <CardHeader className="pb-2 pt-4">
-          <CardDescription>Total de Saídas</CardDescription>
+          <CardDescription>Saídas</CardDescription>
           <CardTitle className="text-2xl flex items-center text-expense">
             <ArrowDownIcon className="mr-2 h-5 w-5" />
             {formatCurrency(summary.expenses)}
