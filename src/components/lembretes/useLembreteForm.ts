@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { Lembrete, addLembrete, updateLembrete } from '@/lib/lembretes';
 import { lembreteSchema, LembreteFormValues } from './lembreteFormSchema';
+import { fetchClienteById } from '@/lib/clientes';
 
 interface UseLembreteFormProps {
   onSubmit: (data: Lembrete) => void;
@@ -28,15 +29,25 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
       // Format the date to YYYY-MM-DD
       const formattedDate = values.vencimento.toISOString().split('T')[0];
       
+      // Get client details to set cliente (name) and telefone
+      let clienteData;
+      try {
+        clienteData = await fetchClienteById(userId);
+        console.log('Client data fetched:', clienteData);
+      } catch (error) {
+        console.error('Error fetching client data:', error);
+        // Continue with the available data if client fetch fails
+      }
+      
       const lembreteData: Lembrete = {
         lembrete: values.lembrete,
         tipo: values.tipo,
         valor: values.valor,
-        telefone: userId, // This is used by the trigger to find the correct client ID
-        cliente: userId, // Mantido para compatibilidade
-        // id_cliente field removed as it's automatically populated by database triggers
+        telefone: clienteData?.telefone || userId, // Telephone from client record
+        cliente: clienteData?.nome || userId, // Name from client record
+        // id_cliente is omitted as it will be set by the database
         vencimento: formattedDate,
-        lembrar: formattedDate, 
+        lembrar: formattedDate, // Same as vencimento
         ...(editingLembrete?.id ? { id: editingLembrete.id } : {}),
       };
 
