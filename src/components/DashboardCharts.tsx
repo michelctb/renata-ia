@@ -20,26 +20,33 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
   const filteredTransactions = useMemo(() => {
     if (!dateRange || !dateRange.from) return transactions;
     
+    console.log(`Filtering chart data with date range: ${dateRange.from.toISOString()} to ${dateRange.to?.toISOString() || 'none'}`);
+    
     return transactions.filter(transaction => {
-      // Parse the date with timezone consideration
-      const transactionDateStr = transaction.data;
-      const transactionDate = parseISO(transactionDateStr);
-      
-      // Adjust the transaction date to America/Sao_Paulo timezone
-      const zonedDate = toZonedTime(transactionDate, 'America/Sao_Paulo');
-      
-      if (dateRange.from && dateRange.to) {
-        return isWithinInterval(zonedDate, { 
-          start: dateRange.from, 
-          end: dateRange.to 
-        });
+      try {
+        // Parse the date with timezone consideration
+        const transactionDateStr = transaction.data;
+        const transactionDate = parseISO(transactionDateStr);
+        
+        // Adjust the transaction date to America/Sao_Paulo timezone
+        const zonedDate = toZonedTime(transactionDate, 'America/Sao_Paulo');
+        
+        if (dateRange.from && dateRange.to) {
+          return isWithinInterval(zonedDate, { 
+            start: dateRange.from, 
+            end: dateRange.to 
+          });
+        }
+        
+        if (dateRange.from) {
+          return zonedDate >= dateRange.from;
+        }
+        
+        return true;
+      } catch (error) {
+        console.error('Error parsing date for charts:', transaction.data, error);
+        return false;
       }
-      
-      if (dateRange.from) {
-        return zonedDate >= dateRange.from;
-      }
-      
-      return true;
     });
   }, [transactions, dateRange]);
 
@@ -48,31 +55,35 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
     const months = new Map();
     
     filteredTransactions.forEach(transaction => {
-      // Parse the date with timezone consideration
-      const dateStr = transaction.data;
-      const date = parseISO(dateStr);
-      
-      // Adjust the date to America/Sao_Paulo timezone
-      const zonedDate = toZonedTime(date, 'America/Sao_Paulo');
-      
-      const monthKey = format(zonedDate, 'yyyy-MM');
-      const monthLabel = format(zonedDate, 'MMM yyyy', { locale: ptBR });
-      const operationType = transaction.operação?.toLowerCase() || '';
-      
-      if (!months.has(monthKey)) {
-        months.set(monthKey, { 
-          name: monthLabel, 
-          entrada: 0, 
-          saída: 0 
-        });
-      }
-      
-      const monthData = months.get(monthKey);
-      
-      if (operationType === 'entrada') {
-        monthData.entrada += Number(transaction.valor);
-      } else if (operationType === 'saída') {
-        monthData.saída += Number(transaction.valor);
+      try {
+        // Parse the date with timezone consideration
+        const dateStr = transaction.data;
+        const date = parseISO(dateStr);
+        
+        // Adjust the date to America/Sao_Paulo timezone
+        const zonedDate = toZonedTime(date, 'America/Sao_Paulo');
+        
+        const monthKey = format(zonedDate, 'yyyy-MM');
+        const monthLabel = format(zonedDate, 'MMM yyyy', { locale: ptBR });
+        const operationType = transaction.operação?.toLowerCase() || '';
+        
+        if (!months.has(monthKey)) {
+          months.set(monthKey, { 
+            name: monthLabel, 
+            entrada: 0, 
+            saída: 0 
+          });
+        }
+        
+        const monthData = months.get(monthKey);
+        
+        if (operationType === 'entrada') {
+          monthData.entrada += Number(transaction.valor);
+        } else if (operationType === 'saída' || operationType === 'saida') {
+          monthData.saída += Number(transaction.valor);
+        }
+      } catch (error) {
+        console.error('Error processing date for monthly chart:', transaction.data, error);
       }
     });
     
@@ -103,7 +114,10 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
     
     // Process all expense transactions with case-insensitive check
     filteredTransactions
-      .filter(t => t.operação?.toLowerCase() === 'saída')
+      .filter(t => {
+        const opType = t.operação?.toLowerCase() || '';
+        return opType === 'saída' || opType === 'saida';
+      })
       .forEach(transaction => {
         // Handle empty or undefined category
         const category = transaction.categoria?.trim() || 'Sem categoria';
@@ -127,7 +141,10 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
   // Log category data for debugging
   console.log('Category data processed:', categoryData);
   console.log('Total categories found:', categoryData.length);
-  console.log('Filtered transactions with expense type:', filteredTransactions.filter(t => t.operação?.toLowerCase() === 'saída').length);
+  console.log('Filtered transactions with expense type:', filteredTransactions.filter(t => {
+    const opType = t.operação?.toLowerCase() || '';
+    return opType === 'saída' || opType === 'saida';
+  }).length);
   console.log('All transaction operation types:', [...new Set(filteredTransactions.map(t => t.operação))]);
   
   return (

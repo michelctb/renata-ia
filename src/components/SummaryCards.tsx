@@ -5,7 +5,7 @@ import { ArrowDownIcon, ArrowUpIcon, TrendingUpIcon } from 'lucide-react';
 import { Transaction } from '@/lib/supabase';
 import { formatCurrency } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
-import { parseISO } from 'date-fns';
+import { parseISO, isWithinInterval } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 
 type SummaryCardsProps = {
@@ -24,27 +24,38 @@ const SummaryCards = ({ transactions, dateRange }: SummaryCardsProps) => {
     let income = 0;
     let expenses = 0;
     
-    // Filter transactions by date range if provided - usando a coluna 'data'
+    // Filter transactions by date range if provided
     const filteredTransactions = transactions.filter(transaction => {
       if (!dateRange || !dateRange.from) return true;
       
-      // Parse the date with timezone consideration
-      const transactionDateStr = transaction.data;
-      const transactionDate = parseISO(transactionDateStr);
-      
-      // Adjust the transaction date to America/Sao_Paulo timezone
-      const zonedDate = toZonedTime(transactionDate, 'America/Sao_Paulo');
-      
-      if (dateRange.from && dateRange.to) {
-        return zonedDate >= dateRange.from && zonedDate <= dateRange.to;
+      try {
+        // Parse the date with timezone consideration
+        const transactionDateStr = transaction.data;
+        const transactionDate = parseISO(transactionDateStr);
+        
+        // Adjust the transaction date to America/Sao_Paulo timezone
+        const zonedDate = toZonedTime(transactionDate, 'America/Sao_Paulo');
+        
+        if (dateRange.from && dateRange.to) {
+          return isWithinInterval(zonedDate, { 
+            start: dateRange.from, 
+            end: dateRange.to 
+          });
+        }
+        
+        if (dateRange.from) {
+          return zonedDate >= dateRange.from;
+        }
+        
+        return true;
+      } catch (error) {
+        console.error('Error processing date:', transaction.data, error);
+        return false;
       }
-      
-      if (dateRange.from) {
-        return zonedDate >= dateRange.from;
-      }
-      
-      return true;
     });
+    
+    console.log(`Filtered from ${transactions.length} to ${filteredTransactions.length} transactions based on date range:`, 
+      dateRange ? `${dateRange.from?.toISOString()} to ${dateRange.to?.toISOString()}` : 'No date range');
     
     // Calculate totals - making operation check case-insensitive
     filteredTransactions.forEach(transaction => {
@@ -52,7 +63,7 @@ const SummaryCards = ({ transactions, dateRange }: SummaryCardsProps) => {
       
       if (operationType === 'entrada') {
         income += transaction.valor;
-      } else if (operationType === 'saída') {
+      } else if (operationType === 'saída' || operationType === 'saida') {
         expenses += transaction.valor;
       }
     });

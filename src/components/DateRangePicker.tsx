@@ -4,6 +4,8 @@ import { CalendarIcon } from "lucide-react";
 import { addDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
+import { parseISO } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,12 +34,13 @@ export function DateRangePicker({ dateRange, onDateRangeChange }: DateRangePicke
   // Predefined ranges
   const handleSelectPredefined = (value: string) => {
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of day
     
     switch (value) {
       case "today":
         onDateRangeChange({
           from: today,
-          to: today,
+          to: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999) // End of day
         });
         break;
       case "yesterday": {
@@ -64,7 +67,7 @@ export function DateRangePicker({ dateRange, onDateRangeChange }: DateRangePicke
       }
       case "thisMonth": {
         const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-        const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
         onDateRangeChange({
           from: firstDay,
           to: lastDay,
@@ -73,7 +76,7 @@ export function DateRangePicker({ dateRange, onDateRangeChange }: DateRangePicke
       }
       case "lastMonth": {
         const firstDay = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-        const lastDay = new Date(today.getFullYear(), today.getMonth(), 0);
+        const lastDay = new Date(today.getFullYear(), today.getMonth(), 0, 23, 59, 59, 999);
         onDateRangeChange({
           from: firstDay,
           to: lastDay,
@@ -134,7 +137,29 @@ export function DateRangePicker({ dateRange, onDateRangeChange }: DateRangePicke
             defaultMonth={dateRange?.from}
             selected={dateRange || undefined}
             onSelect={(range) => {
-              onDateRangeChange(range);
+              // If selecting a day range, set the end time to end of day
+              if (range?.from && range?.to && range.from.getTime() === range.to.getTime()) {
+                // Single day selection - set from to start of day and to to end of day
+                const from = new Date(range.from);
+                from.setHours(0, 0, 0, 0);
+                
+                const to = new Date(range.to);
+                to.setHours(23, 59, 59, 999);
+                
+                onDateRangeChange({ from, to });
+              } else if (range?.from && range?.to) {
+                // Multiple day selection - set first day to start of day and last day to end of day
+                const from = new Date(range.from);
+                from.setHours(0, 0, 0, 0);
+                
+                const to = new Date(range.to);
+                to.setHours(23, 59, 59, 999);
+                
+                onDateRangeChange({ from, to });
+              } else {
+                onDateRangeChange(range);
+              }
+              
               if (range?.from && range?.to) {
                 setIsOpen(false);
               }

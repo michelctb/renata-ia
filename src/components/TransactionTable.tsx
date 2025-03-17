@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { DateRange } from 'react-day-picker';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isWithinInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { format as formatTZ } from 'date-fns-tz';
 import { Transaction } from '@/lib/supabase';
@@ -24,6 +24,7 @@ import {
   XIcon 
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
+import { toZonedTime } from 'date-fns-tz';
 
 interface TransactionTableProps {
   transactions: Transaction[];
@@ -44,26 +45,42 @@ const TransactionTable = ({
   // Filter transactions by date range and search term
   useEffect(() => {
     let filtered = [...transactions];
+    console.log('Filtering transactions, total before filter:', filtered.length);
     
     // Filter by date range
     if (dateRange?.from || dateRange?.to) {
       filtered = filtered.filter(transaction => {
-        const transactionDate = new Date(transaction.data);
-        
-        if (dateRange?.from && dateRange?.to) {
-          return transactionDate >= dateRange.from && transactionDate <= dateRange.to;
+        try {
+          const transactionDate = parseISO(transaction.data);
+          const zonedDate = toZonedTime(transactionDate, 'America/Sao_Paulo');
+          
+          console.log(`Transaction date: ${transaction.data}, parsed: ${zonedDate.toISOString()}`);
+          
+          if (dateRange?.from && dateRange?.to) {
+            const isInRange = isWithinInterval(zonedDate, { 
+              start: dateRange.from, 
+              end: dateRange.to 
+            });
+            console.log(`Checking if ${zonedDate.toISOString()} is between ${dateRange.from.toISOString()} and ${dateRange.to.toISOString()}: ${isInRange}`);
+            return isInRange;
+          }
+          
+          if (dateRange?.from) {
+            return zonedDate >= dateRange.from;
+          }
+          
+          if (dateRange?.to) {
+            return zonedDate <= dateRange.to;
+          }
+          
+          return true;
+        } catch (error) {
+          console.error('Error parsing date:', transaction.data, error);
+          return false;
         }
-        
-        if (dateRange?.from) {
-          return transactionDate >= dateRange.from;
-        }
-        
-        if (dateRange?.to) {
-          return transactionDate <= dateRange.to;
-        }
-        
-        return true;
       });
+      
+      console.log('Filtered by date range, remaining:', filtered.length);
     }
     
     // Filter by search term
@@ -74,6 +91,7 @@ const TransactionTable = ({
           transaction.descrição.toLowerCase().includes(term) ||
           transaction.categoria.toLowerCase().includes(term)
       );
+      console.log('Filtered by search term, remaining:', filtered.length);
     }
     
     setFilteredTransactions(filtered);
