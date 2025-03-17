@@ -1,5 +1,6 @@
 
 import { formatCurrency } from '@/lib/utils';
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Expanded color palette to match the pie chart
 const COLORS = [
@@ -48,33 +49,38 @@ export function ExpensesRanking({ data, transactionType }: ExpensesRankingProps)
   const valueTextColor = transactionType === 'saída' ? 'text-expense' : 'text-income';
 
   return (
-    <div className="space-y-2 max-h-[320px] overflow-y-auto">
-      {dataToShow.map((category, index) => (
-        <div key={index} className="flex items-center justify-between p-2 border-b">
-          <div className="flex items-center gap-2">
-            <div 
-              className="w-3 h-3 rounded-full" 
-              style={{ backgroundColor: COLORS[index % COLORS.length] }}
-            />
-            <span className="font-medium truncate max-w-[140px] text-sm" title={category.name}>
-              {category.name}
-            </span>
-          </div>
-          <span className={`font-medium ${valueTextColor}`}>
-            {formatCurrency(category.value)}
-          </span>
+    <div className="flex flex-col h-[290px]">
+      {/* Scrollable categories area */}
+      <ScrollArea className="flex-1">
+        <div className="space-y-2">
+          {dataToShow.map((category, index) => (
+            <div key={index} className="flex items-center justify-between p-2 border-b">
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-3 h-3 rounded-full" 
+                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                />
+                <span className="font-medium truncate max-w-[140px] text-sm" title={category.name}>
+                  {category.name}
+                </span>
+              </div>
+              <span className={`font-medium ${valueTextColor}`}>
+                {formatCurrency(category.value)}
+              </span>
+            </div>
+          ))}
+          
+          {/* Show the "more categories" message if needed */}
+          {data.length > 15 && (
+            <div className="text-center text-sm text-muted-foreground pt-2 pb-2">
+              Mostrando 15 de {data.length} categorias
+            </div>
+          )}
         </div>
-      ))}
+      </ScrollArea>
       
-      {/* Show the "more categories" message if needed */}
-      {data.length > 15 && (
-        <div className="text-center text-sm text-muted-foreground pt-2">
-          Mostrando 15 de {data.length} categorias
-        </div>
-      )}
-      
-      {/* Total sum row with a divider */}
-      <div className="pt-2 mt-2 border-t-2 border-gray-300">
+      {/* Total sum row with a divider - always visible */}
+      <div className="pt-2 mt-2 border-t-2 border-gray-300 sticky bottom-0 bg-white">
         <div className="flex items-center justify-between p-2">
           <span className="font-bold text-sm">Total</span>
           <span className={`font-bold ${valueTextColor}`}>
