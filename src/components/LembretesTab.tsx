@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { fetchLembretes, Lembrete, deleteLembrete } from '@/lib/lembretes';
+import { fetchLembretes, Lembrete } from '@/lib/lembretes';
 import { Button } from '@/components/ui/button';
 import { PlusIcon } from 'lucide-react';
 import { toast } from 'sonner';
@@ -67,25 +67,21 @@ const LembretesTab = () => {
     try {
       console.log('Form submitted with data:', data);
       
-      // Ensure the data has an ID if it's from a newly added lembrete
-      if (!data.id && data.id !== 0) {
-        console.log('Refreshing lembretes list to get the newly added item with ID');
-        // Refresh the whole list if we don't have an ID
+      // If this is a new item that was just added, reload the entire list
+      // to get the proper IDs from the database
+      if (!editingLembrete) {
         if (user) {
           const updatedLembretes = await fetchLembretes(user.id);
           setLembretes(updatedLembretes);
         }
       } else {
-        // Update existing lembrete
+        // Update existing lembrete in the list
         setLembretes(prevLembretes => {
           return prevLembretes.map(item => 
             item.id === data.id ? data : item
           );
         });
       }
-      
-      setIsFormOpen(false);
-      setEditingLembrete(null);
     } catch (error) {
       console.error('Error updating lembretes list:', error);
       toast.error('Erro ao atualizar a lista de lembretes.');

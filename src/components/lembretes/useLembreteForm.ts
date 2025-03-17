@@ -45,11 +45,14 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
         valor: values.valor,
         telefone: clienteData?.telefone || userId, // Telephone from client record
         cliente: clienteData?.nome || userId, // Name from client record
-        // id_cliente is omitted as it will be set by the database
         vencimento: formattedDate,
-        lembrar: formattedDate, // Same as vencimento
-        ...(editingLembrete?.id ? { id: editingLembrete.id } : {}),
+        lembrar: formattedDate // Same as vencimento
       };
+
+      // Only include id for updates
+      if (editingLembrete?.id) {
+        lembreteData.id = editingLembrete.id;
+      }
 
       console.log('Submitting lembrete data:', lembreteData);
 

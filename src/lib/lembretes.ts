@@ -40,23 +40,28 @@ export async function fetchLembretes(userId: string) {
 export async function addLembrete(lembrete: Lembrete) {
   console.log('Adding lembrete:', lembrete);
   
-  // Create a lembrete object without the ID and id_cliente fields
+  // Create a lembrete object without the ID field
   // id and id_cliente will be set by the database
   const { id, id_cliente, ...lembreteDataForInsert } = lembrete;
   console.log('Submitting lembrete data:', lembreteDataForInsert);
   
-  const { data: insertedData, error } = await supabase
-    .from(LEMBRETES_TABLE)
-    .insert([lembreteDataForInsert])
-    .select();
+  try {
+    const { data: insertedData, error } = await supabase
+      .from(LEMBRETES_TABLE)
+      .insert([lembreteDataForInsert])
+      .select();
 
-  if (error) {
-    console.error('Error adding lembrete:', error);
-    throw error;
+    if (error) {
+      console.error('Error adding lembrete:', error);
+      throw error;
+    }
+
+    console.log('Lembrete added successfully:', insertedData?.[0]);
+    return insertedData?.[0];
+  } catch (err) {
+    console.error('Exception adding lembrete:', err);
+    throw err;
   }
-
-  console.log('Lembrete added successfully:', insertedData?.[0]);
-  return insertedData?.[0];
 }
 
 // Update an existing lembrete
@@ -68,26 +73,31 @@ export async function updateLembrete(lembrete: Lembrete) {
     throw new Error('Lembrete ID is required for update');
   }
   
-  const id = lembrete.id as number;
+  const id = lembrete.id;
   
   console.log('Using ID for update:', id);
   
   // Remove id and id_cliente from the update payload since they're managed by the database
   const { id: _, id_cliente, ...updateData } = lembrete;
   
-  const { data, error } = await supabase
-    .from(LEMBRETES_TABLE)
-    .update(updateData)
-    .eq('id', id)
-    .select();
+  try {
+    const { data, error } = await supabase
+      .from(LEMBRETES_TABLE)
+      .update(updateData)
+      .eq('id', id)
+      .select();
 
-  if (error) {
-    console.error('Error updating lembrete:', error);
-    throw error;
+    if (error) {
+      console.error('Error updating lembrete:', error);
+      throw error;
+    }
+
+    console.log('Lembrete updated successfully:', data?.[0]);
+    return data?.[0];
+  } catch (err) {
+    console.error('Exception updating lembrete:', err);
+    throw err;
   }
-
-  console.log('Lembrete updated successfully:', data?.[0]);
-  return data?.[0];
 }
 
 // Delete a lembrete
