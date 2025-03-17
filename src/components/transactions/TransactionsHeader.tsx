@@ -23,7 +23,7 @@ export function TransactionsHeader({
       <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
         <DateRangePicker
           dateRange={dateRange}
-          setDateRange={setDateRange}
+          onDateRangeChange={setDateRange}
         />
         <Button onClick={onAddNew} disabled={!isUserActive}>
           <PlusIcon className="h-4 w-4 mr-1" />

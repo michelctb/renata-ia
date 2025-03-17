@@ -19,9 +19,10 @@ interface CategoryListProps {
   onEdit: (category: Category) => void;
   onDelete: (id: number, isPadrao: boolean) => void;
   isLoading: boolean;
+  isUserActive?: boolean;
 }
 
-export function CategoryList({ categories, onEdit, onDelete, isLoading }: CategoryListProps) {
+export function CategoryList({ categories, onEdit, onDelete, isLoading, isUserActive = true }: CategoryListProps) {
   if (isLoading) {
     return (
       <div className="p-4 flex justify-center">
@@ -70,8 +71,14 @@ export function CategoryList({ categories, onEdit, onDelete, isLoading }: Catego
                 size="sm"
                 onClick={() => onEdit(category)}
                 className="h-8 w-8 p-0 mr-1"
-                disabled={category.padrao}
-                title={category.padrao ? "Categorias padrão não podem ser editadas" : "Editar categoria"}
+                disabled={category.padrao || !isUserActive}
+                title={
+                  category.padrao 
+                    ? "Categorias padrão não podem ser editadas" 
+                    : !isUserActive 
+                      ? "Assinatura inativa. Não é possível editar categorias."
+                      : "Editar categoria"
+                }
               >
                 <PencilIcon className="h-4 w-4" />
                 <span className="sr-only">Editar</span>
@@ -80,9 +87,15 @@ export function CategoryList({ categories, onEdit, onDelete, isLoading }: Catego
                 variant="ghost"
                 size="sm"
                 onClick={() => onDelete(category.id!, category.padrao || false)}
-                className={`h-8 w-8 p-0 ${category.padrao ? "text-muted-foreground" : "text-destructive hover:text-destructive"}`}
-                disabled={category.padrao}
-                title={category.padrao ? "Categorias padrão não podem ser excluídas" : "Excluir categoria"}
+                className={`h-8 w-8 p-0 ${category.padrao || !isUserActive ? "text-muted-foreground" : "text-destructive hover:text-destructive"}`}
+                disabled={category.padrao || !isUserActive}
+                title={
+                  category.padrao 
+                    ? "Categorias padrão não podem ser excluídas" 
+                    : !isUserActive 
+                      ? "Assinatura inativa. Não é possível excluir categorias."
+                      : "Excluir categoria"
+                }
               >
                 <TrashIcon className="h-4 w-4" />
                 <span className="sr-only">Excluir</span>
