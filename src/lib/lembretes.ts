@@ -10,9 +10,9 @@ export type Lembrete = {
   lembrete: string;
   tipo: string;
   valor?: number;
-  telefone?: string; // Mantido para compatibilidade
+  telefone?: string; // Used by the trigger to find the correct client ID
   cliente?: string; // Mantido para compatibilidade
-  id_cliente: string; // Novo campo para identificar o cliente
+  id_cliente?: string; // Made optional since it's filled automatically by the trigger
   vencimento: string;
   lembrar: string;
 };
@@ -40,18 +40,14 @@ export async function fetchLembretes(userId: string) {
 export async function addLembrete(lembrete: Lembrete) {
   console.log('Adding lembrete:', lembrete);
   
-  if (!lembrete.id_cliente) {
-    console.error('Error: id_cliente field is required');
-    throw new Error('id_cliente field is required');
-  }
-  
-  // Create a lembrete object without the ID field to let the database auto-generate it
-  const { id, ...lembreteWithoutId } = lembrete;
-  console.log('Submitting lembrete without ID:', lembreteWithoutId);
+  // Create a lembrete object without the ID and id_cliente fields
+  // id_cliente will be set by the database trigger
+  const { id, id_cliente, ...lembreteDataForInsert } = lembrete;
+  console.log('Submitting lembrete without ID and id_cliente:', lembreteDataForInsert);
   
   const { data: insertedData, error } = await supabase
     .from(LEMBRETES_TABLE)
-    .insert([lembreteWithoutId])
+    .insert([lembreteDataForInsert])
     .select();
 
   if (error) {
@@ -67,11 +63,6 @@ export async function addLembrete(lembrete: Lembrete) {
 export async function updateLembrete(lembrete: Lembrete) {
   console.log('Updating lembrete:', lembrete);
   
-  if (!lembrete.id_cliente) {
-    console.error('Error: id_cliente field is required');
-    throw new Error('id_cliente field is required');
-  }
-  
   if (!lembrete.id) {
     console.error('Error: lembrete id is required for update');
     throw new Error('Lembrete ID is required for update');
@@ -81,18 +72,12 @@ export async function updateLembrete(lembrete: Lembrete) {
   
   console.log('Using ID for update:', id);
   
+  // Remove id_cliente from the update payload since it's managed by the database
+  const { id: _, id_cliente, ...updateData } = lembrete;
+  
   const { data, error } = await supabase
     .from(LEMBRETES_TABLE)
-    .update({
-      lembrete: lembrete.lembrete,
-      tipo: lembrete.tipo,
-      valor: lembrete.valor,
-      telefone: lembrete.telefone,
-      cliente: lembrete.cliente,
-      id_cliente: lembrete.id_cliente,
-      vencimento: lembrete.vencimento,
-      lembrar: lembrete.lembrar
-    })
+    .update(updateData)
     .eq('id', id)
     .select();
 

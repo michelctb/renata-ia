@@ -32,9 +32,9 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
         lembrete: values.lembrete,
         tipo: values.tipo,
         valor: values.valor,
-        telefone: userId, // Mantido para compatibilidade
+        telefone: userId, // This is used by the trigger to find the correct client ID
         cliente: userId, // Mantido para compatibilidade
-        id_cliente: userId, // Usando o ID do usuário como id_cliente
+        // id_cliente field removed as it's automatically populated by database triggers
         vencimento: formattedDate,
         lembrar: formattedDate, 
         ...(editingLembrete?.id ? { id: editingLembrete.id } : {}),
