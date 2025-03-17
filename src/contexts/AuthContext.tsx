@@ -43,14 +43,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = (userId: string) => {
-    // Garantir que o ID do usuário tenha o sufixo correto
-    const hasWhatsAppSuffix = userId.includes('@s.whatsapp.net');
-    const correctUserId = hasWhatsAppSuffix ? userId : `${userId}@s.whatsapp.net`;
-    
-    console.log('Logging in user with formatted ID:', correctUserId);
+    // Use userId directly without appending WhatsApp suffix
+    console.log('Logging in user with ID:', userId);
     
     // Simple login with userId
-    const newUser = { id: correctUserId };
+    const newUser = { id: userId };
     setUser(newUser);
     localStorage.setItem('financialDashboardUser', JSON.stringify(newUser));
     toast.success('Login realizado com sucesso');

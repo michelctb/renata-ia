@@ -17,20 +17,16 @@ const DirectAccess = () => {
     }
 
     try {
-      // Extrair os primeiros 13 dígitos (número de telefone) do ID do usuário
-      // E adicionar o sufixo padrão do WhatsApp
-      const phoneNumberPart = userId.substring(0, 13);
-      const fullUserId = `${phoneNumberPart}@s.whatsapp.net`;
+      // Use the userId directly without any modifications
+      console.log('Login com ID:', userId);
       
-      console.log('Login com ID completo:', fullUserId); // Debug log
-      
-      // Efetuar login com o ID completo
-      login(fullUserId);
+      // Efetuar login com o ID
+      login(userId);
       
       // Redirecionar para o dashboard
       navigate('/dashboard');
       
-      toast.success(`Acesso direto para o usuário: ${phoneNumberPart}`);
+      toast.success(`Acesso direto para o usuário: ${userId}`);
     } catch (error) {
       console.error('Erro no acesso direto:', error);
       toast.error('Não foi possível acessar com o ID fornecido');

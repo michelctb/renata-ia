@@ -24,6 +24,7 @@ const Login = () => {
     setIsLoading(true);
     
     try {
+      // Use the user ID directly without any modifications
       login(userId.trim());
       navigate('/dashboard');
     } catch (error) {
