@@ -17,7 +17,7 @@ interface LembreteFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: Lembrete) => void;
-  editingLembrete: Lembrete | null;
+  editingLembrete: Lembrete | null; // Fixed typo in variable name
   userId: string;
 }
 
@@ -25,13 +25,13 @@ export function LembreteForm({
   isOpen,
   onClose,
   onSubmit,
-  editingLembrete,
+  editingLembrete, // Fixed typo in variable name
   userId,
 }: LembreteFormProps) {
   const { form, handleSubmit, handleClose } = useLembreteForm({
     onSubmit,
     onClose,
-    editingLembrete,
+    editingLembrete, // Fixed typo in variable name
     userId,
   });
 

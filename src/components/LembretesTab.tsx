@@ -41,6 +41,7 @@ const LembretesTab = () => {
   };
 
   const handleEdit = (lembrete: Lembrete) => {
+    console.log('Editing lembrete:', lembrete); // Debug log
     setEditingLembrete(lembrete);
     setIsFormOpen(true);
   };

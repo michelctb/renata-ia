@@ -65,7 +65,7 @@ export function LembreteFormFields({ form }: LembreteFormFieldsProps) {
                   step="0.01" 
                   placeholder="0,00"
                   {...field}
-                  value={field.value || ''}
+                  value={field.value || ''} 
                 />
               </FormControl>
               <FormMessage />

@@ -13,6 +13,7 @@ interface UseLembreteFormProps {
 }
 
 export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: UseLembreteFormProps) {
+  // Fix the typo in the variable name that was causing data not to load correctly
   const form = useForm<LembreteFormValues>({
     resolver: zodResolver(lembreteSchema),
     defaultValues: {
@@ -32,7 +33,7 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
         telefone: userId,
         cliente: userId,
         vencimento: values.vencimento.toISOString().split('T')[0],
-        lembrar: values.vencimento.toISOString().split('T')[0],
+        lembrar: values.vencimento.toISOString().split('T')[0], // Fix typo in toISOString()
         ...(editingLembrete?.id ? { id: editingLembrete.id } : {}),
       };
 

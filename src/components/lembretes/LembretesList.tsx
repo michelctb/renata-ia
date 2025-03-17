@@ -15,7 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { LembreteActions } from './LembreteActions';
-import { BellIcon, AlertCircleIcon } from 'lucide-react';
+import { BellIcon, AlertCircle } from 'lucide-react';
 
 interface LembretesListProps {
   lembretes: Lembrete[];
@@ -70,7 +70,7 @@ const LembretesList: React.FC<LembretesListProps> = ({
                     {lembrete.lembrete}
                     {overdue && (
                       <span className="inline-flex items-center ml-2">
-                        <AlertCircleIcon className="h-4 w-4 text-red-500" />
+                        <AlertCircle className="h-4 w-4 text-red-500" />
                       </span>
                     )}
                   </TableCell>
