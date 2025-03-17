@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase credentials
@@ -13,7 +14,8 @@ export const FINANCIAL_TABLE = 'Sistema Financeiro';
 // Types for financial records
 export type Transaction = {
   id?: number;
-  cliente: string;
+  cliente?: string; // Mantido para compatibilidade
+  id_cliente: string; // Novo campo para identificar o cliente
   created_at?: string;
   data: string;
   operação: 'entrada' | 'saída';
@@ -29,7 +31,7 @@ export async function fetchTransactions(userId: string) {
   const { data, error } = await supabase
     .from(FINANCIAL_TABLE)
     .select('*')
-    .eq('cliente', userId)  // Explicitly filter by user ID despite RLS
+    .eq('id_cliente', userId)  // Usando id_cliente em vez de cliente
     .order('data', { ascending: false });
 
   if (error) {
@@ -45,15 +47,15 @@ export async function fetchTransactions(userId: string) {
 export async function addTransaction(transaction: Transaction) {
   console.log('Adding transaction:', transaction);
   
-  if (!transaction.cliente) {
-    console.error('Error: cliente field is required');
-    throw new Error('Cliente field is required');
+  if (!transaction.id_cliente) {
+    console.error('Error: id_cliente field is required');
+    throw new Error('id_cliente field is required');
   }
   
   // Garantir que todos os campos necessários estejam presentes
-  const { cliente, data, operação, descrição, categoria, valor } = transaction;
+  const { id_cliente, data, operação, descrição, categoria, valor } = transaction;
   
-  if (!cliente || !data || !operação || !descrição || !categoria || valor === undefined) {
+  if (!id_cliente || !data || !operação || !descrição || !categoria || valor === undefined) {
     console.error('Error: missing required fields', transaction);
     throw new Error('Campos obrigatórios faltando');
   }
@@ -80,9 +82,9 @@ export async function addTransaction(transaction: Transaction) {
 export async function updateTransaction(transaction: Transaction) {
   console.log('Updating transaction:', transaction);
   
-  if (!transaction.cliente) {
-    console.error('Error: cliente field is required');
-    throw new Error('Cliente field is required');
+  if (!transaction.id_cliente) {
+    console.error('Error: id_cliente field is required');
+    throw new Error('id_cliente field is required');
   }
   
   if (!transaction.id) {
@@ -90,8 +92,6 @@ export async function updateTransaction(transaction: Transaction) {
     throw new Error('Transaction ID is required for update');
   }
   
-  // Since we've already checked that transaction.id exists and isn't falsy,
-  // we can safely assert it as a number for TypeScript
   const id = transaction.id as number;
   
   console.log('Using ID for update:', id);
@@ -100,6 +100,7 @@ export async function updateTransaction(transaction: Transaction) {
     .from(FINANCIAL_TABLE)
     .update({
       cliente: transaction.cliente,
+      id_cliente: transaction.id_cliente,
       data: transaction.data,
       operação: transaction.operação,
       descrição: transaction.descrição,

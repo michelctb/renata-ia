@@ -29,8 +29,9 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
         lembrete: values.lembrete,
         tipo: values.tipo,
         valor: values.valor,
-        telefone: userId,
-        cliente: userId,
+        telefone: userId, // Mantido para compatibilidade
+        cliente: userId, // Mantido para compatibilidade
+        id_cliente: userId, // Usando o ID do usuário como id_cliente
         vencimento: values.vencimento.toISOString().split('T')[0],
         lembrar: values.vencimento.toISOString().split('T')[0], 
         ...(editingLembrete?.id ? { id: editingLembrete.id } : {}),

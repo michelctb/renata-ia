@@ -114,7 +114,8 @@ export function useTransactionForm(
       
       const transaction: Transaction = {
         id: values.id,
-        cliente: userId,
+        cliente: userId, // Mantido para compatibilidade
+        id_cliente: userId, // Usando userId como id_cliente
         data: formattedDate,
         operação: values.operação,
         descrição: values.descrição,

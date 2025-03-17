@@ -54,6 +54,42 @@ export type Database = {
         }
         Relationships: []
       }
+      Clientes: {
+        Row: {
+          ativo: boolean | null
+          cpf: number | null
+          created_at: string
+          email: string | null
+          id_cliente: string
+          lembrete: string | null
+          nome: string | null
+          plano: string | null
+          telefone: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          cpf?: number | null
+          created_at?: string
+          email?: string | null
+          id_cliente?: string
+          lembrete?: string | null
+          nome?: string | null
+          plano?: string | null
+          telefone?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          cpf?: number | null
+          created_at?: string
+          email?: string | null
+          id_cliente?: string
+          lembrete?: string | null
+          nome?: string | null
+          plano?: string | null
+          telefone?: string | null
+        }
+        Relationships: []
+      }
       "Informações Clientes": {
         Row: {
           ativo: boolean | null
@@ -94,6 +130,7 @@ export type Database = {
         Row: {
           cliente: string | null
           id: number
+          id_cliente: string | null
           lembrar: string | null
           lembrete: string | null
           telefone: string | null
@@ -104,6 +141,7 @@ export type Database = {
         Insert: {
           cliente?: string | null
           id?: number
+          id_cliente?: string | null
           lembrar?: string | null
           lembrete?: string | null
           telefone?: string | null
@@ -114,6 +152,7 @@ export type Database = {
         Update: {
           cliente?: string | null
           id?: number
+          id_cliente?: string | null
           lembrar?: string | null
           lembrete?: string | null
           telefone?: string | null
@@ -131,6 +170,7 @@ export type Database = {
           data: string
           descrição: string | null
           id: number
+          id_cliente: string | null
           operação: string | null
           valor: number | null
         }
@@ -141,6 +181,7 @@ export type Database = {
           data: string
           descrição?: string | null
           id?: number
+          id_cliente?: string | null
           operação?: string | null
           valor?: number | null
         }
@@ -151,6 +192,7 @@ export type Database = {
           data?: string
           descrição?: string | null
           id?: number
+          id_cliente?: string | null
           operação?: string | null
           valor?: number | null
         }

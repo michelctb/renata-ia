@@ -10,8 +10,9 @@ export type Lembrete = {
   lembrete: string;
   tipo: string;
   valor?: number;
-  telefone: string;
-  cliente: string;
+  telefone?: string; // Mantido para compatibilidade
+  cliente?: string; // Mantido para compatibilidade
+  id_cliente: string; // Novo campo para identificar o cliente
   vencimento: string;
   lembrar: string;
 };
@@ -23,7 +24,7 @@ export async function fetchLembretes(userId: string) {
   const { data, error } = await supabase
     .from(LEMBRETES_TABLE)
     .select('*')
-    .eq('telefone', userId)
+    .eq('id_cliente', userId)
     .order('vencimento', { ascending: true });
 
   if (error) {
@@ -39,9 +40,9 @@ export async function fetchLembretes(userId: string) {
 export async function addLembrete(lembrete: Lembrete) {
   console.log('Adding lembrete:', lembrete);
   
-  if (!lembrete.telefone) {
-    console.error('Error: telefone field is required');
-    throw new Error('Telefone field is required');
+  if (!lembrete.id_cliente) {
+    console.error('Error: id_cliente field is required');
+    throw new Error('id_cliente field is required');
   }
   
   // Create a lembrete object without the ID field to let the database auto-generate it
@@ -66,9 +67,9 @@ export async function addLembrete(lembrete: Lembrete) {
 export async function updateLembrete(lembrete: Lembrete) {
   console.log('Updating lembrete:', lembrete);
   
-  if (!lembrete.telefone) {
-    console.error('Error: telefone field is required');
-    throw new Error('Telefone field is required');
+  if (!lembrete.id_cliente) {
+    console.error('Error: id_cliente field is required');
+    throw new Error('id_cliente field is required');
   }
   
   if (!lembrete.id) {
@@ -88,6 +89,7 @@ export async function updateLembrete(lembrete: Lembrete) {
       valor: lembrete.valor,
       telefone: lembrete.telefone,
       cliente: lembrete.cliente,
+      id_cliente: lembrete.id_cliente,
       vencimento: lembrete.vencimento,
       lembrar: lembrete.lembrar
     })
