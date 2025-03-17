@@ -38,7 +38,11 @@ export function ExpensesRanking({ data, transactionType }: ExpensesRankingProps)
   // Show only top categories if there are too many
   const dataToShow = sortedData.slice(0, 15); // Show at most 15 categories
 
+  // Calculate total of all displayed values
+  const totalValue = dataToShow.reduce((sum, category) => sum + category.value, 0);
+
   console.log(`Processed data for ranking (${transactionType}):`, dataToShow);
+  console.log(`Total value for ranking (${transactionType}):`, totalValue);
 
   // Determine text color based on transaction type
   const valueTextColor = transactionType === 'saída' ? 'text-expense' : 'text-income';
@@ -61,11 +65,23 @@ export function ExpensesRanking({ data, transactionType }: ExpensesRankingProps)
           </span>
         </div>
       ))}
+      
+      {/* Show the "more categories" message if needed */}
       {data.length > 15 && (
         <div className="text-center text-sm text-muted-foreground pt-2">
           Mostrando 15 de {data.length} categorias
         </div>
       )}
+      
+      {/* Total sum row with a divider */}
+      <div className="pt-2 mt-2 border-t-2 border-gray-300">
+        <div className="flex items-center justify-between p-2">
+          <span className="font-bold text-sm">Total</span>
+          <span className={`font-bold ${valueTextColor}`}>
+            {formatCurrency(totalValue)}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
