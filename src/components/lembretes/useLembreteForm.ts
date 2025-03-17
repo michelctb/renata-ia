@@ -46,6 +46,7 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
       }
 
       onSubmit(lembreteData);
+      form.reset(); // Make sure to reset the form
     } catch (error) {
       console.error('Error saving lembrete:', error);
       toast.error(editingLembrete ? 'Erro ao atualizar lembrete' : 'Erro ao adicionar lembrete');
@@ -53,7 +54,7 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
   };
 
   const handleClose = () => {
-    form.reset();
+    form.reset(); // Ensure form is completely reset before closing
     onClose();
   };
 
