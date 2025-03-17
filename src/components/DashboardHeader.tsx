@@ -22,6 +22,14 @@ const DashboardHeader = () => {
     navigate('/');
   };
 
+  // Get initials for avatar fallback
+  const getInitials = () => {
+    if (user?.name) {
+      return user.name.substring(0, 2).toUpperCase();
+    }
+    return user?.id.substring(0, 2).toUpperCase() || 'U';
+  };
+
   return (
     <div className="flex items-center justify-between py-4 px-6 border-b bg-white/50 backdrop-blur-sm sticky top-0 z-10">
       <div className="flex items-center">
@@ -36,7 +44,7 @@ const DashboardHeader = () => {
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
               <Avatar className="h-10 w-10 border-2 border-blue-100">
                 <AvatarFallback className="bg-primary text-primary-foreground">
-                  {user?.id.substring(0, 2).toUpperCase() || 'U'}
+                  {getInitials()}
                 </AvatarFallback>
               </Avatar>
             </Button>
@@ -44,6 +52,12 @@ const DashboardHeader = () => {
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
             <DropdownMenuSeparator />
+            {user?.name && (
+              <DropdownMenuItem>
+                <User className="mr-2 h-4 w-4" />
+                <span>Nome: {user.name}</span>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem>
               <User className="mr-2 h-4 w-4" />
               <span>ID: {user?.id}</span>
