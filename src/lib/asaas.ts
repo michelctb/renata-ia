@@ -45,6 +45,8 @@ export async function createCustomer(customerData: CustomerData) {
     });
     
     if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Asaas API error:", errorData);
       throw new Error(`Failed to create customer: ${response.statusText}`);
     }
     
@@ -77,6 +79,8 @@ export async function createSubscription({ customer, plan }: SubscriptionData) {
     });
     
     if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Asaas API error:", errorData);
       throw new Error(`Failed to create subscription: ${response.statusText}`);
     }
     
@@ -112,6 +116,8 @@ export async function createInstallment({ customer, plan, installmentCount }: In
     });
     
     if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Asaas API error:", errorData);
       throw new Error(`Failed to create installment: ${response.statusText}`);
     }
     
@@ -132,6 +138,8 @@ export async function getInvoiceUrl({ id, type }: InvoiceUrlData) {
     });
     
     if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Asaas API error:", errorData);
       throw new Error(`Failed to get payments: ${response.statusText}`);
     }
     
