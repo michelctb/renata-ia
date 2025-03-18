@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import DirectAccess from "./pages/DirectAccess";
+import Subscription from "./pages/Subscription";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/subscription" element={<Subscription />} />
             <Route path="/:userId" element={<DirectAccess />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

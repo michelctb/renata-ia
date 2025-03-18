@@ -176,7 +176,7 @@ export type Database = {
           data: string
           descrição: string | null
           id: number
-          id_cliente: string | null
+          id_cliente: string
           operação: string | null
           valor: number | null
         }
@@ -187,7 +187,7 @@ export type Database = {
           data: string
           descrição?: string | null
           id?: number
-          id_cliente?: string | null
+          id_cliente: string
           operação?: string | null
           valor?: number | null
         }
@@ -198,7 +198,7 @@ export type Database = {
           data?: string
           descrição?: string | null
           id?: number
-          id_cliente?: string | null
+          id_cliente?: string
           operação?: string | null
           valor?: number | null
         }
