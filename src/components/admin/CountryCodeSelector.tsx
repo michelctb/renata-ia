@@ -44,8 +44,8 @@ const CountryCodeSelector: React.FC<CountryCodeSelectorProps> = ({ name }) => {
           <Command>
             <CommandInput placeholder="Buscar país..." />
             <CommandEmpty>Nenhum país encontrado.</CommandEmpty>
-            <ScrollArea className="h-[300px]">
-              <CommandGroup>
+            <CommandGroup>
+              <ScrollArea className="h-[300px]">
                 {countries.map((country) => (
                   <CommandItem
                     key={country.code}
@@ -66,8 +66,8 @@ const CountryCodeSelector: React.FC<CountryCodeSelectorProps> = ({ name }) => {
                     {country.flag} {country.label} (+{country.code})
                   </CommandItem>
                 ))}
-              </CommandGroup>
-            </ScrollArea>
+              </ScrollArea>
+            </CommandGroup>
           </Command>
         </PopoverContent>
       </Popover>
