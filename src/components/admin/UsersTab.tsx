@@ -1,0 +1,169 @@
+
+import React, { useState } from 'react';
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Edit, Trash2, UserPlus } from 'lucide-react';
+import { toast } from 'sonner';
+import { Cliente, updateCliente, deleteCliente } from '@/lib/clientes';
+import UserManagementDialog from '@/components/admin/UserManagementDialog';
+import { useAuth } from '@/contexts/AuthContext';
+
+interface UsersTabProps {
+  clients: Cliente[];
+  isLoading: boolean;
+  loadClients: () => Promise<void>;
+}
+
+const UsersTab: React.FC<UsersTabProps> = ({ clients, isLoading, loadClients }) => {
+  const { user, isAdmin } = useAuth();
+  const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<Cliente | null>(null);
+
+  const handleEditUser = (client: Cliente) => {
+    setEditingUser({...client});
+    setIsAddUserDialogOpen(true);
+  };
+
+  const handleDeleteUser = async (clientId: string) => {
+    if (!confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.')) {
+      return;
+    }
+    
+    try {
+      await deleteCliente(clientId);
+      toast.success('Usuário excluído com sucesso');
+      loadClients(); // Recarregar a lista após exclusão
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast.error('Erro ao excluir usuário');
+    }
+  };
+
+  const handleUserSave = async (client: Cliente) => {
+    try {
+      if (editingUser) {
+        // Atualizar usuário existente
+        await updateCliente(client);
+        toast.success('Usuário atualizado com sucesso');
+      } else {
+        // Criar novo usuário com consultor associado
+        if (!isAdmin() && user?.id) {
+          client.consultor = user.id;
+        }
+        
+        // Adicionar usuário
+        await updateCliente(client);
+        toast.success('Usuário adicionado com sucesso');
+      }
+      
+      setIsAddUserDialogOpen(false);
+      setEditingUser(null);
+      loadClients(); // Recarregar a lista após adicionar/atualizar
+    } catch (error) {
+      console.error('Error saving user:', error);
+      toast.error('Erro ao salvar usuário');
+    }
+  };
+
+  return (
+    <>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <div>
+            <CardTitle>Gerenciamento de Usuários</CardTitle>
+            <CardDescription>
+              {isAdmin() 
+                ? 'Visualize e gerencie todos os usuários do sistema' 
+                : 'Visualize e gerencie os usuários vinculados a você'}
+            </CardDescription>
+          </div>
+          <Button onClick={() => {setEditingUser(null); setIsAddUserDialogOpen(true);}} className="flex items-center gap-1">
+            <UserPlus className="h-4 w-4" />
+            Novo Usuário
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex justify-center py-8">Carregando...</div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Telefone</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Plano</TableHead>
+                    <TableHead>Perfil</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {clients.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-6 text-muted-foreground">
+                        Nenhum usuário encontrado
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    clients.map((client) => (
+                      <TableRow key={client.id_cliente}>
+                        <TableCell className="font-medium">{client.nome || '-'}</TableCell>
+                        <TableCell>{client.id_cliente}</TableCell>
+                        <TableCell>{client.telefone || '-'}</TableCell>
+                        <TableCell>{client.email || '-'}</TableCell>
+                        <TableCell>{client.plano || '-'}</TableCell>
+                        <TableCell>{client.perfil || 'user'}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded-full text-xs ${client.ativo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                            {client.ativo ? 'Ativo' : 'Inativo'}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => handleEditUser(client)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => handleDeleteUser(client.id_cliente)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      
+      {/* Diálogo de Gestão de Usuários */}
+      <UserManagementDialog 
+        isOpen={isAddUserDialogOpen}
+        onClose={() => {
+          setIsAddUserDialogOpen(false);
+          setEditingUser(null);
+        }}
+        onSave={handleUserSave}
+        userToEdit={editingUser}
+        isAdminMode={isAdmin()}
+      />
+    </>
+  );
+};
+
+export default UsersTab;
