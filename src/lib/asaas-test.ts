@@ -10,7 +10,7 @@ export async function testAsaasConnection() {
   console.log("Using endpoint:", `${API_URL}/status`);
   
   try {
-    // Try to make a simple GET request to check if the API is accessible
+    // Usando uma abordagem alternativa para evitar problemas de CORS
     console.log("Preparing fetch request with headers...");
     const headers = {
       accept: "application/json",
@@ -18,11 +18,47 @@ export async function testAsaasConnection() {
     };
     console.log("Request headers:", JSON.stringify(headers));
     
-    console.log("Sending fetch request...");
+    // Utilizamos um proxy alternativo para evitar CORS
+    const proxyUrl = "https://cors-anywhere.herokuapp.com/";
+    const targetUrl = `${API_URL}/status`;
+    
+    console.log("Sending fetch request through proxy...");
+    console.log("Target URL:", targetUrl);
+    
+    // Tentativa 1: Usando o proxy CORS Anywhere
+    try {
+      const response = await fetch(`${proxyUrl}${targetUrl}`, {
+        method: "GET",
+        headers,
+      });
+      
+      console.log("Received response from API (proxy attempt)");
+      console.log("Response status:", response.status);
+      console.log("Response status text:", response.statusText);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Successfully parsed JSON response:", data);
+        return {
+          success: true,
+          data,
+          method: "proxy"
+        };
+      } else {
+        console.log("Proxy attempt failed, continuing to direct approach");
+      }
+    } catch (proxyError) {
+      console.log("Proxy attempt failed with error:", proxyError);
+      console.log("Continuing to direct approach...");
+    }
+    
+    // Tentativa 2: Abordagem direta com configuração CORS explícita
+    console.log("Trying direct approach with explicit CORS mode...");
     const response = await fetch(`${API_URL}/status`, {
       method: "GET",
       headers,
-      mode: "cors" // Explicitly set CORS mode
+      mode: "cors",
+      credentials: "omit"
     });
     
     console.log("Received response from API");
@@ -49,7 +85,8 @@ export async function testAsaasConnection() {
           success: false,
           status: response.status,
           statusText: response.statusText,
-          error: errorData
+          error: errorData,
+          method: "direct"
         };
       } catch (textError) {
         console.error("Failed to get response text:", textError);
@@ -57,7 +94,8 @@ export async function testAsaasConnection() {
           success: false,
           status: response.status,
           statusText: response.statusText,
-          error: { message: "Failed to get response text" }
+          error: { message: "Failed to get response text" },
+          method: "direct"
         };
       }
     }
@@ -68,13 +106,15 @@ export async function testAsaasConnection() {
       console.log("Successfully parsed JSON response:", data);
       return {
         success: true,
-        data
+        data,
+        method: "direct"
       };
     } catch (jsonError) {
       console.error("Failed to parse JSON response:", jsonError);
       return {
         success: false,
-        error: { message: "Failed to parse JSON response" }
+        error: { message: "Failed to parse JSON response" },
+        method: "direct"
       };
     }
   } catch (error) {
@@ -87,9 +127,17 @@ export async function testAsaasConnection() {
       cause: error.cause,
     };
     console.error("Detailed error:", errorDetails);
+    
+    // Sugestão de alternativas para o usuário
     return {
       success: false,
-      error: errorDetails
+      error: errorDetails,
+      suggestions: [
+        "O erro 'Failed to fetch' geralmente indica um problema de CORS. Tente usar uma extensão de navegador que desabilite CORS para testes.",
+        "Verifique se o token de acesso é válido e está ativo.",
+        "Confira se sua conexão com a internet está funcionando corretamente.",
+        "A API sandbox do Asaas pode estar com instabilidade temporária."
+      ]
     };
   }
 }
