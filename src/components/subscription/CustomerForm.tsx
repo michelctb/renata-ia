@@ -27,6 +27,9 @@ const formSchema = z.object({
   mobilePhone: z.string().min(10, "Celular deve ter pelo menos 10 dígitos")
 });
 
+// This ensures the customer data matches exactly what the API expects
+type CustomerFormValues = z.infer<typeof formSchema>;
+
 type CustomerFormProps = {
   plan: PlanType;
   onBack: () => void;
@@ -37,7 +40,7 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const planInfo = PLANS[plan];
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<CustomerFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
@@ -47,11 +50,11 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
     }
   });
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (data: CustomerFormValues) => {
     setIsSubmitting(true);
     
     try {
-      // 1. Create customer in Asaas
+      // 1. Create customer in Asaas - now we're passing data that matches the expected type
       const customer = await createCustomer(data);
       
       if (!customer || !customer.id) {

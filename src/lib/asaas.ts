@@ -12,7 +12,7 @@ const headers = {
 };
 
 // Types
-type CustomerData = {
+export type CustomerData = {
   name: string;
   cpfCnpj: string;
   email: string;
