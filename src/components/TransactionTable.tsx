@@ -112,11 +112,11 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
         <Table>
           <TableHeader className="bg-gray-50 dark:bg-gray-700/50 sticky top-0">
             <TableRow>
-              <TableHead className="w-[110px]">Data</TableHead>
-              <TableHead className="w-[250px]">Descrição</TableHead>
-              <TableHead>Categoria</TableHead>
-              <TableHead className="text-right">Valor</TableHead>
-              <TableHead className="w-[70px]"></TableHead>
+              <TableHead className="w-[100px] min-w-[100px]">Data</TableHead>
+              <TableHead className="w-[280px] min-w-[200px]">Descrição</TableHead>
+              <TableHead className="w-[180px] min-w-[150px]">Categoria</TableHead>
+              <TableHead className="text-right w-[120px] min-w-[120px]">Valor</TableHead>
+              <TableHead className="w-[60px] min-w-[60px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -131,26 +131,32 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
             ) : (
               sortedTransactions.map((transaction) => (
                 <TableRow key={transaction.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200">
-                  <TableCell className="font-medium">
+                  <TableCell className="font-medium whitespace-nowrap">
                     {formatTransactionDate(transaction.data)}
                   </TableCell>
-                  <TableCell>{transaction.descrição}</TableCell>
+                  <TableCell className="truncate max-w-[280px]">
+                    <div className="truncate" title={transaction.descrição}>
+                      {transaction.descrição}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center">
                       {transaction.operação?.toLowerCase() === 'entrada' 
-                        ? <ArrowUp className="mr-1 h-4 w-4 text-green-500" /> 
-                        : <ArrowDown className="mr-1 h-4 w-4 text-red-500" />}
-                      {transaction.categoria}
+                        ? <ArrowUp className="mr-1 h-4 w-4 text-green-500 flex-shrink-0" /> 
+                        : <ArrowDown className="mr-1 h-4 w-4 text-red-500 flex-shrink-0" />}
+                      <span className="truncate" title={transaction.categoria}>
+                        {transaction.categoria}
+                      </span>
                     </div>
                   </TableCell>
-                  <TableCell className={`text-right font-medium ${
+                  <TableCell className={`text-right font-medium whitespace-nowrap ${
                     transaction.operação?.toLowerCase() === 'entrada' 
                       ? 'text-green-600 dark:text-green-400' 
                       : 'text-red-600 dark:text-red-400'
                   }`}>
                     {formatCurrency(transaction.valor)}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right p-0 pr-2">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
