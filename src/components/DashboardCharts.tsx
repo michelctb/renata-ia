@@ -1,9 +1,9 @@
+
 import { useMemo, useState } from 'react';
 import { Transaction } from '@/lib/supabase';
 import { DateRange } from 'react-day-picker';
 import { format, parseISO, isWithinInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { toZonedTime } from 'date-fns-tz';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MonthlyChart } from './charts/MonthlyChart';
 import { ExpensesPieChart } from './charts/ExpensesPieChart';
@@ -26,22 +26,19 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
     
     return transactions.filter(transaction => {
       try {
-        // Parse the date with timezone consideration
+        // Parse the date directly from ISO string
         const transactionDateStr = transaction.data;
         const transactionDate = parseISO(transactionDateStr);
         
-        // Adjust the transaction date to America/Sao_Paulo timezone
-        const zonedDate = toZonedTime(transactionDate, 'America/Sao_Paulo');
-        
         if (dateRange.from && dateRange.to) {
-          return isWithinInterval(zonedDate, { 
+          return isWithinInterval(transactionDate, { 
             start: dateRange.from, 
             end: dateRange.to 
           });
         }
         
         if (dateRange.from) {
-          return zonedDate >= dateRange.from;
+          return transactionDate >= dateRange.from;
         }
         
         return true;
@@ -58,15 +55,12 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
     
     filteredTransactions.forEach(transaction => {
       try {
-        // Parse the date with timezone consideration
+        // Parse the date directly
         const dateStr = transaction.data;
         const date = parseISO(dateStr);
         
-        // Adjust the date to America/Sao_Paulo timezone
-        const zonedDate = toZonedTime(date, 'America/Sao_Paulo');
-        
-        const monthKey = format(zonedDate, 'yyyy-MM');
-        const monthLabel = format(zonedDate, 'MMM yyyy', { locale: ptBR });
+        const monthKey = format(date, 'yyyy-MM');
+        const monthLabel = format(date, 'MMM yyyy', { locale: ptBR });
         const operationType = transaction.operação?.toLowerCase() || '';
         
         if (!months.has(monthKey)) {

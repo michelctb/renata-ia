@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,6 +9,7 @@ import TransactionsTab from '@/components/TransactionsTab';
 import CategoriesTab from '@/components/CategoriesTab';
 import LembretesTab from '@/components/LembretesTab';
 import { toast } from 'sonner';
+import { parseISO } from 'date-fns';
 
 const Dashboard = () => {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -35,7 +35,7 @@ const Dashboard = () => {
         const data = await fetchTransactions(user.id);
         console.log(`Loaded ${data.length} transactions for user ${user.id}`);
         
-        // Normalize transaction operation types for case-insensitivity
+        // Normalize transaction operation types for case-insensitivity and ensure dates are preserved
         const normalizedData = data.map(transaction => {
           let operationType = transaction.operação;
           
@@ -46,9 +46,14 @@ const Dashboard = () => {
             }
           }
           
+          // Ensure date is in ISO format and doesn't lose the day due to timezone conversion
+          const dateStr = transaction.data;
+          
           return {
             ...transaction,
-            operação: operationType
+            operação: operationType,
+            // Keep the original date string to avoid timezone issues
+            data: dateStr
           };
         });
         

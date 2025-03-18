@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { DateRange } from 'react-day-picker';
 import { Transaction } from '@/lib/supabase';
@@ -63,6 +63,24 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   const sortedTransactions = [...filteredTransactions].sort((a, b) => {
     return new Date(b.data).getTime() - new Date(a.data).getTime();
   });
+
+  // Function to format the date correctly without timezone issues
+  const formatTransactionDate = (dateString: string) => {
+    try {
+      // Parse the ISO date string
+      const date = parseISO(dateString);
+      
+      // Add a day to fix timezone issue (if needed)
+      // This is needed because the date might be losing a day due to timezone conversion
+      // const fixedDate = addDays(date, 1);
+      
+      // Format the date in the desired format
+      return format(date, 'dd/MM/yyyy', { locale: ptBR });
+    } catch (error) {
+      console.error(`Error formatting date: ${dateString}`, error);
+      return dateString; // Return the original string if parsing fails
+    }
+  };
   
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -103,7 +121,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
               sortedTransactions.map((transaction) => (
                 <TableRow key={transaction.id}>
                   <TableCell className="font-medium">
-                    {format(new Date(transaction.data), 'dd/MM/yyyy', { locale: ptBR })}
+                    {formatTransactionDate(transaction.data)}
                   </TableCell>
                   <TableCell>{transaction.descrição}</TableCell>
                   <TableCell>
