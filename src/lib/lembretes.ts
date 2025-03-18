@@ -91,6 +91,8 @@ export async function updateLembrete(lembrete: Lembrete) {
       id_cliente: lembrete.id_cliente
     };
     
+    console.log('Update payload:', updateData);
+    
     const { data, error } = await supabase
       .from(LEMBRETES_TABLE)
       .update(updateData)
@@ -112,7 +114,12 @@ export async function updateLembrete(lembrete: Lembrete) {
 
 // Delete a lembrete
 export async function deleteLembrete(id: number) {
-  console.log('Deleting lembrete:', id);
+  console.log('Deleting lembrete with ID:', id);
+  
+  if (!id) {
+    console.error('Error: lembrete id is required for deletion');
+    throw new Error('Lembrete ID is required for deletion');
+  }
   
   try {
     const { error } = await supabase

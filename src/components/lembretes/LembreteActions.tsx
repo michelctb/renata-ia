@@ -31,6 +31,16 @@ export function LembreteActions({
 
   const handleEdit = () => {
     if (isProcessing) return;
+    
+    // Make sure the lembrete has an ID before proceeding
+    if (!lembrete.id) {
+      console.error('ID do lembrete não encontrado para edição');
+      toast.error('Não foi possível editar este lembrete. ID não encontrado.');
+      return;
+    }
+    
+    // Pass the complete lembrete object to the edit handler
+    console.log('Editing lembrete with ID:', lembrete.id);
     onEdit();
   };
 
@@ -39,13 +49,16 @@ export function LembreteActions({
     
     try {
       if (!lembrete.id) {
-        throw new Error('ID do lembrete não encontrado');
+        console.error('ID do lembrete não encontrado para exclusão');
+        toast.error('Não foi possível excluir este lembrete. ID não encontrado.');
+        return;
       }
       
+      console.log('Deleting lembrete with ID:', lembrete.id);
       onDelete();
     } catch (error) {
-      console.error('Error deleting lembrete:', error);
-      toast.error('Erro ao excluir o lembrete. Tente novamente.');
+      console.error('Error handling delete action:', error);
+      toast.error('Erro ao processar exclusão do lembrete. Tente novamente.');
     } finally {
       setIsDeleteDialogOpen(false);
     }

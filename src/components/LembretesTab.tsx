@@ -55,7 +55,8 @@ const LembretesTab = () => {
     }
     
     console.log('Editing lembrete:', lembrete);
-    setEditingLembrete({...lembrete}); // Use uma cópia para evitar referências
+    // Ensure we create a deep copy to avoid reference issues
+    setEditingLembrete({...lembrete});
     setIsFormOpen(true);
   };
 
@@ -91,9 +92,10 @@ const LembretesTab = () => {
     
     try {
       setIsProcessing(true);
+      console.log('Deleting lembrete with ID:', id);
       await deleteLembrete(id);
-      await loadLembretes(); // Recarrega a lista após exclusão
       toast.success('Lembrete excluído com sucesso');
+      await loadLembretes(); // Recarrega a lista após exclusão
     } catch (error) {
       console.error('Error deleting lembrete:', error);
       toast.error('Erro ao excluir o lembrete. Tente novamente.');

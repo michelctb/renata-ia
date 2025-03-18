@@ -14,9 +14,12 @@ interface UseLembreteFormProps {
 }
 
 export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: UseLembreteFormProps) {
+  console.log('useLembreteForm initialized with editingLembrete:', editingLembrete);
+  
   // Garantir que as datas sejam convertidas corretamente para objetos Date
   const getInitialVencimento = () => {
     if (editingLembrete?.vencimento) {
+      console.log('Initial vencimento from edit data:', editingLembrete.vencimento);
       // Garantir que temos um objeto Date válido
       const date = new Date(editingLembrete.vencimento);
       return isNaN(date.getTime()) ? new Date() : date;
@@ -36,6 +39,9 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
 
   const handleSubmit = async (values: LembreteFormValues) => {
     try {
+      console.log('Form submitted with values:', values);
+      console.log('Editing mode:', editingLembrete ? true : false);
+      
       // Format the date to YYYY-MM-DD
       const formattedDate = values.vencimento.toISOString().split('T')[0];
       
@@ -63,6 +69,7 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
       // Only include id for updates
       if (editingLembrete?.id) {
         lembreteData.id = editingLembrete.id;
+        console.log('Setting ID for update:', lembreteData.id);
       }
 
       console.log('Submitting lembrete data:', lembreteData);
