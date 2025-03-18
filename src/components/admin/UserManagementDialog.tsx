@@ -25,7 +25,7 @@ const userFormSchema = z.object({
   cpf: z.coerce.number().optional().nullable(),
   ativo: z.boolean().default(true),
   plano: z.string().optional().nullable(),
-  perfil: z.enum(['user', 'adm', 'consultor']).default('user'),
+  perfil: z.union([z.enum(['user', 'adm', 'consultor']), z.string()]).default('user'),
 });
 
 type UserFormValues = z.infer<typeof userFormSchema>;
