@@ -33,10 +33,18 @@ const SummaryCards = ({ transactions, dateRange }: SummaryCardsProps) => {
         const transactionDate = parseISO(transactionDateStr);
         
         if (dateRange.from && dateRange.to) {
-          return isWithinInterval(transactionDate, { 
-            start: dateRange.from, 
-            end: dateRange.to 
-          });
+          // Log para debug em casos específicos
+          if (transactionDateStr.includes('2025-03-01')) {
+            console.log('Verificando transação de 01/03:', 
+              transactionDateStr,
+              'Range:', dateRange.from.toISOString(), 'até', dateRange.to.toISOString(),
+              'Está no intervalo?', 
+              transactionDate >= dateRange.from && transactionDate <= dateRange.to
+            );
+          }
+          
+          // Verificar se a data da transação está dentro do intervalo (inclusivo)
+          return transactionDate >= dateRange.from && transactionDate <= dateRange.to;
         }
         
         if (dateRange.from) {

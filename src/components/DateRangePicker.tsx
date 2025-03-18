@@ -5,7 +5,6 @@ import { addDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import { parseISO } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -47,7 +46,7 @@ export function DateRangePicker({ dateRange, onDateRangeChange }: DateRangePicke
         const yesterday = addDays(today, -1);
         onDateRangeChange({
           from: yesterday,
-          to: yesterday,
+          to: new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59, 59, 999)
         });
         break;
       }
@@ -66,8 +65,20 @@ export function DateRangePicker({ dateRange, onDateRangeChange }: DateRangePicke
         break;
       }
       case "thisMonth": {
+        // Definir primeiro dia do mês atual à 00:00:00
         const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-        const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+        firstDay.setHours(0, 0, 0, 0);
+        
+        // Definir último dia do mês atual às 23:59:59
+        const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        lastDay.setHours(23, 59, 59, 999);
+        
+        // Log para debug
+        console.log('Filtro este mês:', 
+          `De: ${firstDay.toISOString()} (${format(firstDay, 'dd/MM/yyyy HH:mm:ss')})`, 
+          `Até: ${lastDay.toISOString()} (${format(lastDay, 'dd/MM/yyyy HH:mm:ss')})`
+        );
+        
         onDateRangeChange({
           from: firstDay,
           to: lastDay,
@@ -75,8 +86,20 @@ export function DateRangePicker({ dateRange, onDateRangeChange }: DateRangePicke
         break;
       }
       case "lastMonth": {
+        // Definir primeiro dia do mês anterior à 00:00:00
         const firstDay = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-        const lastDay = new Date(today.getFullYear(), today.getMonth(), 0, 23, 59, 59, 999);
+        firstDay.setHours(0, 0, 0, 0);
+        
+        // Definir último dia do mês anterior às 23:59:59
+        const lastDay = new Date(today.getFullYear(), today.getMonth(), 0);
+        lastDay.setHours(23, 59, 59, 999);
+        
+        // Log para debug
+        console.log('Filtro mês anterior:', 
+          `De: ${firstDay.toISOString()} (${format(firstDay, 'dd/MM/yyyy HH:mm:ss')})`, 
+          `Até: ${lastDay.toISOString()} (${format(lastDay, 'dd/MM/yyyy HH:mm:ss')})`
+        );
+        
         onDateRangeChange({
           from: firstDay,
           to: lastDay,
@@ -137,9 +160,9 @@ export function DateRangePicker({ dateRange, onDateRangeChange }: DateRangePicke
             defaultMonth={dateRange?.from}
             selected={dateRange || undefined}
             onSelect={(range) => {
-              // If selecting a day range, set the end time to end of day
+              // Se selecionando um intervalo de um único dia, defina o final para o fim do dia
               if (range?.from && range?.to && range.from.getTime() === range.to.getTime()) {
-                // Single day selection - set from to start of day and to to end of day
+                // Seleção de dia único - definir from para início do dia e to para fim do dia
                 const from = new Date(range.from);
                 from.setHours(0, 0, 0, 0);
                 
@@ -148,7 +171,7 @@ export function DateRangePicker({ dateRange, onDateRangeChange }: DateRangePicke
                 
                 onDateRangeChange({ from, to });
               } else if (range?.from && range?.to) {
-                // Multiple day selection - set first day to start of day and last day to end of day
+                // Seleção de vários dias - definir primeiro dia para início do dia e último dia para fim do dia
                 const from = new Date(range.from);
                 from.setHours(0, 0, 0, 0);
                 

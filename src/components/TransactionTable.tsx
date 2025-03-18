@@ -43,14 +43,29 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   
   // Filter transactions by date range and search term
   const filteredTransactions = transactions.filter(transaction => {
-    const transactionDate = new Date(transaction.data);
-    const matchesDateRange = dateRange 
-      ? (
-          (!dateRange.from || transactionDate >= dateRange.from) && 
-          (!dateRange.to || transactionDate <= dateRange.to)
-        )
-      : true;
+    // Filtrar por data
+    let matchesDateRange = true;
+    if (dateRange && dateRange.from) {
+      const transactionDate = parseISO(transaction.data);
       
+      if (dateRange.to) {
+        // Verificar se está dentro do intervalo (inclusivo)
+        matchesDateRange = transactionDate >= dateRange.from && transactionDate <= dateRange.to;
+        
+        // Debug para transações de 01/03
+        if (transaction.data.includes('2025-03-01')) {
+          console.log('TransactionTable - Transação 01/03:', 
+            transaction.data,
+            'Intervalo:', dateRange.from.toISOString(), 'até', dateRange.to.toISOString(),
+            'Incluída?', matchesDateRange
+          );
+        }
+      } else {
+        matchesDateRange = transactionDate >= dateRange.from;
+      }
+    }
+      
+    // Filtrar por termo de busca
     const matchesSearch = searchTerm 
       ? transaction.descrição.toLowerCase().includes(searchTerm.toLowerCase()) ||
         transaction.categoria.toLowerCase().includes(searchTerm.toLowerCase())
@@ -69,10 +84,6 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
     try {
       // Parse the ISO date string
       const date = parseISO(dateString);
-      
-      // Add a day to fix timezone issue (if needed)
-      // This is needed because the date might be losing a day due to timezone conversion
-      // const fixedDate = addDays(date, 1);
       
       // Format the date in the desired format
       return format(date, 'dd/MM/yyyy', { locale: ptBR });
