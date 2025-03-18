@@ -8,6 +8,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '
 import { cn } from '@/lib/utils';
 import { countries } from './UserFormSchema';
 import { useFormContext } from 'react-hook-form';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface CountryCodeSelectorProps {
   name: string;
@@ -39,32 +40,34 @@ const CountryCodeSelector: React.FC<CountryCodeSelectorProps> = ({ name }) => {
             </Button>
           </FormControl>
         </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0">
+        <PopoverContent className="w-[250px] p-0">
           <Command>
             <CommandInput placeholder="Buscar país..." />
             <CommandEmpty>Nenhum país encontrado.</CommandEmpty>
-            <CommandGroup>
-              {countries.map((country) => (
-                <CommandItem
-                  key={country.code}
-                  value={country.code}
-                  onSelect={() => {
-                    setValue(name, country.code);
-                    setOpen(false);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      country.code === value
-                        ? "opacity-100"
-                        : "opacity-0"
-                    )}
-                  />
-                  {country.flag} {country.label} (+{country.code})
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            <ScrollArea className="h-[300px]">
+              <CommandGroup>
+                {countries.map((country) => (
+                  <CommandItem
+                    key={country.code}
+                    value={country.label}
+                    onSelect={() => {
+                      setValue(name, country.code);
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        country.code === value
+                          ? "opacity-100"
+                          : "opacity-0"
+                      )}
+                    />
+                    {country.flag} {country.label} (+{country.code})
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </ScrollArea>
           </Command>
         </PopoverContent>
       </Popover>
