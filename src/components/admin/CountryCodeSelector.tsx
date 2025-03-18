@@ -45,7 +45,7 @@ const CountryCodeSelector: React.FC<CountryCodeSelectorProps> = ({ name }) => {
             <CommandInput placeholder="Buscar país..." />
             <CommandEmpty>Nenhum país encontrado.</CommandEmpty>
             <CommandGroup>
-              <ScrollArea className="h-[300px]">
+              <ScrollArea className="h-60">
                 {countries.map((country) => (
                   <CommandItem
                     key={country.code}
