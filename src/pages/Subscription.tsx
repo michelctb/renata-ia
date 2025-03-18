@@ -14,6 +14,7 @@ import CustomerForm from "@/components/subscription/CustomerForm";
 import PaymentConfirmation from "@/components/subscription/PaymentConfirmation";
 import { testAsaasConnection } from "@/lib/asaas-test";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Plan types
 export type PlanType = "mensal" | "semestral" | "anual" | "consultor";
@@ -50,6 +51,7 @@ const SubscriptionPage = () => {
   const [selectedPlan, setSelectedPlan] = useState<PlanType | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isTestingApi, setIsTestingApi] = useState(false);
+  const [apiTestResult, setApiTestResult] = useState<any>(null);
   
   const handlePlanSelect = (plan: PlanType) => {
     if (plan === "consultor") {
@@ -70,18 +72,25 @@ const SubscriptionPage = () => {
 
   const handleTestApiConnection = async () => {
     setIsTestingApi(true);
+    setApiTestResult(null);
+    
     try {
+      console.log("Starting Asaas API connection test...");
       const result = await testAsaasConnection();
+      console.log("API test completed with result:", result);
+      
+      setApiTestResult(result);
+      
       if (result.success) {
         toast.success("API do Asaas está funcionando corretamente!");
-        console.log("API connection test successful:", result);
       } else {
-        toast.error("Erro ao conectar com a API do Asaas");
-        console.error("API connection test failed:", result);
+        const errorMessage = result.error?.message || "Erro desconhecido";
+        toast.error(`Erro ao conectar com a API do Asaas: ${errorMessage}`);
       }
     } catch (error) {
+      console.error("Exception during API test:", error);
+      setApiTestResult({ success: false, error });
       toast.error("Erro ao testar conexão com a API");
-      console.error("Error testing API connection:", error);
     } finally {
       setIsTestingApi(false);
     }
@@ -96,14 +105,36 @@ const SubscriptionPage = () => {
             Escolha o plano ideal para suas necessidades e comece a utilizar nossa plataforma financeira inteligente.
           </p>
           {!selectedPlan && !showConfirmation && (
-            <Button 
-              variant="outline" 
-              onClick={handleTestApiConnection}
-              disabled={isTestingApi}
-              className="mt-4"
-            >
-              {isTestingApi ? "Testando..." : "Testar conexão com API"}
-            </Button>
+            <>
+              <Button 
+                variant="outline" 
+                onClick={handleTestApiConnection}
+                disabled={isTestingApi}
+                className="mt-4"
+              >
+                {isTestingApi ? "Testando..." : "Testar conexão com API"}
+              </Button>
+              
+              {apiTestResult && (
+                <div className="mt-4 max-w-lg mx-auto">
+                  <Alert variant={apiTestResult.success ? "default" : "destructive"}>
+                    <AlertDescription>
+                      {apiTestResult.success 
+                        ? "Conexão com a API do Asaas estabelecida com sucesso!" 
+                        : `Erro na conexão: ${apiTestResult.error?.message || apiTestResult.statusText || "Erro desconhecido"}`
+                      }
+                    </AlertDescription>
+                  </Alert>
+                  
+                  {!apiTestResult.success && (
+                    <div className="mt-2 text-left p-4 bg-muted rounded text-xs overflow-auto max-h-40">
+                      <p className="font-semibold">Detalhes do erro:</p>
+                      <pre>{JSON.stringify(apiTestResult, null, 2)}</pre>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
 
