@@ -60,69 +60,104 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
     setError(null);
     
     try {
-      console.log("Creating CustomerData object from form data");
-      // Ensure all required fields exist by explicitly creating a CustomerData object
-      const customerData: CustomerData = {
-        name: formData.name,
-        cpfCnpj: formData.cpfCnpj,
-        email: formData.email,
-        mobilePhone: formData.mobilePhone
-      };
-      
-      console.log("Calling createCustomer with data:", customerData);
-      // 1. Create customer in Asaas with properly typed data
-      const customer = await createCustomer(customerData);
-      
-      if (!customer || !customer.id) {
-        console.error("Customer creation failed or returned invalid data:", customer);
-        throw new Error("Falha ao criar cliente no Asaas");
-      }
-      
-      console.log("Customer created successfully with ID:", customer.id);
-      
-      // 2. Create payment according to plan
-      let paymentId: string;
-      
-      if (plan === "mensal") {
-        console.log("Creating monthly subscription");
-        const subscription = await createSubscription({
-          customer: customer.id,
-          plan
+      // If we're on the 'consultor' plan, we should use the original flow
+      if (plan === "consultor") {
+        console.log("Creating CustomerData object from form data");
+        // Ensure all required fields exist by explicitly creating a CustomerData object
+        const customerData: CustomerData = {
+          name: formData.name,
+          cpfCnpj: formData.cpfCnpj,
+          email: formData.email,
+          mobilePhone: formData.mobilePhone
+        };
+        
+        console.log("Calling createCustomer with data:", customerData);
+        // 1. Create customer in Asaas with properly typed data
+        const customer = await createCustomer(customerData);
+        
+        if (!customer || !customer.id) {
+          console.error("Customer creation failed or returned invalid data:", customer);
+          throw new Error("Falha ao criar cliente no Asaas");
+        }
+        
+        console.log("Customer created successfully with ID:", customer.id);
+        
+        // 2. Create payment according to plan
+        let paymentId: string;
+        
+        if (plan === "mensal") {
+          console.log("Creating monthly subscription");
+          const subscription = await createSubscription({
+            customer: customer.id,
+            plan
+          });
+          console.log("Subscription created:", subscription);
+          paymentId = subscription.id;
+        } else {
+          console.log(`Creating ${plan} installment plan`);
+          const installmentCount = plan === "semestral" ? 6 : 12;
+          const installment = await createInstallment({
+            customer: customer.id,
+            plan,
+            installmentCount
+          });
+          console.log("Installment created:", installment);
+          paymentId = installment.id;
+        }
+        
+        // 3. Get invoice URL
+        console.log("Getting invoice URL for payment ID:", paymentId);
+        const invoiceUrl = await getInvoiceUrl({
+          id: paymentId,
+          type: plan === "mensal" ? "subscription" : "installment"
         });
-        console.log("Subscription created:", subscription);
-        paymentId = subscription.id;
+        
+        // 4. Redirect to payment page
+        if (invoiceUrl) {
+          console.log("Redirecting to invoice URL:", invoiceUrl);
+          window.location.href = invoiceUrl;
+          onComplete(); // This will run only if the redirection is blocked
+        } else {
+          console.error("No invoice URL returned");
+          throw new Error("Não foi possível obter o link de pagamento");
+        }
       } else {
-        console.log(`Creating ${plan} installment plan`);
-        const installmentCount = plan === "semestral" ? 6 : 12;
-        const installment = await createInstallment({
-          customer: customer.id,
-          plan,
-          installmentCount
+        // For mensal, semestral, and anual plans, send to webhook URL
+        const webhookUrl = "http://localhost:5678/webhook-test/renata-ia";
+        
+        const webhookData = {
+          plano: plan,
+          nome: formData.name,
+          cpf: formData.cpfCnpj,
+          email: formData.email,
+          celular: formData.mobilePhone
+        };
+        
+        console.log("Sending data to webhook:", webhookData);
+        
+        // Send data to webhook
+        const response = await fetch(webhookUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(webhookData),
         });
-        console.log("Installment created:", installment);
-        paymentId = installment.id;
-      }
-      
-      // 3. Get invoice URL
-      console.log("Getting invoice URL for payment ID:", paymentId);
-      const invoiceUrl = await getInvoiceUrl({
-        id: paymentId,
-        type: plan === "mensal" ? "subscription" : "installment"
-      });
-      
-      // 4. Redirect to payment page
-      if (invoiceUrl) {
-        console.log("Redirecting to invoice URL:", invoiceUrl);
-        window.location.href = invoiceUrl;
-        onComplete(); // This will run only if the redirection is blocked
-      } else {
-        console.error("No invoice URL returned");
-        throw new Error("Não foi possível obter o link de pagamento");
+        
+        if (!response.ok) {
+          throw new Error(`Erro ao enviar dados: ${response.statusText}`);
+        }
+        
+        console.log("Webhook response:", await response.text());
+        
+        toast.success("Informações enviadas com sucesso!");
+        onComplete();
       }
     } catch (error) {
-      console.error("Erro no processo de pagamento:", error);
-      setError("Ocorreu um erro ao processar o pagamento. Por favor, tente novamente.");
-      toast.error("Ocorreu um erro ao processar o pagamento. Por favor, tente novamente.");
+      console.error("Erro no processo:", error);
+      setError("Ocorreu um erro ao processar a solicitação. Por favor, tente novamente.");
+      toast.error("Ocorreu um erro ao processar a solicitação. Por favor, tente novamente.");
+    } finally {
       setIsSubmitting(false);
     }
   };
