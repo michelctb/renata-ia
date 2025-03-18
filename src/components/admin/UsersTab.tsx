@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Edit, Trash2, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
-import { Cliente, updateCliente, deleteCliente } from '@/lib/clientes';
+import { Cliente, updateCliente, deleteCliente, addCliente } from '@/lib/clientes';
 import UserManagementDialog from '@/components/admin/UserManagementDialog';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -47,13 +47,18 @@ const UsersTab: React.FC<UsersTabProps> = ({ clients, isLoading, loadClients }) 
         await updateCliente(client);
         toast.success('Usuário atualizado com sucesso');
       } else {
-        // Criar novo usuário com consultor associado
-        if (!isAdmin() && user?.id) {
-          client.consultor = user.id;
-        }
+        // Gerar ID para novo usuário
+        const newClientId = crypto.randomUUID().substring(0, 8);
+        
+        // Criar novo usuário com ID gerado e consultor associado (se aplicável)
+        const newClient = {
+          ...client,
+          id_cliente: newClientId,
+          consultor: !isAdmin() && user?.id ? user.id : null
+        };
         
         // Adicionar usuário
-        await updateCliente(client);
+        await addCliente(newClient);
         toast.success('Usuário adicionado com sucesso');
       }
       
