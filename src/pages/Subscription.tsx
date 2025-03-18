@@ -60,7 +60,7 @@ const SubscriptionPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted p-4 sm:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted p-4 sm:p-8 transition-colors duration-300">
       <div className="max-w-6xl mx-auto">
         <PageHeader 
           title="Planos de Assinatura Renata.ia" 
@@ -68,9 +68,10 @@ const SubscriptionPage = () => {
         />
         
         {!selectedPlan && !showConfirmation && (
-          <>
+          <div className="space-y-10">
+            <PlanGrid onPlanSelect={handlePlanSelect} />
             <ApiTestSection />
-          </>
+          </div>
         )}
 
         {showConfirmation ? (
@@ -81,9 +82,7 @@ const SubscriptionPage = () => {
             onBack={() => setSelectedPlan(null)} 
             onComplete={handlePaymentComplete}
           />
-        ) : (
-          <PlanGrid onPlanSelect={handlePlanSelect} />
-        )}
+        ) : null}
       </div>
     </div>
   );
