@@ -53,10 +53,14 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
   });
 
   const onSubmit = async (formData: CustomerFormValues) => {
+    console.log("Form submitted with data:", formData);
+    console.log("Selected plan:", plan);
+    
     setIsSubmitting(true);
     setError(null);
     
     try {
+      console.log("Creating CustomerData object from form data");
       // Ensure all required fields exist by explicitly creating a CustomerData object
       const customerData: CustomerData = {
         name: formData.name,
@@ -65,33 +69,42 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
         mobilePhone: formData.mobilePhone
       };
       
+      console.log("Calling createCustomer with data:", customerData);
       // 1. Create customer in Asaas with properly typed data
       const customer = await createCustomer(customerData);
       
       if (!customer || !customer.id) {
+        console.error("Customer creation failed or returned invalid data:", customer);
         throw new Error("Falha ao criar cliente no Asaas");
       }
+      
+      console.log("Customer created successfully with ID:", customer.id);
       
       // 2. Create payment according to plan
       let paymentId: string;
       
       if (plan === "mensal") {
+        console.log("Creating monthly subscription");
         const subscription = await createSubscription({
           customer: customer.id,
           plan
         });
+        console.log("Subscription created:", subscription);
         paymentId = subscription.id;
       } else {
+        console.log(`Creating ${plan} installment plan`);
         const installmentCount = plan === "semestral" ? 6 : 12;
         const installment = await createInstallment({
           customer: customer.id,
           plan,
           installmentCount
         });
+        console.log("Installment created:", installment);
         paymentId = installment.id;
       }
       
       // 3. Get invoice URL
+      console.log("Getting invoice URL for payment ID:", paymentId);
       const invoiceUrl = await getInvoiceUrl({
         id: paymentId,
         type: plan === "mensal" ? "subscription" : "installment"
@@ -99,9 +112,11 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
       
       // 4. Redirect to payment page
       if (invoiceUrl) {
+        console.log("Redirecting to invoice URL:", invoiceUrl);
         window.location.href = invoiceUrl;
         onComplete(); // This will run only if the redirection is blocked
       } else {
+        console.error("No invoice URL returned");
         throw new Error("Não foi possível obter o link de pagamento");
       }
     } catch (error) {

@@ -37,20 +37,30 @@ type InvoiceUrlData = {
 
 // Create customer in Asaas
 export async function createCustomer(customerData: CustomerData) {
+  console.log("Creating customer with data:", JSON.stringify(customerData));
+  console.log("API URL:", `${API_URL}/customers`);
+  console.log("Headers:", JSON.stringify(headers));
+  
   try {
+    console.log("Sending request to Asaas API...");
     const response = await fetch(`${API_URL}/customers`, {
       method: "POST",
       headers,
       body: JSON.stringify(customerData)
     });
     
+    console.log("Response status:", response.status);
+    console.log("Response status text:", response.statusText);
+    
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json().catch(() => ({ message: "Failed to parse error response" }));
       console.error("Asaas API error:", errorData);
-      throw new Error(`Failed to create customer: ${response.statusText}`);
+      throw new Error(`Failed to create customer: ${response.statusText}. Details: ${JSON.stringify(errorData)}`);
     }
     
-    return await response.json();
+    const responseData = await response.json();
+    console.log("Customer created successfully:", responseData);
+    return responseData;
   } catch (error) {
     console.error("Error creating customer:", error);
     throw error;
@@ -59,6 +69,8 @@ export async function createCustomer(customerData: CustomerData) {
 
 // Create subscription for monthly plan
 export async function createSubscription({ customer, plan }: SubscriptionData) {
+  console.log("Creating subscription with customer ID:", customer);
+  
   try {
     const nextDueDate = new Date();
     nextDueDate.setDate(nextDueDate.getDate() + 1); // Start tomorrow
@@ -72,19 +84,25 @@ export async function createSubscription({ customer, plan }: SubscriptionData) {
       description: "Renata.ia - Plano Mensal"
     };
     
+    console.log("Subscription data:", JSON.stringify(subscriptionData));
+    
     const response = await fetch(`${API_URL}/subscriptions`, {
       method: "POST",
       headers,
       body: JSON.stringify(subscriptionData)
     });
     
+    console.log("Subscription response status:", response.status);
+    
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json().catch(() => ({ message: "Failed to parse error response" }));
       console.error("Asaas API error:", errorData);
-      throw new Error(`Failed to create subscription: ${response.statusText}`);
+      throw new Error(`Failed to create subscription: ${response.statusText}. Details: ${JSON.stringify(errorData)}`);
     }
     
-    return await response.json();
+    const responseData = await response.json();
+    console.log("Subscription created successfully:", responseData);
+    return responseData;
   } catch (error) {
     console.error("Error creating subscription:", error);
     throw error;
@@ -93,6 +111,8 @@ export async function createSubscription({ customer, plan }: SubscriptionData) {
 
 // Create installment for semestral or annual plan
 export async function createInstallment({ customer, plan, installmentCount }: InstallmentData) {
+  console.log("Creating installment with customer ID:", customer);
+  
   try {
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 1); // Start tomorrow
@@ -109,19 +129,25 @@ export async function createInstallment({ customer, plan, installmentCount }: In
       description
     };
     
+    console.log("Installment data:", JSON.stringify(installmentData));
+    
     const response = await fetch(`${API_URL}/installments`, {
       method: "POST",
       headers,
       body: JSON.stringify(installmentData)
     });
     
+    console.log("Installment response status:", response.status);
+    
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json().catch(() => ({ message: "Failed to parse error response" }));
       console.error("Asaas API error:", errorData);
-      throw new Error(`Failed to create installment: ${response.statusText}`);
+      throw new Error(`Failed to create installment: ${response.statusText}. Details: ${JSON.stringify(errorData)}`);
     }
     
-    return await response.json();
+    const responseData = await response.json();
+    console.log("Installment created successfully:", responseData);
+    return responseData;
   } catch (error) {
     console.error("Error creating installment:", error);
     throw error;
@@ -130,22 +156,30 @@ export async function createInstallment({ customer, plan, installmentCount }: In
 
 // Get invoice URL
 export async function getInvoiceUrl({ id, type }: InvoiceUrlData) {
+  console.log(`Getting invoice URL for ${type} with ID:`, id);
+  
   try {
     const queryParam = type === "subscription" ? `subscription=${id}` : `installment=${id}`;
+    console.log("Query parameter:", queryParam);
+    
     const response = await fetch(`${API_URL}/payments?${queryParam}`, {
       method: "GET",
       headers
     });
     
+    console.log("Invoice URL response status:", response.status);
+    
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json().catch(() => ({ message: "Failed to parse error response" }));
       console.error("Asaas API error:", errorData);
-      throw new Error(`Failed to get payments: ${response.statusText}`);
+      throw new Error(`Failed to get payments: ${response.statusText}. Details: ${JSON.stringify(errorData)}`);
     }
     
     const data = await response.json();
+    console.log("Payments data:", data);
     
     if (data.data && data.data.length > 0 && data.data[0].invoiceUrl) {
+      console.log("Invoice URL found:", data.data[0].invoiceUrl);
       return data.data[0].invoiceUrl;
     } else {
       console.error("No invoice URL found in response:", data);

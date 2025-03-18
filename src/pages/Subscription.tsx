@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { CalendarIcon, CreditCardIcon, RocketIcon, UsersIcon } from "lucide-react";
 import CustomerForm from "@/components/subscription/CustomerForm";
 import PaymentConfirmation from "@/components/subscription/PaymentConfirmation";
+import { testAsaasConnection } from "@/lib/asaas-test";
+import { toast } from "sonner";
 
 // Plan types
 export type PlanType = "mensal" | "semestral" | "anual" | "consultor";
@@ -47,6 +49,7 @@ export const PLANS = {
 const SubscriptionPage = () => {
   const [selectedPlan, setSelectedPlan] = useState<PlanType | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isTestingApi, setIsTestingApi] = useState(false);
   
   const handlePlanSelect = (plan: PlanType) => {
     if (plan === "consultor") {
@@ -65,6 +68,25 @@ const SubscriptionPage = () => {
     setShowConfirmation(false);
   };
 
+  const handleTestApiConnection = async () => {
+    setIsTestingApi(true);
+    try {
+      const result = await testAsaasConnection();
+      if (result.success) {
+        toast.success("API do Asaas está funcionando corretamente!");
+        console.log("API connection test successful:", result);
+      } else {
+        toast.error("Erro ao conectar com a API do Asaas");
+        console.error("API connection test failed:", result);
+      }
+    } catch (error) {
+      toast.error("Erro ao testar conexão com a API");
+      console.error("Error testing API connection:", error);
+    } finally {
+      setIsTestingApi(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted p-4 sm:p-8">
       <div className="max-w-6xl mx-auto">
@@ -73,6 +95,16 @@ const SubscriptionPage = () => {
           <p className="text-muted-foreground max-w-3xl mx-auto">
             Escolha o plano ideal para suas necessidades e comece a utilizar nossa plataforma financeira inteligente.
           </p>
+          {!selectedPlan && !showConfirmation && (
+            <Button 
+              variant="outline" 
+              onClick={handleTestApiConnection}
+              disabled={isTestingApi}
+              className="mt-4"
+            >
+              {isTestingApi ? "Testando..." : "Testar conexão com API"}
+            </Button>
+          )}
         </div>
 
         {showConfirmation ? (
