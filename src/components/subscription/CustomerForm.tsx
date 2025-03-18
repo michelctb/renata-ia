@@ -1,35 +1,16 @@
 
 import { useState } from "react";
-import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlanType, PLANS } from "@/pages/Subscription";
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { ArrowLeftIcon, Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
-import { createCustomer, createSubscription, createInstallment, getInvoiceUrl, CustomerData } from "@/lib/asaas";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
-// Form schema
-const formSchema = z.object({
-  name: z.string().min(3, "O nome deve ter pelo menos 3 caracteres"),
-  cpfCnpj: z.string().min(11, "CPF deve ter 11 dígitos").max(14, "CNPJ deve ter 14 dígitos"),
-  email: z.string().email("E-mail inválido"),
-  mobilePhone: z.string().min(10, "Celular deve ter pelo menos 10 dígitos")
-});
-
-// This ensures the customer data matches exactly what the API expects
-type CustomerFormValues = z.infer<typeof formSchema>;
+import CustomerFormFields from "./CustomerFormFields";
+import { customerFormSchema, CustomerFormValues } from "./customerFormSchema";
+import { processConsultorPayment, submitToWebhook } from "./subscriptionService";
 
 type CustomerFormProps = {
   plan: PlanType;
@@ -43,7 +24,7 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
   const planInfo = PLANS[plan];
 
   const form = useForm<CustomerFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(customerFormSchema),
     defaultValues: {
       name: "",
       cpfCnpj: "",
@@ -62,97 +43,17 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
     try {
       // If we're on the 'consultor' plan, we should use the original flow
       if (plan === "consultor") {
-        console.log("Creating CustomerData object from form data");
-        // Ensure all required fields exist by explicitly creating a CustomerData object
-        const customerData: CustomerData = {
-          name: formData.name,
-          cpfCnpj: formData.cpfCnpj,
-          email: formData.email,
-          mobilePhone: formData.mobilePhone
-        };
-        
-        console.log("Calling createCustomer with data:", customerData);
-        // 1. Create customer in Asaas with properly typed data
-        const customer = await createCustomer(customerData);
-        
-        if (!customer || !customer.id) {
-          console.error("Customer creation failed or returned invalid data:", customer);
-          throw new Error("Falha ao criar cliente no Asaas");
-        }
-        
-        console.log("Customer created successfully with ID:", customer.id);
-        
-        // 2. Create payment according to plan
-        let paymentId: string;
-        
-        // These comparisons were causing type errors because TypeScript knows that
-        // plan can only be "consultor" at this point, so comparing with "mensal" will always be false
-        const paymentPlan = plan; // Use a new variable to avoid TypeScript narrowing
-        
-        if (paymentPlan === "mensal") {
-          console.log("Creating monthly subscription");
-          const subscription = await createSubscription({
-            customer: customer.id,
-            plan
-          });
-          console.log("Subscription created:", subscription);
-          paymentId = subscription.id;
-        } else {
-          console.log(`Creating ${plan} installment plan`);
-          const installmentCount = paymentPlan === "semestral" ? 6 : 12;
-          const installment = await createInstallment({
-            customer: customer.id,
-            plan,
-            installmentCount
-          });
-          console.log("Installment created:", installment);
-          paymentId = installment.id;
-        }
-        
-        // 3. Get invoice URL
-        console.log("Getting invoice URL for payment ID:", paymentId);
-        const invoiceUrl = await getInvoiceUrl({
-          id: paymentId,
-          type: paymentPlan === "mensal" ? "subscription" : "installment"
-        });
+        const invoiceUrl = await processConsultorPayment(formData, plan);
         
         // 4. Redirect to payment page
-        if (invoiceUrl) {
-          console.log("Redirecting to invoice URL:", invoiceUrl);
-          window.location.href = invoiceUrl;
-          onComplete(); // This will run only if the redirection is blocked
-        } else {
-          console.error("No invoice URL returned");
-          throw new Error("Não foi possível obter o link de pagamento");
-        }
+        console.log("Redirecting to invoice URL:", invoiceUrl);
+        window.location.href = invoiceUrl;
+        onComplete(); // This will run only if the redirection is blocked
       } else {
         // For mensal, semestral, and anual plans, send to webhook URL
-        const webhookUrl = "http://localhost:5678/webhook-test/renata-ia";
+        const response = await submitToWebhook(formData, plan);
         
-        const webhookData = {
-          plano: plan,
-          nome: formData.name,
-          cpf: formData.cpfCnpj,
-          email: formData.email,
-          celular: formData.mobilePhone
-        };
-        
-        console.log("Sending data to webhook:", webhookData);
-        
-        // Send data to webhook
-        const response = await fetch(webhookUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(webhookData),
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Erro ao enviar dados: ${response.statusText}`);
-        }
-        
-        console.log("Webhook response:", await response.text());
+        console.log("Webhook response:", response);
         
         toast.success("Informações enviadas com sucesso!");
         onComplete();
@@ -202,67 +103,7 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nome completo</FormLabel>
-                <FormControl>
-                  <Input placeholder="Digite seu nome completo" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="cpfCnpj"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>CPF/CNPJ</FormLabel>
-                <FormControl>
-                  <Input placeholder="Apenas números" {...field} />
-                </FormControl>
-                <FormDescription>
-                  CPF (11 dígitos) ou CNPJ (14 dígitos) sem pontuação
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>E-mail</FormLabel>
-                <FormControl>
-                  <Input type="email" placeholder="seu@email.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="mobilePhone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Celular</FormLabel>
-                <FormControl>
-                  <Input placeholder="DDD + número" {...field} />
-                </FormControl>
-                <FormDescription>
-                  Exemplo: 11999887766 (apenas números)
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <CustomerFormFields form={form} />
           
           <Button 
             type="submit" 
