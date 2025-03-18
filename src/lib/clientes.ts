@@ -14,7 +14,7 @@ export type Cliente = {
   ativo?: boolean;
   plano?: string;
   lembrete?: string;
-  perfil?: 'user' | 'adm' | 'consultor';
+  perfil?: 'user' | 'adm' | 'consultor' | string;
   consultor?: string;
   created_at?: string;
 };

@@ -10,7 +10,7 @@ export type User = {
   email?: string;
   name?: string;
   isActive?: boolean;
-  perfil?: 'user' | 'adm' | 'consultor';
+  perfil?: 'user' | 'adm' | 'consultor' | string;
   consultor?: string;
   plano?: string;
 };
