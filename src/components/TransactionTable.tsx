@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { formatCurrency } from '@/lib/utils';
-import { ArrowUp, ArrowDown, Calendar, MoreHorizontal, Pencil, Trash } from 'lucide-react';
+import { ArrowUp, ArrowDown, Search, MoreHorizontal, Pencil, Trash, Lock } from 'lucide-react';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 
@@ -94,23 +94,23 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   };
   
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
-      <div className="p-4 flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Histórico de Transações</h3>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-300 animate-fade-in hover:shadow-lg">
+      <div className="p-4 flex items-center justify-between border-b dark:border-gray-700">
+        <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">Histórico de Transações</h3>
         <div className="relative">
           <Input
-            className="w-56 pl-8"
+            className="w-56 pl-8 bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 focus:ring-blue-500 dark:focus:ring-blue-400"
             placeholder="Buscar transação..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Calendar className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
         </div>
       </div>
       
       <ScrollArea className="h-[400px]">
         <Table>
-          <TableHeader className="bg-muted/50">
+          <TableHeader className="bg-gray-50 dark:bg-gray-700/50 sticky top-0">
             <TableRow>
               <TableHead className="w-[110px]">Data</TableHead>
               <TableHead className="w-[250px]">Descrição</TableHead>
@@ -122,7 +122,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
           <TableBody>
             {sortedTransactions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                   {searchTerm || dateRange?.from 
                     ? "Nenhuma transação encontrada para os filtros selecionados." 
                     : "Nenhuma transação registrada ainda."}
@@ -130,7 +130,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
               </TableRow>
             ) : (
               sortedTransactions.map((transaction) => (
-                <TableRow key={transaction.id}>
+                <TableRow key={transaction.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200">
                   <TableCell className="font-medium">
                     {formatTransactionDate(transaction.data)}
                   </TableCell>
@@ -145,28 +145,28 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                   </TableCell>
                   <TableCell className={`text-right font-medium ${
                     transaction.operação?.toLowerCase() === 'entrada' 
-                      ? 'text-green-600' 
-                      : 'text-red-600'
+                      ? 'text-green-600 dark:text-green-400' 
+                      : 'text-red-600 dark:text-red-400'
                   }`}>
                     {formatCurrency(transaction.valor)}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
+                      <DropdownMenuContent align="end" className="w-[160px]">
                         {isUserActive ? (
                           <>
-                            <DropdownMenuItem onClick={() => onEdit(transaction)}>
+                            <DropdownMenuItem onClick={() => onEdit(transaction)} className="cursor-pointer">
                               <Pencil className="mr-2 h-4 w-4" />
                               Editar
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => onDelete(transaction.id as number)}
-                              className="text-red-600 focus:text-red-600"
+                              className="text-red-600 focus:text-red-600 cursor-pointer"
                             >
                               <Trash className="mr-2 h-4 w-4" />
                               Excluir
@@ -174,7 +174,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                           </>
                         ) : (
                           <DropdownMenuItem disabled className="text-muted-foreground">
-                            <span className="mr-2">🔒</span>
+                            <Lock className="mr-2 h-4 w-4" />
                             Acesso somente leitura
                           </DropdownMenuItem>
                         )}

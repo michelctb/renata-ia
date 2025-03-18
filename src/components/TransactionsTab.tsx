@@ -94,7 +94,7 @@ const TransactionsTab = ({
   };
 
   return (
-    <>
+    <div className="space-y-6">
       <TransactionsHeader
         dateRange={dateRange}
         setDateRange={setDateRange}
@@ -137,7 +137,7 @@ const TransactionsTab = ({
         onOpenChange={setDeleteConfirmOpen}
         onConfirm={confirmDelete}
       />
-    </>
+    </div>
   );
 };
 

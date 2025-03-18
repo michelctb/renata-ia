@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -76,25 +77,25 @@ const Dashboard = () => {
 
   if (isLoading && !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
         <div className="animate-pulse-slow text-lg">Carregando...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
       <DashboardHeader />
       
       <div className="container px-4 py-8 max-w-7xl">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6">
-            <TabsTrigger value="transactions">Transações</TabsTrigger>
-            <TabsTrigger value="categories">Categorias</TabsTrigger>
-            <TabsTrigger value="lembretes">Lembretes</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="animate-fade-in">
+          <TabsList className="mb-6 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm shadow-sm">
+            <TabsTrigger value="transactions" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Transações</TabsTrigger>
+            <TabsTrigger value="categories" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Categorias</TabsTrigger>
+            <TabsTrigger value="lembretes" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Lembretes</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="transactions">
+          <TabsContent value="transactions" className="animate-fade-up">
             <TransactionsTab 
               transactions={transactions}
               setTransactions={setTransactions}
@@ -103,11 +104,11 @@ const Dashboard = () => {
             />
           </TabsContent>
           
-          <TabsContent value="categories">
+          <TabsContent value="categories" className="animate-fade-up">
             <CategoriesTab />
           </TabsContent>
           
-          <TabsContent value="lembretes">
+          <TabsContent value="lembretes" className="animate-fade-up">
             <LembretesTab />
           </TabsContent>
         </Tabs>

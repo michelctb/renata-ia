@@ -83,7 +83,7 @@ const SummaryCards = ({ transactions, dateRange }: SummaryCardsProps) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-      <Card className="border-none shadow-md animate-fade-up" style={{ animationDelay: '0.1s' }}>
+      <Card className="border-none shadow-md hover:shadow-lg transition-all duration-300 animate-fade-up bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm" style={{ animationDelay: '0.1s' }}>
         <CardHeader className="pb-2 pt-4">
           <CardDescription>Entradas</CardDescription>
           <CardTitle className="text-2xl flex items-center text-income">
@@ -96,7 +96,7 @@ const SummaryCards = ({ transactions, dateRange }: SummaryCardsProps) => {
         </CardContent>
       </Card>
       
-      <Card className="border-none shadow-md animate-fade-up" style={{ animationDelay: '0.2s' }}>
+      <Card className="border-none shadow-md hover:shadow-lg transition-all duration-300 animate-fade-up bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm" style={{ animationDelay: '0.2s' }}>
         <CardHeader className="pb-2 pt-4">
           <CardDescription>Saídas</CardDescription>
           <CardTitle className="text-2xl flex items-center text-expense">
@@ -109,7 +109,7 @@ const SummaryCards = ({ transactions, dateRange }: SummaryCardsProps) => {
         </CardContent>
       </Card>
       
-      <Card className="border-none shadow-md animate-fade-up" style={{ animationDelay: '0.3s' }}>
+      <Card className="border-none shadow-md hover:shadow-lg transition-all duration-300 animate-fade-up bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm" style={{ animationDelay: '0.3s' }}>
         <CardHeader className="pb-2 pt-4">
           <CardDescription>Saldo</CardDescription>
           <CardTitle className={`text-2xl flex items-center ${summary.balance >= 0 ? 'text-income' : 'text-expense'}`}>

@@ -1,8 +1,9 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Shield } from 'lucide-react';
+import { LogOut, User, Shield, SunIcon, MoonIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from 'next-themes';
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +16,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const DashboardHeader = () => {
   const { user, logout, isAdmin, isConsultor } = useAuth();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   
   const handleLogout = () => {
@@ -35,20 +37,35 @@ const DashboardHeader = () => {
   };
 
   return (
-    <div className="flex items-center justify-between py-4 px-6 border-b bg-white/50 backdrop-blur-sm sticky top-0 z-10">
+    <div className="flex items-center justify-between py-4 px-6 border-b dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm sticky top-0 z-10">
       <div className="flex items-center">
-        <div className="text-2xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+        <div className="text-2xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
           Renata.ia
         </div>
       </div>
       
       <div className="flex items-center gap-4">
+        {/* Theme toggle */}
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="rounded-full"
+        >
+          {theme === 'dark' ? (
+            <SunIcon className="h-5 w-5 text-yellow-400" />
+          ) : (
+            <MoonIcon className="h-5 w-5 text-blue-600" />
+          )}
+          <span className="sr-only">Toggle theme</span>
+        </Button>
+        
         {/* Mostrar botão de Admin apenas para adm e consultor */}
         {(isAdmin() || isConsultor()) && (
           <Button 
             variant="outline" 
             onClick={handleAdminClick}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 shadow-sm hover:shadow"
           >
             <Shield className="h-4 w-4" />
             <span>Administração</span>
@@ -58,7 +75,7 @@ const DashboardHeader = () => {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-              <Avatar className="h-10 w-10 border-2 border-blue-100">
+              <Avatar className="h-10 w-10 border-2 border-blue-100 dark:border-blue-900 transition-all duration-300 hover:border-blue-300 dark:hover:border-blue-700">
                 <AvatarFallback className="bg-primary text-primary-foreground">
                   {getInitials()}
                 </AvatarFallback>
