@@ -9,7 +9,10 @@ export type User = {
   id: string;
   email?: string;
   name?: string;
-  isActive?: boolean; // New field to track if user is active
+  isActive?: boolean;
+  perfil?: 'user' | 'adm' | 'consultor';
+  consultor?: string;
+  plano?: string;
 };
 
 // Context type
@@ -18,7 +21,9 @@ type AuthContextType = {
   isLoading: boolean;
   login: (userId: string) => void;
   logout: () => void;
-  isUserActive: () => boolean; // New helper function
+  isUserActive: () => boolean;
+  isAdmin: () => boolean;
+  isConsultor: () => boolean;
 };
 
 // Create context
@@ -42,11 +47,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           fetchClienteById(parsedUser.id)
             .then(clienteData => {
               if (clienteData) {
-                // Update user with name and active status from Clientes table
+                // Update user with latest data from Clientes table
                 const updatedUser = {
                   ...parsedUser,
                   name: clienteData.nome,
-                  isActive: clienteData.ativo
+                  isActive: clienteData.ativo,
+                  perfil: clienteData.perfil,
+                  consultor: clienteData.consultor,
+                  plano: clienteData.plano
                 };
                 setUser(updatedUser);
                 // Update localStorage with the updated info
@@ -80,7 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Use userId directly without appending WhatsApp suffix
     console.log('Logging in user with ID:', userId);
     
-    // Fetch client data to get the name and active status
+    // Fetch client data to get complete profile
     fetchClienteById(userId)
       .then(clienteData => {
         if (!clienteData) {
@@ -91,7 +99,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const newUser = { 
           id: userId,
           name: clienteData?.nome,
-          isActive: clienteData?.ativo 
+          isActive: clienteData?.ativo,
+          perfil: clienteData?.perfil,
+          consultor: clienteData?.consultor,
+          plano: clienteData?.plano
         };
         
         setUser(newUser);
@@ -121,6 +132,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const isUserActive = () => {
     return user?.isActive === true;
   };
+  
+  // Helper function to check if user is admin
+  const isAdmin = () => {
+    return user?.perfil === 'adm';
+  };
+  
+  // Helper function to check if user is consultor
+  const isConsultor = () => {
+    return user?.perfil === 'consultor';
+  };
 
   const value = {
     user,
@@ -128,6 +149,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     login,
     logout,
     isUserActive,
+    isAdmin,
+    isConsultor,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

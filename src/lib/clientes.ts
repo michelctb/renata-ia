@@ -14,6 +14,8 @@ export type Cliente = {
   ativo?: boolean;
   plano?: string;
   lembrete?: string;
+  perfil?: 'user' | 'adm' | 'consultor';
+  consultor?: string;
   created_at?: string;
 };
 
@@ -32,6 +34,25 @@ export async function fetchClientes() {
   }
 
   console.log('Clients fetched:', data?.length || 0);
+  return data || [];
+}
+
+// Fetch all users for a consultant
+export async function fetchConsultorClients(consultorId: string) {
+  console.log('Fetching clients for consultant:', consultorId);
+  
+  const { data, error } = await supabase
+    .from(CLIENTES_TABLE)
+    .select('*')
+    .eq('consultor', consultorId)
+    .order('nome', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching consultant clients:', error);
+    throw error;
+  }
+
+  console.log(`Clients fetched for consultant ${consultorId}:`, data?.length || 0);
   return data || [];
 }
 
@@ -95,7 +116,9 @@ export async function updateCliente(cliente: Cliente) {
       cpf: cliente.cpf,
       ativo: cliente.ativo,
       plano: cliente.plano,
-      lembrete: cliente.lembrete
+      lembrete: cliente.lembrete,
+      perfil: cliente.perfil,
+      consultor: cliente.consultor
     })
     .eq('id_cliente', cliente.id_cliente)
     .select();

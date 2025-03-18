@@ -1,7 +1,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
   DropdownMenu,
@@ -14,7 +14,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const DashboardHeader = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin, isConsultor } = useAuth();
   const navigate = useNavigate();
   
   const handleLogout = () => {
@@ -30,6 +30,10 @@ const DashboardHeader = () => {
     return user?.id.substring(0, 2).toUpperCase() || 'U';
   };
 
+  const handleAdminClick = () => {
+    navigate('/admin');
+  };
+
   return (
     <div className="flex items-center justify-between py-4 px-6 border-b bg-white/50 backdrop-blur-sm sticky top-0 z-10">
       <div className="flex items-center">
@@ -39,6 +43,18 @@ const DashboardHeader = () => {
       </div>
       
       <div className="flex items-center gap-4">
+        {/* Mostrar botão de Admin apenas para adm e consultor */}
+        {(isAdmin() || isConsultor()) && (
+          <Button 
+            variant="outline" 
+            onClick={handleAdminClick}
+            className="flex items-center gap-2"
+          >
+            <Shield className="h-4 w-4" />
+            <span>Administração</span>
+          </Button>
+        )}
+        
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
@@ -62,6 +78,15 @@ const DashboardHeader = () => {
               <User className="mr-2 h-4 w-4" />
               <span>ID: {user?.id}</span>
             </DropdownMenuItem>
+            {user?.perfil && (
+              <DropdownMenuItem>
+                <Shield className="mr-2 h-4 w-4" />
+                <span>Perfil: {
+                  user.perfil === 'adm' ? 'Administrador' : 
+                  user.perfil === 'consultor' ? 'Consultor' : 'Usuário'
+                }</span>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
