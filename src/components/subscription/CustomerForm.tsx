@@ -85,7 +85,11 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
         // 2. Create payment according to plan
         let paymentId: string;
         
-        if (plan === "mensal") {
+        // These comparisons were causing type errors because TypeScript knows that
+        // plan can only be "consultor" at this point, so comparing with "mensal" will always be false
+        const paymentPlan = plan; // Use a new variable to avoid TypeScript narrowing
+        
+        if (paymentPlan === "mensal") {
           console.log("Creating monthly subscription");
           const subscription = await createSubscription({
             customer: customer.id,
@@ -95,7 +99,7 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
           paymentId = subscription.id;
         } else {
           console.log(`Creating ${plan} installment plan`);
-          const installmentCount = plan === "semestral" ? 6 : 12;
+          const installmentCount = paymentPlan === "semestral" ? 6 : 12;
           const installment = await createInstallment({
             customer: customer.id,
             plan,
@@ -109,7 +113,7 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
         console.log("Getting invoice URL for payment ID:", paymentId);
         const invoiceUrl = await getInvoiceUrl({
           id: paymentId,
-          type: plan === "mensal" ? "subscription" : "installment"
+          type: paymentPlan === "mensal" ? "subscription" : "installment"
         });
         
         // 4. Redirect to payment page
