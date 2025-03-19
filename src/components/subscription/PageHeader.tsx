@@ -18,11 +18,13 @@ const PageHeader = ({ title, description }: PageHeaderProps) => {
 
   return (
     <div className="mb-12 text-center relative">
-      <div className="absolute right-0 top-0 flex items-center gap-2">
+      <div className="absolute right-0 top-0 flex items-center gap-2 z-10">
         <SunIcon size={16} className="text-muted-foreground" />
         <Switch 
           checked={theme === "dark"} 
-          onCheckedChange={toggleTheme} 
+          onCheckedChange={toggleTheme}
+          aria-label="Toggle dark mode"
+          className="cursor-pointer"
         />
         <MoonIcon size={16} className="text-muted-foreground" />
       </div>
