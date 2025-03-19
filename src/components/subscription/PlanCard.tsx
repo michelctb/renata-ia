@@ -72,7 +72,7 @@ const PlanCard = ({ planKey, onSelect }: PlanCardProps) => {
                 <span>Suporte especializado</span>
               </li>
             </>
-          ) : (
+          ) : isMensal ? (
             <>
               <li className="flex items-center">
                 <span className="mr-2 rounded-full bg-primary/10 p-1">
@@ -93,7 +93,7 @@ const PlanCard = ({ planKey, onSelect }: PlanCardProps) => {
                 <span>Lembrete de contas a pagar</span>
               </li>
             </>
-          )}
+          ) : null}
           
           {isSemestral && (
             <li className="flex items-center">
