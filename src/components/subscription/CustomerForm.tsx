@@ -41,10 +41,10 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
     setError(null);
     
     try {
-      // Send to webhook URL and receive checkout link
+      // Send to webhook URL and receive invoiceUrl for checkout
       const checkoutLink = await submitToWebhook(formData, plan);
       
-      console.log("Webhook response (checkout link):", checkoutLink);
+      console.log("Checkout link (invoiceUrl):", checkoutLink);
       
       toast.success("Redirecionando para o checkout...");
       

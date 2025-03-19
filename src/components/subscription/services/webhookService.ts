@@ -29,5 +29,14 @@ export async function submitToWebhook(formData: CustomerFormValues, plan: PlanTy
     throw new Error(`Erro ao enviar dados: ${response.statusText}`);
   }
   
-  return await response.text();
+  const responseData = await response.json();
+  console.log("Webhook response data:", responseData);
+  
+  // Extract the invoiceUrl from the response
+  if (responseData && responseData.invoiceUrl) {
+    return responseData.invoiceUrl;
+  } else {
+    console.error("No invoiceUrl found in response:", responseData);
+    throw new Error("URL de checkout não encontrada na resposta");
+  }
 }
