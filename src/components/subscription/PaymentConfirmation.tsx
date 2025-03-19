@@ -17,7 +17,7 @@ const PaymentConfirmation = ({ onReset }: PaymentConfirmationProps) => {
       <h2 className="text-2xl font-bold mb-4">Redirecionado para pagamento</h2>
       
       <p className="text-muted-foreground mb-6">
-        Você foi redirecionado para a página de pagamento do Asaas. 
+        Você foi redirecionado para a página de checkout para finalizar seu pagamento.
         Após completar o pagamento, sua assinatura será ativada imediatamente.
       </p>
       

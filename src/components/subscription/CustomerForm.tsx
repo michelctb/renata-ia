@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,12 +41,19 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
     setError(null);
     
     try {
-      // For all plans, send to webhook URL
-      const response = await submitToWebhook(formData, plan);
+      // Send to webhook URL and receive checkout link
+      const checkoutLink = await submitToWebhook(formData, plan);
       
-      console.log("Webhook response:", response);
+      console.log("Webhook response (checkout link):", checkoutLink);
       
-      toast.success("Obrigado por enviar suas informações!");
+      toast.success("Redirecionando para o checkout...");
+      
+      // Redirect to the checkout link
+      if (checkoutLink) {
+        window.location.href = checkoutLink;
+      }
+      
+      // Still call onComplete to update UI state
       onComplete();
     } catch (error) {
       console.error("Erro no processo:", error);
