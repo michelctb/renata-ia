@@ -5,7 +5,6 @@ import CustomerForm from "@/components/subscription/CustomerForm";
 import PaymentConfirmation from "@/components/subscription/PaymentConfirmation";
 import PageHeader from "@/components/subscription/PageHeader";
 import PlanGrid from "@/components/subscription/PlanGrid";
-import ApiTestSection from "@/components/subscription/ApiTestSection";
 
 // Plan types
 export type PlanType = "mensal" | "semestral" | "anual" | "consultor";
@@ -68,10 +67,7 @@ const SubscriptionPage = () => {
         />
         
         {!selectedPlan && !showConfirmation && (
-          <div className="space-y-10">
-            <PlanGrid onPlanSelect={handlePlanSelect} />
-            <ApiTestSection />
-          </div>
+          <PlanGrid onPlanSelect={handlePlanSelect} />
         )}
 
         {showConfirmation ? (
