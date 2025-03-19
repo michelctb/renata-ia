@@ -42,35 +42,21 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
     
     try {
       console.log("Calling submitToWebhook...");
-      // Send to webhook URL and get redirect URL
-      const redirectUrl = await submitToWebhook(formData, plan);
       
-      console.log("Redirect URL received:", redirectUrl);
-      
-      // First call onComplete to update UI state
-      onComplete();
-      
-      // Then show toast and redirect after a short delay
+      // Show toast before redirect happens
       toast.success("Redirecionando para o checkout...");
-      console.log("Toast displayed, preparing to redirect...");
       
-      // Use setTimeout to ensure the toast is shown before redirecting
-      setTimeout(() => {
-        // Ensure the URL is valid before redirecting
-        if (redirectUrl && typeof redirectUrl === 'string' && redirectUrl.startsWith('http')) {
-          console.log("Redirecting to:", redirectUrl);
-          window.location.href = redirectUrl;
-        } else {
-          console.error("Invalid redirect URL:", redirectUrl);
-          throw new Error("URL de redirecionamento inválida");
-        }
-      }, 2000); // 2 second delay to ensure toast is visible
+      // Call the webhook service which will handle the form submission and redirect
+      await submitToWebhook(formData, plan);
+      
+      // Call onComplete to update UI state
+      // Note: This may not execute if the redirect happens immediately
+      onComplete();
       
     } catch (error) {
       console.error("Erro no processo:", error);
       setError("Ocorreu um erro ao processar a solicitação. Por favor, tente novamente.");
       toast.error("Ocorreu um erro ao processar a solicitação. Por favor, tente novamente.");
-    } finally {
       setIsSubmitting(false);
     }
   };

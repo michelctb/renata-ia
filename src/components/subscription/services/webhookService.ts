@@ -21,81 +21,43 @@ export async function submitToWebhook(formData: CustomerFormValues, plan: PlanTy
   try {
     // Send data to webhook
     console.log("Initiating fetch request to webhook...");
-    const response = await fetch(webhookUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(webhookData),
-      // Don't follow redirects automatically
-      redirect: "manual"
-    });
     
-    console.log("Webhook response received");
-    console.log("Webhook response status:", response.status);
-    console.log("Webhook response type:", response.type);
-    console.log("Webhook response headers:", [...response.headers.entries()]);
+    // For CORS-restricted redirects, we need a fallback approach
+    // Using form submission instead of fetch to follow redirects across origins
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = webhookUrl;
+    form.target = '_self'; // Use _self to redirect in the same window
     
-    // Handle redirect response (status 302, 303, etc.)
-    if (response.type === "opaqueredirect") {
-      // For redirect responses, get the Location header
-      const redirectUrl = response.headers.get("Location");
-      console.log("Redirect URL from headers:", redirectUrl);
-      
-      if (redirectUrl) {
-        console.log("Valid redirect URL found in headers:", redirectUrl);
-        return redirectUrl;
-      } else {
-        console.error("No Location header found in redirect response");
-        throw new Error("URL de redirecionamento não encontrada na resposta");
+    // Add the data as hidden fields
+    for (const key in webhookData) {
+      if (Object.prototype.hasOwnProperty.call(webhookData, key)) {
+        const hiddenField = document.createElement('input');
+        hiddenField.type = 'hidden';
+        hiddenField.name = key;
+        hiddenField.value = webhookData[key as keyof typeof webhookData];
+        form.appendChild(hiddenField);
       }
     }
+
+    console.log("Created form for submission:", form);
     
-    // If not a redirect, try to parse JSON response (fallback to original behavior)
-    if (response.ok) {
-      console.log("Response is OK, attempting to parse JSON...");
-      try {
-        const responseText = await response.text();
-        console.log("Raw response text:", responseText);
-        
-        let responseData;
-        try {
-          responseData = JSON.parse(responseText);
-          console.log("Successfully parsed JSON response:", responseData);
-        } catch (jsonError) {
-          console.error("Failed to parse JSON:", jsonError);
-          console.log("Response might not be JSON format");
-          
-          // If the response contains a URL, try to extract it as a fallback
-          if (responseText.includes("http")) {
-            const urlMatch = responseText.match(/(https?:\/\/[^\s"']+)/);
-            if (urlMatch && urlMatch[0]) {
-              console.log("Extracted URL from response text:", urlMatch[0]);
-              return urlMatch[0];
-            }
-          }
-          throw new Error("Resposta não está em formato JSON válido");
-        }
-        
-        // Extract the invoiceUrl from the response
-        if (responseData && responseData.invoiceUrl) {
-          console.log("invoiceUrl found in response:", responseData.invoiceUrl);
-          return responseData.invoiceUrl;
-        } else if (responseData && typeof responseData === 'string' && responseData.startsWith('http')) {
-          // Handle case where the response itself is a URL string
-          console.log("Response is a URL string:", responseData);
-          return responseData;
-        } else {
-          console.error("No invoiceUrl found in response:", responseData);
-          throw new Error("URL de checkout não encontrada na resposta");
-        }
-      } catch (error) {
-        console.error("Error processing response:", error);
-        throw new Error("Erro ao processar resposta do webhook");
-      }
+    // For testing purposes, return a mock URL
+    // In production, this code won't execute as the form will redirect the page
+    if (process.env.NODE_ENV === 'development') {
+      console.log("Development mode detected, returning mock URL");
+      // Append the form to the document and submit it
+      document.body.appendChild(form);
+      
+      // Return a promise that will resolve with the proper URL
+      // In real cases, this won't execute as the form submission will navigate away
+      return Promise.resolve(webhookUrl);
     } else {
-      console.error("Webhook request failed with status:", response.status);
-      throw new Error(`Erro ao enviar dados: ${response.statusText}`);
+      // In production, submit the form which will follow the redirect
+      document.body.appendChild(form);
+      form.submit();
+      // This part won't execute as the page will be redirected
+      return "redirecting...";
     }
   } catch (error) {
     console.error("Exception in webhook service:", error);
