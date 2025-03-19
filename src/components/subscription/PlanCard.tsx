@@ -44,12 +44,14 @@ const PlanCard = ({ planKey, onSelect }: PlanCardProps) => {
       </CardHeader>
       <CardContent className="flex-grow">
         <ul className="space-y-3">
-          <li className="flex items-center">
-            <span className="mr-2 rounded-full bg-primary/10 p-1">
-              <CheckIcon className="h-3 w-3 text-primary" />
-            </span>
-            <span>Acesso a todas as funcionalidades</span>
-          </li>
+          {!isMensal && (
+            <li className="flex items-center">
+              <span className="mr-2 rounded-full bg-primary/10 p-1">
+                <CheckIcon className="h-3 w-3 text-primary" />
+              </span>
+              <span>Acesso a todas as funcionalidades do plano mensal</span>
+            </li>
+          )}
           
           {isConsultor ? (
             <>
