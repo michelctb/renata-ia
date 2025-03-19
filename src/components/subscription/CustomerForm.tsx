@@ -41,6 +41,7 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
     setError(null);
     
     try {
+      console.log("Calling submitToWebhook...");
       // Send to webhook URL and get redirect URL
       const redirectUrl = await submitToWebhook(formData, plan);
       
@@ -51,6 +52,7 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
       
       // Then show toast and redirect after a short delay
       toast.success("Redirecionando para o checkout...");
+      console.log("Toast displayed, preparing to redirect...");
       
       // Use setTimeout to ensure the toast is shown before redirecting
       setTimeout(() => {
@@ -62,7 +64,7 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
           console.error("Invalid redirect URL:", redirectUrl);
           throw new Error("URL de redirecionamento inválida");
         }
-      }, 1500); // 1.5 second delay to ensure toast is visible
+      }, 2000); // 2 second delay to ensure toast is visible
       
     } catch (error) {
       console.error("Erro no processo:", error);
