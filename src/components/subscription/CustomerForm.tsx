@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,7 +9,7 @@ import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import CustomerFormFields from "./CustomerFormFields";
 import { customerFormSchema, CustomerFormValues } from "./customerFormSchema";
-import { submitToWebhook } from "./subscriptionService";
+import { submitToWebhook } from "./services";
 
 type CustomerFormProps = {
   plan: PlanType;
