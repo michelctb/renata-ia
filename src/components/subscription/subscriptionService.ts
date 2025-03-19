@@ -1,9 +1,7 @@
-
-import { CustomerData, createCustomer, createSubscription, createInstallment, getInvoiceUrl } from "@/lib/asaas";
 import { PlanType } from "@/pages/Subscription";
 import { CustomerFormValues } from "./customerFormSchema";
 
-// Handle the webhook submission for non-consultor plans
+// Handle the webhook submission for all plans
 export async function submitToWebhook(formData: CustomerFormValues, plan: PlanType) {
   const webhookUrl = "http://localhost:5678/webhook-test/renata-ia";
   
@@ -33,7 +31,7 @@ export async function submitToWebhook(formData: CustomerFormValues, plan: PlanTy
   return await response.text();
 }
 
-// Handle the payment flow for the consultor plan
+// This function is no longer used but kept for reference
 export async function processConsultorPayment(formData: CustomerFormValues, plan: PlanType) {
   console.log("Creating CustomerData object from form data");
   // Ensure all required fields exist by explicitly creating a CustomerData object

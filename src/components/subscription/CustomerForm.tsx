@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import CustomerFormFields from "./CustomerFormFields";
 import { customerFormSchema, CustomerFormValues } from "./customerFormSchema";
-import { processConsultorPayment, submitToWebhook } from "./subscriptionService";
+import { submitToWebhook } from "./subscriptionService";
 
 type CustomerFormProps = {
   plan: PlanType;
@@ -41,23 +41,13 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
     setError(null);
     
     try {
-      // If we're on the 'consultor' plan, we should use the original flow
-      if (plan === "consultor") {
-        const invoiceUrl = await processConsultorPayment(formData, plan);
-        
-        // 4. Redirect to payment page
-        console.log("Redirecting to invoice URL:", invoiceUrl);
-        window.location.href = invoiceUrl;
-        onComplete(); // This will run only if the redirection is blocked
-      } else {
-        // For mensal, semestral, and anual plans, send to webhook URL
-        const response = await submitToWebhook(formData, plan);
-        
-        console.log("Webhook response:", response);
-        
-        toast.success("Informações enviadas com sucesso!");
-        onComplete();
-      }
+      // For all plans, send to webhook URL
+      const response = await submitToWebhook(formData, plan);
+      
+      console.log("Webhook response:", response);
+      
+      toast.success("Obrigado por enviar suas informações!");
+      onComplete();
     } catch (error) {
       console.error("Erro no processo:", error);
       setError("Ocorreu um erro ao processar a solicitação. Por favor, tente novamente.");

@@ -176,7 +176,7 @@ export type Database = {
           data: string
           descrição: string | null
           id: number
-          id_cliente: string
+          id_cliente: string | null
           operação: string | null
           valor: number | null
         }
@@ -187,7 +187,7 @@ export type Database = {
           data: string
           descrição?: string | null
           id?: number
-          id_cliente: string
+          id_cliente?: string | null
           operação?: string | null
           valor?: number | null
         }
@@ -198,7 +198,43 @@ export type Database = {
           data?: string
           descrição?: string | null
           id?: number
-          id_cliente?: string
+          id_cliente?: string | null
+          operação?: string | null
+          valor?: number | null
+        }
+        Relationships: []
+      }
+      "Sistema Financeiro_duplicate": {
+        Row: {
+          categoria: string | null
+          cliente: string | null
+          created_at: string | null
+          data: string
+          descrição: string | null
+          id: number
+          id_cliente: string | null
+          operação: string | null
+          valor: number | null
+        }
+        Insert: {
+          categoria?: string | null
+          cliente?: string | null
+          created_at?: string | null
+          data: string
+          descrição?: string | null
+          id?: number
+          id_cliente?: string | null
+          operação?: string | null
+          valor?: number | null
+        }
+        Update: {
+          categoria?: string | null
+          cliente?: string | null
+          created_at?: string | null
+          data?: string
+          descrição?: string | null
+          id?: number
+          id_cliente?: string | null
           operação?: string | null
           valor?: number | null
         }
