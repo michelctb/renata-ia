@@ -46,15 +46,24 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
       
       console.log("Checkout link (invoiceUrl):", checkoutLink);
       
+      // First call onComplete to update UI state
+      onComplete();
+      
+      // Then show toast and redirect after a short delay
       toast.success("Redirecionando para o checkout...");
       
-      // Redirect to the checkout link
-      if (checkoutLink) {
-        window.location.href = checkoutLink;
-      }
+      // Use setTimeout to ensure the toast is shown before redirecting
+      setTimeout(() => {
+        // Ensure the URL is valid before redirecting
+        if (checkoutLink && typeof checkoutLink === 'string' && checkoutLink.startsWith('http')) {
+          console.log("Redirecting to:", checkoutLink);
+          window.location.href = checkoutLink;
+        } else {
+          console.error("Invalid checkout URL:", checkoutLink);
+          throw new Error("URL de checkout inválida");
+        }
+      }, 1000); // 1 second delay to ensure toast is visible
       
-      // Still call onComplete to update UI state
-      onComplete();
     } catch (error) {
       console.error("Erro no processo:", error);
       setError("Ocorreu um erro ao processar a solicitação. Por favor, tente novamente.");
