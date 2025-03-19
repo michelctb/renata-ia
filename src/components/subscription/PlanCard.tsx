@@ -15,6 +15,7 @@ const PlanCard = ({ planKey, onSelect }: PlanCardProps) => {
   const isConsultor = planKey === "consultor";
   const isPopular = planKey === "anual";
   const isSemestral = planKey === "semestral";
+  const isMensal = planKey === "mensal";
 
   return (
     <Card className={`flex flex-col h-full transition-all duration-300 hover:shadow-xl group relative overflow-hidden ${
@@ -72,12 +73,26 @@ const PlanCard = ({ planKey, onSelect }: PlanCardProps) => {
               </li>
             </>
           ) : (
-            <li className="flex items-center">
-              <span className="mr-2 rounded-full bg-primary/10 p-1">
-                <CheckIcon className="h-3 w-3 text-primary" />
-              </span>
-              <span>Suporte especializado</span>
-            </li>
+            <>
+              <li className="flex items-center">
+                <span className="mr-2 rounded-full bg-primary/10 p-1">
+                  <CheckIcon className="h-3 w-3 text-primary" />
+                </span>
+                <span>Controle de transações financeiras via Whatsapp</span>
+              </li>
+              <li className="flex items-center">
+                <span className="mr-2 rounded-full bg-primary/10 p-1">
+                  <CheckIcon className="h-3 w-3 text-primary" />
+                </span>
+                <span>Dashboard financeiro</span>
+              </li>
+              <li className="flex items-center">
+                <span className="mr-2 rounded-full bg-primary/10 p-1">
+                  <CheckIcon className="h-3 w-3 text-primary" />
+                </span>
+                <span>Lembrete de contas a pagar</span>
+              </li>
+            </>
           )}
           
           {isSemestral && (
