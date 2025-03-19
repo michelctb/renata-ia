@@ -14,6 +14,7 @@ const PlanCard = ({ planKey, onSelect }: PlanCardProps) => {
   const PlanIcon = plan.icon;
   const isConsultor = planKey === "consultor";
   const isPopular = planKey === "anual";
+  const isSemestral = planKey === "semestral";
 
   return (
     <Card className={`flex flex-col h-full transition-all duration-300 hover:shadow-xl group relative overflow-hidden ${
@@ -34,7 +35,7 @@ const PlanCard = ({ planKey, onSelect }: PlanCardProps) => {
           <div className="text-3xl font-bold mt-3 flex items-end">
             {plan.price}
             <span className="text-sm text-muted-foreground font-normal ml-1">
-              {planKey === "mensal" ? "/mês" : ""}
+              /mês
             </span>
           </div>
         )}
@@ -48,12 +49,46 @@ const PlanCard = ({ planKey, onSelect }: PlanCardProps) => {
             </span>
             <span>Acesso a todas as funcionalidades</span>
           </li>
-          <li className="flex items-center">
-            <span className="mr-2 rounded-full bg-primary/10 p-1">
-              <CheckIcon className="h-3 w-3 text-primary" />
-            </span>
-            <span>Suporte especializado</span>
-          </li>
+          
+          {isConsultor ? (
+            <>
+              <li className="flex items-center">
+                <span className="mr-2 rounded-full bg-primary/10 p-1">
+                  <CheckIcon className="h-3 w-3 text-primary" />
+                </span>
+                <span>Controle de clientes ativos</span>
+              </li>
+              <li className="flex items-center">
+                <span className="mr-2 rounded-full bg-primary/10 p-1">
+                  <CheckIcon className="h-3 w-3 text-primary" />
+                </span>
+                <span>Conta gratuita para consultor</span>
+              </li>
+              <li className="flex items-center">
+                <span className="mr-2 rounded-full bg-primary/10 p-1">
+                  <CheckIcon className="h-3 w-3 text-primary" />
+                </span>
+                <span>Suporte especializado</span>
+              </li>
+            </>
+          ) : (
+            <li className="flex items-center">
+              <span className="mr-2 rounded-full bg-primary/10 p-1">
+                <CheckIcon className="h-3 w-3 text-primary" />
+              </span>
+              <span>Suporte especializado</span>
+            </li>
+          )}
+          
+          {isSemestral && (
+            <li className="flex items-center">
+              <span className="mr-2 rounded-full bg-primary/10 p-1">
+                <CheckIcon className="h-3 w-3 text-primary" />
+              </span>
+              <span className="font-medium">Economia de 13% no valor mensal</span>
+            </li>
+          )}
+          
           {isPopular && (
             <li className="flex items-center">
               <span className="mr-2 rounded-full bg-primary/10 p-1">

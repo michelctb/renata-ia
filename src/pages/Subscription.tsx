@@ -30,7 +30,7 @@ export const PLANS = {
     icon: RocketIcon
   },
   consultor: {
-    title: "Consultor",
+    title: "Consultor Financeiro",
     price: "",
     description: "Agende uma demonstração",
     icon: UsersIcon
