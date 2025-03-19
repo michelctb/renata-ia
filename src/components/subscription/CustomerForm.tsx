@@ -41,10 +41,10 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
     setError(null);
     
     try {
-      // Send to webhook URL and receive invoiceUrl for checkout
-      const checkoutLink = await submitToWebhook(formData, plan);
+      // Send to webhook URL and get redirect URL
+      const redirectUrl = await submitToWebhook(formData, plan);
       
-      console.log("Checkout link (invoiceUrl):", checkoutLink);
+      console.log("Redirect URL received:", redirectUrl);
       
       // First call onComplete to update UI state
       onComplete();
@@ -55,14 +55,14 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
       // Use setTimeout to ensure the toast is shown before redirecting
       setTimeout(() => {
         // Ensure the URL is valid before redirecting
-        if (checkoutLink && typeof checkoutLink === 'string' && checkoutLink.startsWith('http')) {
-          console.log("Redirecting to:", checkoutLink);
-          window.location.href = checkoutLink;
+        if (redirectUrl && typeof redirectUrl === 'string' && redirectUrl.startsWith('http')) {
+          console.log("Redirecting to:", redirectUrl);
+          window.location.href = redirectUrl;
         } else {
-          console.error("Invalid checkout URL:", checkoutLink);
-          throw new Error("URL de checkout inválida");
+          console.error("Invalid redirect URL:", redirectUrl);
+          throw new Error("URL de redirecionamento inválida");
         }
-      }, 1000); // 1 second delay to ensure toast is visible
+      }, 1500); // 1.5 second delay to ensure toast is visible
       
     } catch (error) {
       console.error("Erro no processo:", error);
