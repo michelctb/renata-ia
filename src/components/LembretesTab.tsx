@@ -55,14 +55,18 @@ const LembretesTab = () => {
     }
     
     console.log('Editing lembrete:', lembrete);
-    // Ensure we create a deep copy to avoid reference issues
-    setEditingLembrete({...lembrete});
+    // Garantir que fazemos uma cópia profunda do objeto
+    const lembreteCopy = JSON.parse(JSON.stringify(lembrete));
+    setEditingLembrete(lembreteCopy);
     setIsFormOpen(true);
   };
 
   const handleFormClose = () => {
     setIsFormOpen(false);
-    setEditingLembrete(null);
+    // Limpar o lembrete em edição apenas quando o formulário for fechado
+    setTimeout(() => {
+      setEditingLembrete(null);
+    }, 100);
   };
 
   const handleFormSubmit = async (data: Lembrete) => {
@@ -71,7 +75,21 @@ const LembretesTab = () => {
     try {
       setIsProcessing(true);
       console.log('Form submitted with data:', data);
-      // Always reload the list after adding or updating a lembrete
+      
+      // Atualizar a lista local primeiro com o novo lembrete
+      if (editingLembrete?.id) {
+        // Caso de edição - atualizar o item existente
+        setLembretes(prevLembretes => 
+          prevLembretes.map(item => 
+            item.id === editingLembrete.id ? data : item
+          )
+        );
+      } else {
+        // Caso de adição - adicionar o novo item
+        setLembretes(prevLembretes => [...prevLembretes, data]);
+      }
+      
+      // Recarregar lembretes do servidor para sincronizar
       await loadLembretes();
     } catch (error) {
       console.error('Error updating lembretes list:', error);
@@ -93,12 +111,21 @@ const LembretesTab = () => {
     try {
       setIsProcessing(true);
       console.log('Deleting lembrete with ID:', id);
+      
+      // Atualizar a lista local primeiro removendo o item
+      setLembretes(prevLembretes => prevLembretes.filter(item => item.id !== id));
+      
+      // Deletar do servidor
       await deleteLembrete(id);
       toast.success('Lembrete excluído com sucesso');
-      await loadLembretes(); // Recarrega a lista após exclusão
+      
+      // Recarregar para sincronizar
+      await loadLembretes();
     } catch (error) {
       console.error('Error deleting lembrete:', error);
       toast.error('Erro ao excluir o lembrete. Tente novamente.');
+      // Recarregar novamente em caso de erro
+      await loadLembretes();
     } finally {
       setIsProcessing(false);
     }

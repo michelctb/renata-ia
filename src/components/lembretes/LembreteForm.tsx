@@ -12,12 +12,13 @@ import {
 import { Form } from '@/components/ui/form';
 import { LembreteFormFields } from './LembreteFormFields';
 import { useLembreteForm } from './useLembreteForm';
+import { useEffect, useState } from 'react';
 
 interface LembreteFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: Lembrete) => void;
-  editingLembrete: Lembrete | null; // Fixed typo in variable name
+  editingLembrete: Lembrete | null;
   userId: string;
 }
 
@@ -25,19 +26,34 @@ export function LembreteForm({
   isOpen,
   onClose,
   onSubmit,
-  editingLembrete, // Fixed typo in variable name
+  editingLembrete,
   userId,
 }: LembreteFormProps) {
+  // Use uma cópia local do editingLembrete para evitar loops infinitos
+  const [localEditingLembrete, setLocalEditingLembrete] = useState<Lembrete | null>(null);
+  
+  // Atualiza a cópia local apenas quando o diálogo é aberto ou o editingLembrete muda
+  useEffect(() => {
+    if (isOpen) {
+      setLocalEditingLembrete(editingLembrete);
+    }
+  }, [isOpen, editingLembrete]);
+  
   const { form, handleSubmit, handleClose } = useLembreteForm({
     onSubmit,
     onClose,
-    editingLembrete, // Fixed typo in variable name
+    editingLembrete: localEditingLembrete,
     userId,
   });
 
+  const onCloseWrapper = () => {
+    handleClose();
+    setLocalEditingLembrete(null);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
-      if (!open) handleClose();
+      if (!open) onCloseWrapper();
     }}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
@@ -54,7 +70,7 @@ export function LembreteForm({
             <LembreteFormFields form={form} />
             
             <DialogFooter className="mt-6">
-              <Button type="button" variant="outline" onClick={handleClose}>
+              <Button type="button" variant="outline" onClick={onCloseWrapper}>
                 Cancelar
               </Button>
               <Button type="submit">

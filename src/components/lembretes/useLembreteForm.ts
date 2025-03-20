@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { Lembrete, addLembrete, updateLembrete } from '@/lib/lembretes';
 import { lembreteSchema, LembreteFormValues } from './lembreteFormSchema';
 import { fetchClienteById } from '@/lib/clientes';
+import { useEffect } from 'react';
 
 interface UseLembreteFormProps {
   onSubmit: (data: Lembrete) => void;
@@ -21,8 +22,7 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
     if (editingLembrete?.vencimento) {
       console.log('Initial vencimento from edit data:', editingLembrete.vencimento);
       // Garantir que temos um objeto Date válido
-      const date = new Date(editingLembrete.vencimento);
-      return isNaN(date.getTime()) ? new Date() : date;
+      return new Date(editingLembrete.vencimento);
     }
     return new Date();
   };
@@ -30,12 +30,33 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
   const form = useForm<LembreteFormValues>({
     resolver: zodResolver(lembreteSchema),
     defaultValues: {
-      lembrete: editingLembrete?.lembrete || "",
-      tipo: editingLembrete?.tipo || "fixo",
-      valor: editingLembrete?.valor || undefined,
-      vencimento: getInitialVencimento(),
+      lembrete: "",
+      tipo: "fixo",
+      valor: undefined,
+      vencimento: new Date(),
     },
   });
+
+  // Use useEffect para atualizar o formulário quando editingLembrete mudar
+  useEffect(() => {
+    if (editingLembrete) {
+      console.log('Setting form values from editingLembrete:', editingLembrete);
+      
+      form.reset({
+        lembrete: editingLembrete.lembrete,
+        tipo: editingLembrete.tipo || "fixo",
+        valor: editingLembrete.valor,
+        vencimento: getInitialVencimento(),
+      });
+    } else {
+      form.reset({
+        lembrete: "",
+        tipo: "fixo",
+        valor: undefined,
+        vencimento: new Date(),
+      });
+    }
+  }, [editingLembrete, form]);
 
   const handleSubmit = async (values: LembreteFormValues) => {
     try {
