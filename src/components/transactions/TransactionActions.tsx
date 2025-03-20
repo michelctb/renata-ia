@@ -1,6 +1,5 @@
-
 import { useState, useRef } from 'react';
-import { Transaction, formatPhoneForWhatsApp, getClientPhone } from '@/lib/supabase';
+import { Transaction } from '@/lib/supabase';
 import { toast } from 'sonner';
 import {
   addTransaction,
