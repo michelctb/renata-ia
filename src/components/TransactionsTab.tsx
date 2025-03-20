@@ -86,6 +86,7 @@ const TransactionsTab = ({
   const { 
     deleteConfirmOpen, 
     setDeleteConfirmOpen,
+    transactionToDelete,
     handleSubmitTransaction,
     handleDeleteRequest,
     confirmDelete
@@ -153,6 +154,7 @@ const TransactionsTab = ({
         open={deleteConfirmOpen} 
         onOpenChange={setDeleteConfirmOpen}
         onConfirm={confirmDelete}
+        transactionId={transactionToDelete}
       />
     </div>
   );

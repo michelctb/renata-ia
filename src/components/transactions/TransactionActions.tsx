@@ -143,7 +143,10 @@ export function useTransactionActions({
   
   // Confirm deletion of a transaction
   const confirmDelete = async () => {
-    if (!transactionToDelete) return;
+    if (!transactionToDelete) {
+      console.error('No transaction ID to delete');
+      return;
+    }
     
     // Reset callback executed flag
     callbackExecuted.current = false;
@@ -151,31 +154,30 @@ export function useTransactionActions({
     try {
       console.log('Confirming deletion of transaction ID:', transactionToDelete);
       
-      // Close dialog first to prevent UI issues
-      setDeleteConfirmOpen(false);
+      // Save transactionId to a local variable since we'll clear state
+      const transactionId = transactionToDelete;
       
-      const success = await deleteTransaction(transactionToDelete);
+      // Close dialog first to prevent UI issues - this is already handled in DeleteTransactionDialog
+      
+      const success = await deleteTransaction(transactionId);
       
       if (success) {
         console.log('Setting state after transaction deletion');
         setTimeout(() => {
           setTransactions(prev => {
             // Create a new array without the deleted transaction
-            const newTransactions = prev.filter(t => t.id !== transactionToDelete);
+            const newTransactions = prev.filter(t => t.id !== transactionId);
             console.log('New transactions array after delete:', newTransactions.length);
             return newTransactions;
           });
+          // Clear the transactionToDelete state after deletion
+          setTransactionToDelete(null);
           toast.success('Transação excluída com sucesso!');
         }, 50);
       }
     } catch (error) {
       console.error('Error deleting transaction:', error);
       toast.error('Erro ao excluir a transação. Tente novamente.');
-    } finally {
-      console.log('Cleaning up after delete operation');
-      setTimeout(() => {
-        setTransactionToDelete(null);
-      }, 100);
     }
   };
 
