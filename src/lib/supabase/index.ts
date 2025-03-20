@@ -3,7 +3,7 @@
 export { supabase, FINANCIAL_TABLE, CLIENTES_TABLE } from './client';
 
 // Re-export types
-export { Transaction } from './types';
+export type { Transaction } from './types';
 
 // Re-export utility functions
 export { formatPhoneForWhatsApp, getClientPhone } from './utils';
