@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Transaction, formatPhoneForWhatsApp, getClientPhone } from '@/lib/supabase';
 import { toast } from 'sonner';
 import {
@@ -21,6 +21,9 @@ export function useTransactionActions({
   const { user } = useAuth();
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<number | null>(null);
+  
+  // Ref to track if callbacks have been executed
+  const callbackExecuted = useRef(false);
 
   // Handle adding or updating a transaction
   const handleSubmitTransaction = async (transaction: Transaction) => {
@@ -32,6 +35,9 @@ export function useTransactionActions({
     try {
       console.log('Processing transaction:', transaction);
       console.log('Processing transaction with user ID:', user.id);
+      
+      // Reset callback executed flag
+      callbackExecuted.current = false;
       
       // Garantir que todos os campos obrigatórios estejam presentes
       if (!transaction.data || !transaction.descrição || !transaction.operação || !transaction.categoria) {
@@ -62,19 +68,25 @@ export function useTransactionActions({
           
           if (updated) {
             console.log('Setting updated transaction in state');
-            setTransactions(prev => {
-              // Create a new array with the updated transaction
-              const newTransactions = prev.map(t => 
-                t.id === transaction.id ? updated : t
-              );
-              console.log('New transactions array after update:', newTransactions.length);
-              return newTransactions;
-            });
-            toast.success('Transação atualizada com sucesso!');
             
-            // Close the form after update is successful and state is updated
-            console.log('Closing form after successful update');
-            onCloseForm();
+            // Close form first to prevent UI issues
+            if (!callbackExecuted.current) {
+              callbackExecuted.current = true;
+              onCloseForm();
+            }
+            
+            // Then update the state
+            setTimeout(() => {
+              setTransactions(prev => {
+                // Create a new array with the updated transaction
+                const newTransactions = prev.map(t => 
+                  t.id === transaction.id ? updated : t
+                );
+                console.log('New transactions array after update:', newTransactions.length);
+                return newTransactions;
+              });
+              toast.success('Transação atualizada com sucesso!');
+            }, 50);
           } else {
             console.error('No updated transaction returned from the API');
             toast.error('Erro ao atualizar a transação. Tente novamente.');
@@ -89,17 +101,23 @@ export function useTransactionActions({
           
           if (added) {
             console.log('Setting added transaction in state');
-            setTransactions(prev => {
-              // Create a new array with the added transaction at the beginning
-              const newTransactions = [added, ...prev];
-              console.log('New transactions array after add:', newTransactions.length);
-              return newTransactions;
-            });
-            toast.success('Transação adicionada com sucesso!');
             
-            // Close the form after add is successful and state is updated
-            console.log('Closing form after successful add');
-            onCloseForm();
+            // Close form first to prevent UI issues
+            if (!callbackExecuted.current) {
+              callbackExecuted.current = true;
+              onCloseForm();
+            }
+            
+            // Then update the state
+            setTimeout(() => {
+              setTransactions(prev => {
+                // Create a new array with the added transaction at the beginning
+                const newTransactions = [added, ...prev];
+                console.log('New transactions array after add:', newTransactions.length);
+                return newTransactions;
+              });
+              toast.success('Transação adicionada com sucesso!');
+            }, 50);
           } else {
             console.error('No added transaction returned from the API');
             toast.error('Erro ao adicionar a transação. Tente novamente.');
@@ -127,27 +145,37 @@ export function useTransactionActions({
   const confirmDelete = async () => {
     if (!transactionToDelete) return;
     
+    // Reset callback executed flag
+    callbackExecuted.current = false;
+    
     try {
       console.log('Confirming deletion of transaction ID:', transactionToDelete);
+      
+      // Close dialog first to prevent UI issues
+      setDeleteConfirmOpen(false);
+      
       const success = await deleteTransaction(transactionToDelete);
       
       if (success) {
         console.log('Setting state after transaction deletion');
-        setTransactions(prev => {
-          // Create a new array without the deleted transaction
-          const newTransactions = prev.filter(t => t.id !== transactionToDelete);
-          console.log('New transactions array after delete:', newTransactions.length);
-          return newTransactions;
-        });
-        toast.success('Transação excluída com sucesso!');
+        setTimeout(() => {
+          setTransactions(prev => {
+            // Create a new array without the deleted transaction
+            const newTransactions = prev.filter(t => t.id !== transactionToDelete);
+            console.log('New transactions array after delete:', newTransactions.length);
+            return newTransactions;
+          });
+          toast.success('Transação excluída com sucesso!');
+        }, 50);
       }
     } catch (error) {
       console.error('Error deleting transaction:', error);
       toast.error('Erro ao excluir a transação. Tente novamente.');
     } finally {
       console.log('Cleaning up after delete operation');
-      setDeleteConfirmOpen(false);
-      setTransactionToDelete(null);
+      setTimeout(() => {
+        setTransactionToDelete(null);
+      }, 100);
     }
   };
 

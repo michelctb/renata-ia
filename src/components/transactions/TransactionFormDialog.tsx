@@ -12,6 +12,7 @@ import {
 import { Form } from '@/components/ui/form';
 import { useTransactionForm } from './useTransactionForm';
 import { TransactionFormFields } from './TransactionFormFields';
+import { useEffect, useState } from 'react';
 
 interface TransactionFormDialogProps {
   isOpen: boolean;
@@ -28,24 +29,52 @@ export function TransactionFormDialog({
   editingTransaction,
   userId,
 }: TransactionFormDialogProps) {
+  console.log('TransactionFormDialog rendered with isOpen:', isOpen);
+  console.log('TransactionFormDialog received editingTransaction:', editingTransaction?.id);
+  
+  // Use a local copy of editingTransaction to avoid infinite loops
+  const [localEditingTransaction, setLocalEditingTransaction] = useState<Transaction | null>(null);
+  
+  // Update local copy only when dialog is opened or editingTransaction changes
+  useEffect(() => {
+    if (isOpen && editingTransaction) {
+      console.log('Updating local editing transaction:', editingTransaction.id);
+      // Create a deep copy to avoid reference issues
+      setLocalEditingTransaction(JSON.parse(JSON.stringify(editingTransaction)));
+    } else if (!isOpen) {
+      console.log('Dialog closed, resetting local editing transaction');
+      // Clear local transaction when dialog closes
+      setLocalEditingTransaction(null);
+    }
+  }, [isOpen, editingTransaction]);
+  
   const {
     form,
     filteredCategories,
     isLoadingCategories,
     handleSubmit
-  } = useTransactionForm(userId, editingTransaction, onSubmit, onClose);
+  } = useTransactionForm(userId, localEditingTransaction, onSubmit, onClose);
+
+  const handleOpenChange = (open: boolean) => {
+    console.log('Dialog openChange event triggered:', open);
+    if (!open) {
+      console.log('Dialog closing via openChange event');
+      onClose();
+    }
+  };
+
+  const dialogTitle = localEditingTransaction ? 'Editar Transação' : 'Nova Transação';
+  const dialogDescription = localEditingTransaction 
+    ? 'Edite os dados da transação selecionada.'
+    : 'Preencha os dados para registrar uma nova transação financeira.';
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => {
-      if (!open) onClose();
-    }}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{editingTransaction ? 'Editar Transação' : 'Nova Transação'}</DialogTitle>
+          <DialogTitle>{dialogTitle}</DialogTitle>
           <DialogDescription>
-            {editingTransaction 
-              ? 'Edite os dados da transação selecionada.'
-              : 'Preencha os dados para registrar uma nova transação financeira.'}
+            {dialogDescription}
           </DialogDescription>
         </DialogHeader>
         
@@ -62,7 +91,7 @@ export function TransactionFormDialog({
                 Cancelar
               </Button>
               <Button type="submit">
-                {editingTransaction ? 'Atualizar' : 'Adicionar'}
+                {localEditingTransaction ? 'Atualizar' : 'Adicionar'}
               </Button>
             </DialogFooter>
           </form>

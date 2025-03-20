@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { DateRange } from 'react-day-picker';
 import { Transaction } from '@/lib/supabase';
@@ -45,9 +45,14 @@ const TransactionsTab = ({
   
   // Close the transaction form
   const handleCloseForm = () => {
-    console.log('Closing transaction form');
+    console.log('Transaction form close requested');
     setIsTransactionFormOpen(false);
-    setEditingTransaction(null);
+    
+    // Clear the editing transaction after a short delay to avoid timing issues
+    setTimeout(() => {
+      console.log('Clearing editing transaction after form close');
+      setEditingTransaction(null);
+    }, 100);
   };
   
   // Edit a transaction
@@ -67,8 +72,14 @@ const TransactionsTab = ({
     };
     
     console.log('Prepared transaction for edit:', transactionCopy);
+    
+    // First set the transaction, then open the form
     setEditingTransaction(transactionCopy);
-    setIsTransactionFormOpen(true);
+    
+    // Set form open after editing state is set with a small delay to ensure state updates
+    setTimeout(() => {
+      setIsTransactionFormOpen(true);
+    }, 0);
   };
   
   // Use the transaction actions hook
@@ -93,6 +104,11 @@ const TransactionsTab = ({
     
     handleDeleteRequest(id);
   };
+
+  // Monitor form state for debugging
+  useEffect(() => {
+    console.log('Transaction form state changed - isOpen:', isTransactionFormOpen, 'editingTransaction:', editingTransaction?.id);
+  }, [isTransactionFormOpen, editingTransaction]);
 
   return (
     <div className="space-y-6">
