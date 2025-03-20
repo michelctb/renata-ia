@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 import { Transaction } from '@/lib/supabase';
 import { toast } from 'sonner';
@@ -5,6 +6,7 @@ import {
   addTransaction,
   updateTransaction,
   deleteTransaction,
+  fetchTransactions,
 } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -142,8 +144,8 @@ export function useTransactionActions({
   
   // Confirm deletion of a transaction
   const confirmDelete = async () => {
-    if (!transactionToDelete) {
-      console.error('No transaction ID to delete');
+    if (!transactionToDelete || !user) {
+      console.error('No transaction ID to delete or user not logged in');
       return;
     }
     
@@ -161,18 +163,31 @@ export function useTransactionActions({
       const success = await deleteTransaction(transactionId);
       
       if (success) {
-        console.log('Setting state after transaction deletion');
-        setTimeout(() => {
+        console.log('Transaction deletion successful, reloading transactions');
+        toast.success('Transação excluída com sucesso!');
+        
+        // Clear the transactionToDelete state after deletion
+        setTransactionToDelete(null);
+        
+        // Reload the transactions list from the database instead of just updating the state
+        try {
+          console.log('Loading transactions...');
+          const updatedTransactions = await fetchTransactions(user.id);
+          console.log(`Loaded ${updatedTransactions.length} transactions after deletion`);
+          
+          // Update the state with the fresh data from the server
+          setTransactions(updatedTransactions);
+        } catch (loadError) {
+          console.error('Error reloading transactions after deletion:', loadError);
+          toast.error('Transação excluída, mas houve um erro ao atualizar a lista.');
+          
+          // Fallback to the previous approach if reloading fails
           setTransactions(prev => {
-            // Create a new array without the deleted transaction
             const newTransactions = prev.filter(t => t.id !== transactionId);
-            console.log('New transactions array after delete:', newTransactions.length);
+            console.log('Fallback: New transactions array after delete:', newTransactions.length);
             return newTransactions;
           });
-          // Clear the transactionToDelete state after deletion
-          setTransactionToDelete(null);
-          toast.success('Transação excluída com sucesso!');
-        }, 50);
+        }
       }
     } catch (error) {
       console.error('Error deleting transaction:', error);
