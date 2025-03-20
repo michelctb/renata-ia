@@ -1,4 +1,3 @@
-
 import { formatCurrency } from '@/lib/utils';
 import {
   PieChart,
@@ -9,6 +8,7 @@ import {
   ResponsiveContainer,
   TooltipProps,
 } from 'recharts';
+import { Badge } from "@/components/ui/badge";
 
 // Expanded color palette for the pie chart
 const COLORS = [
@@ -69,6 +69,31 @@ const CustomPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, i
   );
 };
 
+// Custom legend component that uses badges instead of dots
+const CustomLegend = (props: any) => {
+  const { payload } = props;
+  
+  if (!payload || payload.length === 0) return null;
+  
+  return (
+    <div className="flex flex-wrap justify-center gap-2 pt-4">
+      {payload.map((entry: any, index: number) => (
+        <Badge 
+          key={`legend-${index}`}
+          className="font-medium text-xs text-white" 
+          style={{ 
+            backgroundColor: entry.color,
+            borderColor: entry.color
+          }}
+          title={entry.value}
+        >
+          {entry.value.length > 15 ? `${entry.value.substring(0, 15)}...` : entry.value}
+        </Badge>
+      ))}
+    </div>
+  );
+};
+
 export function ExpensesPieChart({ data, transactionType }: ExpensesPieChartProps) {
   console.log(`Raw data received in pie chart (${transactionType}):`, data);
   
@@ -119,12 +144,6 @@ export function ExpensesPieChart({ data, transactionType }: ExpensesPieChartProp
     renderColors[9] = OTHER_COLOR;
   }
 
-  // Custom legend formatter to handle long category names
-  const formatLegendText = (value: string) => {
-    // Truncate long category names in the legend
-    return value.length > 15 ? `${value.substring(0, 15)}...` : value;
-  };
-
   return (
     <ResponsiveContainer width="100%" height="100%">
       <PieChart>
@@ -143,7 +162,7 @@ export function ExpensesPieChart({ data, transactionType }: ExpensesPieChartProp
           ))}
         </Pie>
         <Tooltip content={<CustomPieTooltip />} />
-        <Legend formatter={formatLegendText} />
+        <Legend content={<CustomLegend />} />
       </PieChart>
     </ResponsiveContainer>
   );
