@@ -48,6 +48,7 @@ export function useTransactionActions({
         // Create a new transaction object with the normalized operation
         const transactionWithClient = {
           ...transaction,
+          id_cliente: user.id, // Make sure id_cliente is properly set
           cliente: user.id,
           operação: operationType as 'entrada' | 'saída'
         };
@@ -66,6 +67,9 @@ export function useTransactionActions({
             );
             toast.success('Transação atualizada com sucesso!');
             onCloseForm();
+          } else {
+            console.error('No updated transaction returned from the API');
+            toast.error('Erro ao atualizar a transação. Tente novamente.');
           }
         } else {
           // Add new transaction - ensure we're not sending an ID
@@ -79,6 +83,9 @@ export function useTransactionActions({
             setTransactions(prev => [added, ...prev]);
             toast.success('Transação adicionada com sucesso!');
             onCloseForm();
+          } else {
+            console.error('No added transaction returned from the API');
+            toast.error('Erro ao adicionar a transação. Tente novamente.');
           }
         }
       } else {

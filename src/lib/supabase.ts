@@ -96,17 +96,12 @@ export async function updateTransaction(transaction: Transaction) {
   
   console.log('Using ID for update:', id);
   
+  // Create a copy of the transaction without the id field to prevent it from being included in the update
+  const { id: _, ...transactionUpdate } = transaction;
+  
   const { data, error } = await supabase
     .from(FINANCIAL_TABLE)
-    .update({
-      cliente: transaction.cliente,
-      id_cliente: transaction.id_cliente,
-      data: transaction.data,
-      operação: transaction.operação,
-      descrição: transaction.descrição,
-      categoria: transaction.categoria,
-      valor: transaction.valor
-    })
+    .update(transactionUpdate)
     .eq('id', id)
     .select();
 
