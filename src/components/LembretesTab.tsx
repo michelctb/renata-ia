@@ -15,11 +15,13 @@ const LembretesTab = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingLembrete, setEditingLembrete] = useState<Lembrete | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [formSubmissionCount, setFormSubmissionCount] = useState(0);
 
   const loadLembretes = async () => {
     if (!user) return;
     
     try {
+      console.log('Loading lembretes...');
       setIsLoading(true);
       const data = await fetchLembretes(user.id);
       console.log(`Loaded ${data.length} lembretes for user ${user.id}`);
@@ -33,8 +35,17 @@ const LembretesTab = () => {
   };
 
   useEffect(() => {
+    console.log('User effect triggered, loading lembretes');
     loadLembretes();
   }, [user]);
+
+  // Separate effect for form submission to avoid race conditions
+  useEffect(() => {
+    if (formSubmissionCount > 0) {
+      console.log('Form submission detected, reloading lembretes');
+      loadLembretes();
+    }
+  }, [formSubmissionCount]);
 
   const handleAddNew = () => {
     // Block inactive users from adding lembretes
@@ -43,6 +54,7 @@ const LembretesTab = () => {
       return;
     }
     
+    console.log('Adding new lembrete, clearing editing state');
     setEditingLembrete(null);
     setIsFormOpen(true);
   };
@@ -54,31 +66,43 @@ const LembretesTab = () => {
       return;
     }
     
+    console.log('Editing lembrete with ID:', lembrete.id);
     console.log('Editing lembrete:', lembrete);
+    
     // Garantir que fazemos uma cópia profunda do objeto
     const lembreteCopy = JSON.parse(JSON.stringify(lembrete));
     setEditingLembrete(lembreteCopy);
-    setIsFormOpen(true);
+    
+    // Set form open after editing state is set
+    setTimeout(() => {
+      setIsFormOpen(true);
+    }, 0);
   };
 
   const handleFormClose = () => {
+    console.log('Form closed, cleaning up state');
     setIsFormOpen(false);
-    // Limpar o lembrete em edição apenas quando o formulário for fechado
+    // Limpar o lembrete em edição após um curto intervalo para evitar problemas de timing
     setTimeout(() => {
       setEditingLembrete(null);
     }, 100);
   };
 
   const handleFormSubmit = async (data: Lembrete) => {
-    if (isProcessing) return;
+    if (isProcessing) {
+      console.log('Already processing a submission, ignoring');
+      return;
+    }
     
     try {
+      console.log('Starting form submission processing');
       setIsProcessing(true);
       console.log('Form submitted with data:', data);
       
       // Atualizar a lista local primeiro com o novo lembrete
       if (editingLembrete?.id) {
         // Caso de edição - atualizar o item existente
+        console.log('Updating local list with edited item');
         setLembretes(prevLembretes => 
           prevLembretes.map(item => 
             item.id === editingLembrete.id ? data : item
@@ -86,15 +110,29 @@ const LembretesTab = () => {
         );
       } else {
         // Caso de adição - adicionar o novo item
-        setLembretes(prevLembretes => [...prevLembretes, data]);
+        console.log('Adding new item to local list');
+        if (data.id) {
+          setLembretes(prevLembretes => [...prevLembretes, data]);
+        }
       }
       
-      // Recarregar lembretes do servidor para sincronizar
-      await loadLembretes();
+      // Trigger a reload via the submission counter
+      console.log('Incrementing form submission counter to trigger reload');
+      setFormSubmissionCount(prev => prev + 1);
+      
+      // Close form
+      setIsFormOpen(false);
+      
+      // Clear editing state after form is closed
+      setTimeout(() => {
+        setEditingLembrete(null);
+      }, 100);
+      
     } catch (error) {
       console.error('Error updating lembretes list:', error);
       toast.error('Erro ao atualizar a lista de lembretes.');
     } finally {
+      console.log('Form submission processing complete');
       setIsProcessing(false);
     }
   };
@@ -106,9 +144,13 @@ const LembretesTab = () => {
       return;
     }
     
-    if (isProcessing) return;
+    if (isProcessing) {
+      console.log('Already processing an operation, ignoring delete');
+      return;
+    }
     
     try {
+      console.log('Starting delete processing');
       setIsProcessing(true);
       console.log('Deleting lembrete with ID:', id);
       
@@ -119,14 +161,17 @@ const LembretesTab = () => {
       await deleteLembrete(id);
       toast.success('Lembrete excluído com sucesso');
       
-      // Recarregar para sincronizar
-      await loadLembretes();
+      // Recarregar para sincronizar após um breve intervalo
+      setTimeout(() => {
+        loadLembretes();
+      }, 100);
     } catch (error) {
       console.error('Error deleting lembrete:', error);
       toast.error('Erro ao excluir o lembrete. Tente novamente.');
       // Recarregar novamente em caso de erro
-      await loadLembretes();
+      loadLembretes();
     } finally {
+      console.log('Delete processing complete');
       setIsProcessing(false);
     }
   };

@@ -41,13 +41,20 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
   useEffect(() => {
     if (editingLembrete) {
       console.log('Setting form values from editingLembrete:', editingLembrete);
+      console.log('Tipo do lembrete:', editingLembrete.tipo);
       
+      // Resetar o formulário com os valores corretos
       form.reset({
         lembrete: editingLembrete.lembrete,
         tipo: editingLembrete.tipo || "fixo",
         valor: editingLembrete.valor,
         vencimento: getInitialVencimento(),
       });
+
+      // Verificar se os valores foram definidos corretamente
+      setTimeout(() => {
+        console.log('Form values after reset:', form.getValues());
+      }, 0);
     } else {
       form.reset({
         lembrete: "",
@@ -99,16 +106,31 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
         // For existing lembrete, update it
         const updatedLembrete = await updateLembrete(lembreteData);
         toast.success('Lembrete atualizado com sucesso');
+        
+        console.log('Update successful, updated lembrete:', updatedLembrete);
+        
+        // Clean up before calling onSubmit
+        form.reset();
+        
+        // Then call onSubmit with the updated data
         onSubmit(updatedLembrete || lembreteData);
+        
+        // And finally close the dialog
+        onClose();
       } else {
         // For new lembrete, add it
         const newLembrete = await addLembrete(lembreteData);
         toast.success('Lembrete adicionado com sucesso');
+        
+        // Clean up before calling onSubmit
+        form.reset();
+        
+        // Then call onSubmit with the new data
         onSubmit(newLembrete || lembreteData);
+        
+        // And finally close the dialog
+        onClose();
       }
-
-      form.reset();
-      onClose();
     } catch (error) {
       console.error('Error saving lembrete:', error);
       toast.error(editingLembrete ? 'Erro ao atualizar lembrete' : 'Erro ao adicionar lembrete');
@@ -116,6 +138,7 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
   };
 
   const handleClose = () => {
+    console.log('Closing form and resetting');
     form.reset();
     onClose();
   };
