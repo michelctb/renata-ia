@@ -10,6 +10,7 @@ import TransactionForm from '@/components/TransactionForm';
 import { TransactionsHeader } from '@/components/transactions/TransactionsHeader';
 import { useTransactionActions } from '@/components/transactions/TransactionActions';
 import { DeleteTransactionDialog } from '@/components/transactions/DeleteTransactionDialog';
+import { TransactionDeleteConfirmation } from '@/components/transactions/TransactionDeleteConfirmation';
 import { toast } from 'sonner';
 
 type TransactionsTabProps = {
@@ -86,10 +87,13 @@ const TransactionsTab = ({
   const { 
     deleteConfirmOpen, 
     setDeleteConfirmOpen,
+    deleteSuccessOpen,
+    setDeleteSuccessOpen,
     transactionToDelete,
     handleSubmitTransaction,
     handleDeleteRequest,
-    confirmDelete
+    confirmDelete,
+    handleReloadAfterDelete
   } = useTransactionActions({ 
     setTransactions, 
     onCloseForm: handleCloseForm 
@@ -155,6 +159,12 @@ const TransactionsTab = ({
         onOpenChange={setDeleteConfirmOpen}
         onConfirm={confirmDelete}
         transactionId={transactionToDelete}
+      />
+      
+      <TransactionDeleteConfirmation
+        open={deleteSuccessOpen}
+        onOpenChange={setDeleteSuccessOpen}
+        onReload={handleReloadAfterDelete}
       />
     </div>
   );

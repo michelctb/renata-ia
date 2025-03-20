@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { Transaction } from '@/lib/supabase';
 import { toast } from 'sonner';
@@ -21,6 +20,7 @@ export function useTransactionActions({
 }: TransactionActionsProps) {
   const { user } = useAuth();
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteSuccessOpen, setDeleteSuccessOpen] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState<number | null>(null);
   
   // Ref to track if callbacks have been executed
@@ -163,44 +163,35 @@ export function useTransactionActions({
       const success = await deleteTransaction(transactionId);
       
       if (success) {
-        console.log('Transaction deletion successful, reloading transactions');
-        toast.success('Transação excluída com sucesso!');
+        console.log('Transaction deletion successful, showing confirmation dialog');
         
         // Clear the transactionToDelete state after deletion
         setTransactionToDelete(null);
         
-        // Reload the transactions list from the database instead of just updating the state
-        try {
-          console.log('Loading transactions...');
-          const updatedTransactions = await fetchTransactions(user.id);
-          console.log(`Loaded ${updatedTransactions.length} transactions after deletion`);
-          
-          // Update the state with the fresh data from the server
-          setTransactions(updatedTransactions);
-        } catch (loadError) {
-          console.error('Error reloading transactions after deletion:', loadError);
-          toast.error('Transação excluída, mas houve um erro ao atualizar a lista.');
-          
-          // Fallback to the previous approach if reloading fails
-          setTransactions(prev => {
-            const newTransactions = prev.filter(t => t.id !== transactionId);
-            console.log('Fallback: New transactions array after delete:', newTransactions.length);
-            return newTransactions;
-          });
-        }
+        // Show success confirmation dialog
+        setDeleteSuccessOpen(true);
       }
     } catch (error) {
       console.error('Error deleting transaction:', error);
       toast.error('Erro ao excluir a transação. Tente novamente.');
     }
   };
+  
+  // Handle page reload after successful deletion
+  const handleReloadAfterDelete = () => {
+    console.log('Reloading page after successful deletion');
+    window.location.reload();
+  };
 
   return {
     deleteConfirmOpen,
     setDeleteConfirmOpen,
+    deleteSuccessOpen,
+    setDeleteSuccessOpen,
     transactionToDelete,
     handleSubmitTransaction,
     handleDeleteRequest,
-    confirmDelete
+    confirmDelete,
+    handleReloadAfterDelete
   };
 }
