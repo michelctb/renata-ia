@@ -82,7 +82,7 @@ export function ExpensesRanking({ data, transactionType }: ExpensesRankingProps)
       </ScrollArea>
       
       {/* Total sum row with a divider - always visible */}
-      <div className="pt-2 mt-2 border-t-2 border-gray-300 sticky bottom-0 bg-white">
+      <div className="pt-2 mt-2 border-t-2 border-gray-300 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-card">
         <div className="flex items-center justify-between p-2">
           <span className="font-bold text-sm">Total</span>
           <span className={`font-bold ${valueTextColor}`}>
