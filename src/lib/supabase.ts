@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase credentials
@@ -9,6 +10,7 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Table name
 export const FINANCIAL_TABLE = 'Sistema Financeiro';
+export const CLIENTES_TABLE = 'Clientes';
 
 // Types for financial records
 export type Transaction = {
@@ -41,6 +43,30 @@ export function formatPhoneForWhatsApp(userId: string): string {
   
   // Otherwise, add the default prefix
   return `${DEFAULT_PHONE_PREFIX}${userId}${WHATSAPP_SUFFIX}`;
+}
+
+// Busca o telefone do cliente pelo id_cliente
+export async function getClientPhone(id_cliente: string): Promise<string | null> {
+  console.log('Buscando telefone para o cliente ID:', id_cliente);
+  
+  try {
+    const { data, error } = await supabase
+      .from(CLIENTES_TABLE)
+      .select('telefone')
+      .eq('id_cliente', id_cliente)
+      .single();
+
+    if (error) {
+      console.error('Erro ao buscar telefone do cliente:', error);
+      return null;
+    }
+
+    console.log('Telefone do cliente encontrado:', data?.telefone);
+    return data?.telefone || null;
+  } catch (error) {
+    console.error('Exceção ao buscar telefone do cliente:', error);
+    return null;
+  }
 }
 
 // Fetch transactions for a specific user
@@ -79,8 +105,13 @@ export async function addTransaction(transaction: Transaction) {
     throw new Error('Campos obrigatórios faltando');
   }
   
-  // Format the phone number for WhatsApp format if not already formatted
-  const clienteFormatted = formatPhoneForWhatsApp(id_cliente);
+  // Buscar o telefone do cliente do banco de dados
+  const clientPhone = await getClientPhone(id_cliente);
+  
+  // Se não conseguir buscar o telefone, usar o formato padrão
+  const clienteFormatted = clientPhone || formatPhoneForWhatsApp(id_cliente);
+  
+  console.log('Usando telefone do cliente para transação:', clienteFormatted);
   
   // Create a transaction object without the ID field to let the database auto-generate it,
   // and with the properly formatted cliente field
@@ -124,8 +155,13 @@ export async function updateTransaction(transaction: Transaction) {
   
   console.log('Using ID for update:', id);
   
-  // Format the phone number for WhatsApp format
-  const clienteFormatted = formatPhoneForWhatsApp(transaction.id_cliente);
+  // Buscar o telefone do cliente do banco de dados
+  const clientPhone = await getClientPhone(transaction.id_cliente);
+  
+  // Se não conseguir buscar o telefone, usar o formato padrão
+  const clienteFormatted = clientPhone || formatPhoneForWhatsApp(transaction.id_cliente);
+  
+  console.log('Usando telefone do cliente para atualização:', clienteFormatted);
   
   // Create a copy of the transaction without the id field to prevent it from being included in the update
   const { id: _, ...transactionData } = transaction;

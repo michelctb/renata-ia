@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Transaction, formatPhoneForWhatsApp } from '@/lib/supabase';
+import { Transaction, formatPhoneForWhatsApp, getClientPhone } from '@/lib/supabase';
 import { toast } from 'sonner';
 import {
   addTransaction,
@@ -49,7 +49,6 @@ export function useTransactionActions({
         const transactionWithClient = {
           ...transaction,
           id_cliente: user.id, // Make sure id_cliente is properly set
-          cliente: user.id, // This will be formatted in the addTransaction/updateTransaction functions
           operação: operationType as 'entrada' | 'saída'
         };
         
