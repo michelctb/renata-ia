@@ -1,6 +1,6 @@
 
-import { useState } from 'react';
-import { Lembrete, deleteLembrete } from '@/lib/lembretes';
+import { useState, useCallback } from 'react';
+import { Lembrete } from '@/lib/lembretes';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import {
@@ -29,7 +29,7 @@ export function LembreteActions({
 }: LembreteActionsProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     if (isProcessing) {
       console.log('Edit action blocked: processing in progress');
       return;
@@ -45,9 +45,14 @@ export function LembreteActions({
     // Pass the complete lembrete object to the edit handler
     console.log('Editing lembrete with ID:', lembrete.id);
     onEdit();
-  };
+  }, [lembrete, onEdit, isProcessing]);
 
-  const handleDelete = async () => {
+  const handleDeleteClick = useCallback(() => {
+    console.log('Delete menu item clicked for lembrete ID:', lembrete.id);
+    setIsDeleteDialogOpen(true);
+  }, [lembrete.id]);
+
+  const handleDeleteConfirm = useCallback(() => {
     if (isProcessing) {
       console.log('Delete action blocked: processing in progress');
       return;
@@ -62,8 +67,7 @@ export function LembreteActions({
       
       console.log('Starting delete process for lembrete with ID:', lembrete.id);
       
-      // Close the dialog first to prevent UI issues
-      setIsDeleteDialogOpen(false);
+      // The dialog will be closed by its own component
       
       // Then call the parent's onDelete callback
       console.log('Calling parent onDelete callback');
@@ -74,7 +78,12 @@ export function LembreteActions({
       toast.error('Erro ao processar exclusão do lembrete. Tente novamente.');
       setIsDeleteDialogOpen(false);
     }
-  };
+  }, [lembrete.id, onDelete, isProcessing]);
+
+  const handleCloseDeleteDialog = useCallback(() => {
+    console.log('Delete dialog close request');
+    setIsDeleteDialogOpen(false);
+  }, []);
 
   return (
     <>
@@ -93,10 +102,7 @@ export function LembreteActions({
                 Editar
               </DropdownMenuItem>
               <DropdownMenuItem 
-                onClick={() => {
-                  console.log('Delete menu item clicked for lembrete ID:', lembrete.id);
-                  setIsDeleteDialogOpen(true);
-                }}
+                onClick={handleDeleteClick}
                 className="text-red-600 focus:text-red-600"
                 disabled={isProcessing}
               >
@@ -116,11 +122,8 @@ export function LembreteActions({
 
       <DeleteLembreteDialog
         isOpen={isDeleteDialogOpen}
-        onClose={() => {
-          console.log('Delete dialog close request');
-          setIsDeleteDialogOpen(false);
-        }}
-        onConfirm={handleDelete}
+        onClose={handleCloseDeleteDialog}
+        onConfirm={handleDeleteConfirm}
         lembrete={lembrete}
       />
     </>

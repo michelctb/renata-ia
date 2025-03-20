@@ -1,26 +1,21 @@
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useState, useEffect } from 'react';
 import { Lembrete } from '@/lib/lembretes';
-import { toast } from 'sonner';
-import LembretesList from '@/components/lembretes/LembretesList';
-import { useLembretes } from '@/hooks/useLembretes';
-import { LembretesHeader } from '@/components/lembretes/LembretesHeader';
-import { useState } from 'react';
-import LembreteForm from '@/components/lembretes/LembreteForm';
+import LembreteForm from './LembreteForm';
 
-const LembretesTab = () => {
-  const { user, isUserActive } = useAuth();
-  const { lembretes, isLoading, isProcessing, handleFormSubmit, handleDelete } = useLembretes({
-    userId: user?.id,
-    isUserActive: isUserActive(),
-  });
-  
+interface LembreteFormManagerProps {
+  isUserActive: boolean;
+  userId: string;
+  onSubmit: (data: Lembrete) => void;
+}
+
+export function LembreteFormManager({ isUserActive, userId, onSubmit }: LembreteFormManagerProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingLembrete, setEditingLembrete] = useState<Lembrete | null>(null);
 
   const handleAddNew = () => {
     // Block inactive users from adding lembretes
-    if (!isUserActive()) {
+    if (!isUserActive) {
       toast.error('Sua assinatura está inativa. Você não pode adicionar lembretes.');
       return;
     }
@@ -32,7 +27,7 @@ const LembretesTab = () => {
 
   const handleEdit = (lembrete: Lembrete) => {
     // Block inactive users from editing lembretes
-    if (!isUserActive()) {
+    if (!isUserActive) {
       toast.error('Sua assinatura está inativa. Você não pode editar lembretes.');
       return;
     }
@@ -59,39 +54,20 @@ const LembretesTab = () => {
     }, 100);
   };
 
-  if (isLoading && lembretes.length === 0) {
-    return (
-      <div className="flex justify-center p-8">
-        <div className="animate-pulse text-lg">Carregando lembretes...</div>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <LembretesHeader 
-        onAddNew={handleAddNew} 
-        isUserActive={isUserActive()} 
-        isProcessing={isProcessing}
-      />
-
-      <LembretesList 
-        lembretes={lembretes}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        isUserActive={isUserActive()}
-        isProcessing={isProcessing}
-      />
-
+  return {
+    isFormOpen,
+    editingLembrete,
+    handleAddNew,
+    handleEdit,
+    handleFormClose,
+    FormComponent: (
       <LembreteForm
         isOpen={isFormOpen}
         onClose={handleFormClose}
-        onSubmit={handleFormSubmit}
+        onSubmit={onSubmit}
         editingLembrete={editingLembrete}
-        userId={user?.id || ''}
+        userId={userId || ''}
       />
-    </div>
-  );
-};
-
-export default LembretesTab;
+    )
+  };
+}

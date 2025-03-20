@@ -30,12 +30,27 @@ export function DeleteLembreteDialog({
   // Log when dialog opens or closes
   useEffect(() => {
     console.log(`Delete dialog ${isOpen ? 'opened' : 'closed'} for lembrete ID:`, lembrete.id);
+    
+    // Cleanup function to ensure we log when component unmounts
+    return () => {
+      console.log('Delete dialog component cleanup for lembrete ID:', lembrete.id);
+    };
   }, [isOpen, lembrete.id]);
 
   const handleConfirm = () => {
     console.log('Delete confirmation clicked for lembrete ID:', lembrete.id);
-    // Call onConfirm after a small delay to allow the dialog to close
-    onConfirm();
+    try {
+      // Close the dialog first
+      onClose();
+      
+      // Then call the confirmation handler with a small delay
+      setTimeout(() => {
+        console.log('Executing onConfirm callback for lembrete ID:', lembrete.id);
+        onConfirm();
+      }, 100);
+    } catch (error) {
+      console.error('Error in delete confirmation handler:', error);
+    }
   };
 
   const handleOpenChange = (open: boolean) => {
