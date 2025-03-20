@@ -1,18 +1,11 @@
 
 import { Lembrete } from '@/lib/lembretes';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from '@/components/ui/dialog';
 import { Form } from '@/components/ui/form';
 import { LembreteFormFields } from './LembreteFormFields';
 import { useLembreteForm } from './useLembreteForm';
 import { useEffect, useState } from 'react';
+import { LembreteFormDialog } from './LembreteFormDialog';
+import { LembreteFormFooter } from './LembreteFormFooter';
 
 interface LembreteFormProps {
   isOpen: boolean;
@@ -68,9 +61,14 @@ export function LembreteForm({
     }
   }, [isOpen, form]);
 
+  const dialogTitle = localEditingLembrete ? 'Editar Lembrete' : 'Novo Lembrete';
+  const dialogDescription = localEditingLembrete 
+    ? 'Edite os dados do lembrete selecionado.'
+    : 'Preencha os dados para registrar um novo lembrete.';
+
   return (
-    <Dialog 
-      open={isOpen} 
+    <LembreteFormDialog
+      isOpen={isOpen}
       onOpenChange={(open) => {
         console.log('Dialog onOpenChange:', open);
         if (!open) {
@@ -78,33 +76,19 @@ export function LembreteForm({
           onCloseWrapper();
         }
       }}
+      title={dialogTitle}
+      description={dialogDescription}
     >
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>{localEditingLembrete ? 'Editar Lembrete' : 'Novo Lembrete'}</DialogTitle>
-          <DialogDescription>
-            {localEditingLembrete 
-              ? 'Edite os dados do lembrete selecionado.'
-              : 'Preencha os dados para registrar um novo lembrete.'}
-          </DialogDescription>
-        </DialogHeader>
-        
-        <Form {...form}>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <LembreteFormFields form={form} />
-            
-            <DialogFooter className="mt-6">
-              <Button type="button" variant="outline" onClick={onCloseWrapper}>
-                Cancelar
-              </Button>
-              <Button type="submit">
-                {localEditingLembrete ? 'Atualizar' : 'Adicionar'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+      <Form {...form}>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <LembreteFormFields form={form} />
+          <LembreteFormFooter 
+            onCancel={onCloseWrapper}
+            isEditing={!!localEditingLembrete}
+          />
+        </form>
+      </Form>
+    </LembreteFormDialog>
   );
 }
 
