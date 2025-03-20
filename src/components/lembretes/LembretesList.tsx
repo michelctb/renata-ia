@@ -1,6 +1,6 @@
 
 import { Lembrete } from '@/lib/lembretes';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency } from '@/lib/utils';
 import { LembreteActions } from './LembreteActions';
@@ -53,13 +53,17 @@ export default function LembretesList({
     }
   };
 
-  // Função para formatar a data corretamente
+  // Função corrigida para formatar a data adequadamente
   const formatData = (dataString: string) => {
     try {
-      // Criar uma data sem preocupação com fuso horário
+      // Extrair ano, mês e dia diretamente da string de data
       const [year, month, day] = dataString.split('-').map(Number);
-      // Format usando parseISO para lidar com a string de data ISO
-      return format(new Date(year, month - 1, day), 'dd/MM/yyyy', { locale: ptBR });
+      
+      // Criar um objeto Date com horário meio-dia para evitar problemas de fuso horário
+      const date = new Date(year, month - 1, day, 12, 0, 0);
+      
+      // Formatar a data usando o format do date-fns
+      return format(date, 'dd/MM/yyyy', { locale: ptBR });
     } catch (error) {
       console.error('Erro ao formatar data:', error, dataString);
       return 'Data inválida';

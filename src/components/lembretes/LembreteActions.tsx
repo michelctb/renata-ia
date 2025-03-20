@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
+
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Lembrete } from '@/lib/lembretes';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
@@ -30,6 +31,16 @@ export function LembreteActions({
   
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [localLembrete, setLocalLembrete] = useState<Lembrete | null>(null);
+  
+  // Ref para rastrear se o componente está montado
+  const isMounted = useRef(true);
+  
+  // Set isMounted to false when component unmounts
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
   
   useEffect(() => {
     if (lembrete) {
@@ -76,12 +87,22 @@ export function LembreteActions({
       console.log('Starting delete process for lembrete with ID:', localLembrete.id);
       
       console.log('Calling parent onDelete callback');
-      onDelete();
+      // Fechamos o diálogo antes de chamar onDelete para evitar problemas de UI
+      setIsDeleteDialogOpen(false);
+      
+      // Pequeno delay para garantir que o estado foi atualizado
+      setTimeout(() => {
+        if (isMounted.current) {
+          onDelete();
+        }
+      }, 100);
       
     } catch (error) {
       console.error('Error handling delete action:', error);
       toast.error('Erro ao processar exclusão do lembrete. Tente novamente.');
-      setIsDeleteDialogOpen(false);
+      if (isMounted.current) {
+        setIsDeleteDialogOpen(false);
+      }
     }
   }, [localLembrete, onDelete, isProcessing]);
 

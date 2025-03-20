@@ -15,6 +15,10 @@ interface LembreteDatePickerProps {
 }
 
 export function LembreteDatePicker({ form }: LembreteDatePickerProps) {
+  // Log the current date value for debugging
+  const currentDate = form.watch('vencimento');
+  console.log('Current date in LembreteDatePicker:', currentDate);
+  
   return (
     <FormField
       control={form.control}
@@ -45,7 +49,22 @@ export function LembreteDatePicker({ form }: LembreteDatePickerProps) {
               <Calendar
                 mode="single"
                 selected={field.value}
-                onSelect={field.onChange}
+                onSelect={(date) => {
+                  if (date) {
+                    // Normalizar a data selecionada para meio-dia para evitar problemas de fuso horário
+                    const normalizedDate = new Date(
+                      date.getFullYear(),
+                      date.getMonth(),
+                      date.getDate(),
+                      12, 0, 0
+                    );
+                    console.log('Selected date:', date);
+                    console.log('Normalized date:', normalizedDate);
+                    field.onChange(normalizedDate);
+                  } else {
+                    field.onChange(undefined);
+                  }
+                }}
                 locale={ptBR}
                 initialFocus
               />

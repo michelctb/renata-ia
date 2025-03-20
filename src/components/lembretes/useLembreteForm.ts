@@ -17,12 +17,20 @@ interface UseLembreteFormProps {
 export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: UseLembreteFormProps) {
   console.log('useLembreteForm initialized with editingLembrete:', editingLembrete);
   
-  // Garantir que as datas sejam convertidas corretamente para objetos Date
+  // Garantir que as datas sejam convertidas corretamente para objetos Date, compensando o fuso horário
   const getInitialVencimento = () => {
     if (editingLembrete?.vencimento) {
       console.log('Initial vencimento from edit data:', editingLembrete.vencimento);
-      // Garantir que temos um objeto Date válido
-      return new Date(editingLembrete.vencimento);
+      
+      // Extrair ano, mês e dia da string de data
+      const [year, month, day] = editingLembrete.vencimento.split('-').map(Number);
+      
+      // Criar uma data, garantindo que o dia seja o correto independente do fuso horário
+      // Usando meio-dia (12:00) para evitar problemas com horário de verão
+      const dateObject = new Date(year, month - 1, day, 12, 0, 0);
+      
+      console.log('Created date object with correct date:', dateObject.toISOString());
+      return dateObject;
     }
     return new Date();
   };
@@ -72,13 +80,13 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
       
       // Corrigir o problema de fuso horário criando uma nova data com UTC
       const vencimentoDate = new Date(values.vencimento);
-      // Ajustar para manter o dia correto independente do fuso horário
-      const formattedDate = new Date(
-        vencimentoDate.getFullYear(),
-        vencimentoDate.getMonth(),
-        vencimentoDate.getDate(),
-        12, 0, 0 // Meio-dia para evitar problemas de fuso horário
-      ).toISOString().split('T')[0];
+      
+      // Usar o ano, mês e dia diretamente para criar a string de data no formato YYYY-MM-DD
+      const formattedDate = `${vencimentoDate.getFullYear()}-${
+        String(vencimentoDate.getMonth() + 1).padStart(2, '0')
+      }-${
+        String(vencimentoDate.getDate()).padStart(2, '0')
+      }`;
       
       console.log('Original date:', values.vencimento);
       console.log('Formatted date for storage:', formattedDate);

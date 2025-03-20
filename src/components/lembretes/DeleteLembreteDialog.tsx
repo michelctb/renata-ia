@@ -1,5 +1,5 @@
 
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Lembrete } from '@/lib/lembretes';
 import {
@@ -12,7 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface DeleteLembreteDialogProps {
   isOpen: boolean;
@@ -32,12 +32,17 @@ export function DeleteLembreteDialog({
   // Criar uma cópia local do lembrete para evitar problemas quando o lembrete original for removido
   const [localLembrete, setLocalLembrete] = useState<Lembrete | null>(null);
   
+  // Ref para rastrear se o callback de confirmação já foi chamado
+  const confirmCallbackExecuted = useRef(false);
+  
   // Atualiza a cópia local quando o componente monta ou o lembrete muda
   useEffect(() => {
     if (isOpen && lembrete) {
       console.log('Setting localLembrete in DeleteDialog with data:', JSON.stringify(lembrete));
       // Deep copy para garantir que não temos referências ao objeto original
       setLocalLembrete(JSON.parse(JSON.stringify(lembrete)));
+      // Resetar o flag de callback quando o diálogo abre
+      confirmCallbackExecuted.current = false;
     }
   }, [isOpen, lembrete]);
   
@@ -60,12 +65,21 @@ export function DeleteLembreteDialog({
       return;
     }
     
+    // Evitar chamadas duplicadas
+    if (confirmCallbackExecuted.current) {
+      console.log('Confirm callback already executed, ignoring duplicate call');
+      return;
+    }
+    
     const lembreteId = localLembrete?.id || 'unknown';
     console.log('Delete confirmation clicked for lembrete ID:', lembreteId);
     console.log('Current localLembrete at confirmation time:', JSON.stringify(localLembrete));
     
     try {
-      // Close the dialog first
+      // Marcar que o callback já foi executado
+      confirmCallbackExecuted.current = true;
+      
+      // Close the dialog first to prevent UI issues
       onClose();
       
       // Then call the confirmation handler with a small delay to ensure state updates properly
@@ -97,7 +111,12 @@ export function DeleteLembreteDialog({
     try {
       // Extrair ano, mês e dia da string de data
       const [year, month, day] = dataString.split('-').map(Number);
-      return format(new Date(year, month - 1, day), 'dd/MM/yyyy', { locale: ptBR });
+      
+      // Criar um objeto Date com horário meio-dia para evitar problemas de fuso horário
+      const date = new Date(year, month - 1, day, 12, 0, 0);
+      
+      // Formatar a data usando o format do date-fns
+      return format(date, 'dd/MM/yyyy', { locale: ptBR });
     } catch (error) {
       console.error('Erro ao formatar data:', error, dataString);
       return 'data inválida';
@@ -142,7 +161,7 @@ export function DeleteLembreteDialog({
           <AlertDialogAction 
             onClick={handleConfirm} 
             className="bg-red-600 hover:bg-red-700"
-            disabled={!localLembrete}
+            disabled={!localLembrete || confirmCallbackExecuted.current}
           >
             Excluir
           </AlertDialogAction>
