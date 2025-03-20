@@ -1,6 +1,7 @@
 
 import { formatCurrency } from '@/lib/utils';
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 
 // Expanded color palette to match the pie chart
 const COLORS = [
@@ -55,15 +56,16 @@ export function ExpensesRanking({ data, transactionType }: ExpensesRankingProps)
         <div className="space-y-2">
           {dataToShow.map((category, index) => (
             <div key={index} className="flex items-center justify-between p-2 border-b">
-              <div className="flex items-center gap-2">
-                <div 
-                  className="w-3 h-3 rounded-full" 
-                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                />
-                <span className="font-medium truncate max-w-[140px] text-sm" title={category.name}>
-                  {category.name}
-                </span>
-              </div>
+              <Badge 
+                className="font-medium truncate max-w-[140px] text-sm text-white" 
+                style={{ 
+                  backgroundColor: COLORS[index % COLORS.length],
+                  borderColor: COLORS[index % COLORS.length] 
+                }}
+                title={category.name}
+              >
+                {category.name}
+              </Badge>
               <span className={`font-medium ${valueTextColor}`}>
                 {formatCurrency(category.value)}
               </span>
