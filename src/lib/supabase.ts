@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase credentials
@@ -23,6 +22,26 @@ export type Transaction = {
   categoria: string;
   valor: number;
 };
+
+// Default WhatsApp suffix for cliente field
+const WHATSAPP_SUFFIX = '@s.whatsapp.net';
+const DEFAULT_PHONE_PREFIX = '5521'; // Default prefix for phone numbers
+
+// Format phone number for WhatsApp
+export function formatPhoneForWhatsApp(userId: string): string {
+  // Check if userId is already in WhatsApp format
+  if (userId.includes('@s.whatsapp.net')) {
+    return userId;
+  }
+  
+  // Check if it's already a full phone number with the prefix
+  if (userId.length >= 12 && userId.startsWith('55')) {
+    return `${userId}${WHATSAPP_SUFFIX}`;
+  }
+  
+  // Otherwise, add the default prefix
+  return `${DEFAULT_PHONE_PREFIX}${userId}${WHATSAPP_SUFFIX}`;
+}
 
 // Fetch transactions for a specific user
 export async function fetchTransactions(userId: string) {
@@ -60,13 +79,22 @@ export async function addTransaction(transaction: Transaction) {
     throw new Error('Campos obrigatórios faltando');
   }
   
-  // Create a transaction object without the ID field to let the database auto-generate it
-  const { id, ...transactionWithoutId } = transaction;
-  console.log('Submitting transaction without ID:', transactionWithoutId);
+  // Format the phone number for WhatsApp format if not already formatted
+  const clienteFormatted = formatPhoneForWhatsApp(id_cliente);
+  
+  // Create a transaction object without the ID field to let the database auto-generate it,
+  // and with the properly formatted cliente field
+  const { id, ...transactionData } = transaction;
+  const transactionWithFormattedClient = {
+    ...transactionData,
+    cliente: clienteFormatted // Use the formatted phone number for WhatsApp
+  };
+  
+  console.log('Submitting transaction without ID:', transactionWithFormattedClient);
   
   const { data: insertedData, error } = await supabase
     .from(FINANCIAL_TABLE)
-    .insert([transactionWithoutId])
+    .insert([transactionWithFormattedClient])
     .select();
 
   if (error) {
@@ -96,8 +124,17 @@ export async function updateTransaction(transaction: Transaction) {
   
   console.log('Using ID for update:', id);
   
+  // Format the phone number for WhatsApp format
+  const clienteFormatted = formatPhoneForWhatsApp(transaction.id_cliente);
+  
   // Create a copy of the transaction without the id field to prevent it from being included in the update
-  const { id: _, ...transactionUpdate } = transaction;
+  const { id: _, ...transactionData } = transaction;
+  
+  // Ensure cliente field is in the correct format
+  const transactionUpdate = {
+    ...transactionData,
+    cliente: clienteFormatted
+  };
   
   const { data, error } = await supabase
     .from(FINANCIAL_TABLE)
