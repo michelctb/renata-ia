@@ -14,17 +14,37 @@ export function useLembretes({ userId, isUserActive }: UseLembretesProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [formSubmissionCount, setFormSubmissionCount] = useState(0);
   const [deleteRequestId, setDeleteRequestId] = useState<number | null>(null);
+  const [deleteRequestPending, setDeleteRequestPending] = useState(false);
+
+  // Debug the state changes 
+  useEffect(() => {
+    console.log('useLembretes state update:', { 
+      lembretesCount: lembretes.length, 
+      isLoading, 
+      isProcessing, 
+      deleteRequestId,
+      deleteRequestPending
+    });
+  }, [lembretes, isLoading, isProcessing, deleteRequestId, deleteRequestPending]);
 
   // Use useCallback for loadLembretes to prevent unnecessary recreation
   const loadLembretes = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      console.log('No userId, skipping loadLembretes');
+      return;
+    }
     
     try {
       console.log('Loading lembretes...');
       setIsLoading(true);
       const data = await fetchLembretes(userId);
       console.log(`Loaded ${data.length} lembretes for user ${userId}`);
-      setLembretes(data);
+      
+      // Always use a functional update to avoid race conditions
+      setLembretes(prevState => {
+        console.log('Updating lembretes state from:', prevState.length, 'items to', data.length, 'items');
+        return data;
+      });
     } catch (error) {
       console.error('Error loading lembretes:', error);
       toast.error('Erro ao carregar lembretes. Atualize a página.');
@@ -49,9 +69,11 @@ export function useLembretes({ userId, isUserActive }: UseLembretesProps) {
 
   // Separate effect for delete requests
   useEffect(() => {
-    if (deleteRequestId === null || !userId) return;
-    
     const processDelete = async () => {
+      if (!deleteRequestPending || deleteRequestId === null || !userId) {
+        return;
+      }
+      
       if (isProcessing) {
         console.log('Already processing, will try again later');
         return;
@@ -66,23 +88,31 @@ export function useLembretes({ userId, isUserActive }: UseLembretesProps) {
         console.log('Delete operation completed on server');
         toast.success('Lembrete excluído com sucesso');
         
+        // Reset state before reloading
+        setDeleteRequestId(null);
+        setDeleteRequestPending(false);
+        
         // Reload the list
         await loadLembretes();
         console.log('Lembretes reloaded after delete');
       } catch (error) {
         console.error('Error completing delete operation:', error);
         toast.error('Erro ao excluir o lembrete. Tente novamente.');
+        
+        // Reset state
+        setDeleteRequestId(null);
+        setDeleteRequestPending(false);
+        
         // Reload again in case of error
         loadLembretes();
       } finally {
         console.log('Delete processing complete, resetting state');
-        setDeleteRequestId(null);
         setIsProcessing(false);
       }
     };
     
     processDelete();
-  }, [deleteRequestId, userId, isProcessing, loadLembretes]);
+  }, [deleteRequestId, userId, isProcessing, loadLembretes, deleteRequestPending]);
 
   const handleFormSubmit = async (data: Lembrete) => {
     if (isProcessing) {
@@ -125,7 +155,7 @@ export function useLembretes({ userId, isUserActive }: UseLembretesProps) {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = useCallback(async (id: number) => {
     // Block inactive users from deleting lembretes
     if (!isUserActive) {
       toast.error('Sua assinatura está inativa. Você não pode excluir lembretes.');
@@ -140,18 +170,27 @@ export function useLembretes({ userId, isUserActive }: UseLembretesProps) {
     
     console.log('Delete requested for lembrete ID:', id);
     
-    // First, update the local list removing the item
-    // This provides immediate visual feedback to the user
-    setLembretes(prevLembretes => {
-      console.log('Removing lembrete from local state');
-      return prevLembretes.filter(item => item.id !== id);
-    });
-    
-    // Instead of performing the deletion directly, we schedule it
-    // to be processed by the useEffect
-    console.log('Setting deleteRequestId to trigger processing');
-    setDeleteRequestId(id);
-  };
+    try {
+      // First, update the local list removing the item
+      // This provides immediate visual feedback to the user
+      setLembretes(prevLembretes => {
+        console.log('Removing lembrete from local state:', { 
+          before: prevLembretes.length,
+          after: prevLembretes.filter(item => item.id !== id).length,
+          id
+        });
+        return prevLembretes.filter(item => item.id !== id);
+      });
+      
+      // Set both flags to trigger the deletion process
+      console.log('Setting deleteRequestId to trigger processing');
+      setDeleteRequestId(id);
+      setDeleteRequestPending(true);
+    } catch (error) {
+      console.error('Error in handleDelete:', error);
+      toast.error('Erro ao iniciar processo de exclusão.');
+    }
+  }, [isProcessing, isUserActive]);
 
   return {
     lembretes,

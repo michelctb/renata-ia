@@ -1,5 +1,4 @@
-
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Lembrete } from '@/lib/lembretes';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
@@ -27,7 +26,17 @@ export function LembreteActions({
   isUserActive = true,
   isProcessing = false
 }: LembreteActionsProps) {
+  console.log('LembreteActions rendered for ID:', lembrete?.id);
+  
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [localLembrete, setLocalLembrete] = useState<Lembrete | null>(null);
+  
+  useEffect(() => {
+    if (lembrete) {
+      console.log('Updating localLembrete in LembreteActions with ID:', lembrete.id);
+      setLocalLembrete(JSON.parse(JSON.stringify(lembrete)));
+    }
+  }, [lembrete]);
 
   const handleEdit = useCallback(() => {
     if (isProcessing) {
@@ -35,22 +44,20 @@ export function LembreteActions({
       return;
     }
     
-    // Make sure the lembrete has an ID before proceeding
     if (!lembrete.id) {
       console.error('ID do lembrete não encontrado para edição');
       toast.error('Não foi possível editar este lembrete. ID não encontrado.');
       return;
     }
     
-    // Pass the complete lembrete object to the edit handler
     console.log('Editing lembrete with ID:', lembrete.id);
     onEdit();
   }, [lembrete, onEdit, isProcessing]);
 
   const handleDeleteClick = useCallback(() => {
-    console.log('Delete menu item clicked for lembrete ID:', lembrete.id);
+    console.log('Delete menu item clicked for lembrete ID:', lembrete?.id);
     setIsDeleteDialogOpen(true);
-  }, [lembrete.id]);
+  }, [lembrete?.id]);
 
   const handleDeleteConfirm = useCallback(() => {
     if (isProcessing) {
@@ -58,18 +65,16 @@ export function LembreteActions({
       return;
     }
     
+    if (!localLembrete || !localLembrete.id) {
+      console.error('localLembrete is null or has no ID in handleDeleteConfirm');
+      toast.error('Não foi possível excluir este lembrete. Dados não encontrados.');
+      setIsDeleteDialogOpen(false);
+      return;
+    }
+    
     try {
-      if (!lembrete.id) {
-        console.error('ID do lembrete não encontrado para exclusão');
-        toast.error('Não foi possível excluir este lembrete. ID não encontrado.');
-        return;
-      }
+      console.log('Starting delete process for lembrete with ID:', localLembrete.id);
       
-      console.log('Starting delete process for lembrete with ID:', lembrete.id);
-      
-      // The dialog will be closed by its own component
-      
-      // Then call the parent's onDelete callback
       console.log('Calling parent onDelete callback');
       onDelete();
       
@@ -78,12 +83,17 @@ export function LembreteActions({
       toast.error('Erro ao processar exclusão do lembrete. Tente novamente.');
       setIsDeleteDialogOpen(false);
     }
-  }, [lembrete.id, onDelete, isProcessing]);
+  }, [localLembrete, onDelete, isProcessing]);
 
   const handleCloseDeleteDialog = useCallback(() => {
     console.log('Delete dialog close request');
     setIsDeleteDialogOpen(false);
   }, []);
+
+  if (!localLembrete) {
+    console.log('LembreteActions: localLembrete is null, rendering empty fragment');
+    return <></>;
+  }
 
   return (
     <>
@@ -120,12 +130,14 @@ export function LembreteActions({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <DeleteLembreteDialog
-        isOpen={isDeleteDialogOpen}
-        onClose={handleCloseDeleteDialog}
-        onConfirm={handleDeleteConfirm}
-        lembrete={lembrete}
-      />
+      {localLembrete && (
+        <DeleteLembreteDialog
+          isOpen={isDeleteDialogOpen}
+          onClose={handleCloseDeleteDialog}
+          onConfirm={handleDeleteConfirm}
+          lembrete={localLembrete}
+        />
+      )}
     </>
   );
 }
