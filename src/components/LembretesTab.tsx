@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchLembretes, Lembrete, deleteLembrete } from '@/lib/lembretes';
 import { Button } from '@/components/ui/button';
@@ -16,8 +16,10 @@ const LembretesTab = () => {
   const [editingLembrete, setEditingLembrete] = useState<Lembrete | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [formSubmissionCount, setFormSubmissionCount] = useState(0);
+  const [deleteRequestId, setDeleteRequestId] = useState<number | null>(null);
 
-  const loadLembretes = async () => {
+  // Use useCallback for loadLembretes to prevent unnecessary recreation
+  const loadLembretes = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -32,12 +34,13 @@ const LembretesTab = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
+  // Initial load on component mount
   useEffect(() => {
     console.log('User effect triggered, loading lembretes');
     loadLembretes();
-  }, [user]);
+  }, [loadLembretes]);
 
   // Separate effect for form submission to avoid race conditions
   useEffect(() => {
@@ -45,7 +48,39 @@ const LembretesTab = () => {
       console.log('Form submission detected, reloading lembretes');
       loadLembretes();
     }
-  }, [formSubmissionCount]);
+  }, [formSubmissionCount, loadLembretes]);
+
+  // Separate effect for delete requests
+  useEffect(() => {
+    const processDelete = async () => {
+      if (deleteRequestId === null || !user || isProcessing) return;
+      
+      try {
+        console.log('Starting delete processing for ID:', deleteRequestId);
+        setIsProcessing(true);
+        
+        // Deletar do servidor
+        await deleteLembrete(deleteRequestId);
+        console.log('Delete operation completed on server');
+        toast.success('Lembrete excluído com sucesso');
+        
+        // Recarregar a lista
+        await loadLembretes();
+        console.log('Lembretes reloaded after delete');
+      } catch (error) {
+        console.error('Error completing delete operation:', error);
+        toast.error('Erro ao excluir o lembrete. Tente novamente.');
+        // Recarregar novamente em caso de erro
+        loadLembretes();
+      } finally {
+        console.log('Delete processing complete, resetting state');
+        setDeleteRequestId(null);
+        setIsProcessing(false);
+      }
+    };
+    
+    processDelete();
+  }, [deleteRequestId, user, isProcessing, loadLembretes]);
 
   const handleAddNew = () => {
     // Block inactive users from adding lembretes
@@ -149,31 +184,19 @@ const LembretesTab = () => {
       return;
     }
     
-    try {
-      console.log('Starting delete processing');
-      setIsProcessing(true);
-      console.log('Deleting lembrete with ID:', id);
-      
-      // Atualizar a lista local primeiro removendo o item
-      setLembretes(prevLembretes => prevLembretes.filter(item => item.id !== id));
-      
-      // Deletar do servidor
-      await deleteLembrete(id);
-      toast.success('Lembrete excluído com sucesso');
-      
-      // Recarregar para sincronizar após um breve intervalo
-      setTimeout(() => {
-        loadLembretes();
-      }, 100);
-    } catch (error) {
-      console.error('Error deleting lembrete:', error);
-      toast.error('Erro ao excluir o lembrete. Tente novamente.');
-      // Recarregar novamente em caso de erro
-      loadLembretes();
-    } finally {
-      console.log('Delete processing complete');
-      setIsProcessing(false);
-    }
+    console.log('Delete requested for lembrete ID:', id);
+    
+    // Primeiro, atualizar a lista local removendo o item
+    // Isso proporciona feedback visual imediato para o usuário
+    setLembretes(prevLembretes => {
+      console.log('Removing lembrete from local state');
+      return prevLembretes.filter(item => item.id !== id);
+    });
+    
+    // Em vez de realizar a exclusão diretamente, agendamos ela 
+    // para ser processada pelo useEffect
+    console.log('Setting deleteRequestId to trigger processing');
+    setDeleteRequestId(id);
   };
 
   if (isLoading && lembretes.length === 0) {

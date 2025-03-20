@@ -30,7 +30,10 @@ export function LembreteActions({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const handleEdit = () => {
-    if (isProcessing) return;
+    if (isProcessing) {
+      console.log('Edit action blocked: processing in progress');
+      return;
+    }
     
     // Make sure the lembrete has an ID before proceeding
     if (!lembrete.id) {
@@ -45,7 +48,10 @@ export function LembreteActions({
   };
 
   const handleDelete = async () => {
-    if (isProcessing) return;
+    if (isProcessing) {
+      console.log('Delete action blocked: processing in progress');
+      return;
+    }
     
     try {
       if (!lembrete.id) {
@@ -54,12 +60,18 @@ export function LembreteActions({
         return;
       }
       
-      console.log('Deleting lembrete with ID:', lembrete.id);
+      console.log('Starting delete process for lembrete with ID:', lembrete.id);
+      
+      // Close the dialog first to prevent UI issues
+      setIsDeleteDialogOpen(false);
+      
+      // Then call the parent's onDelete callback
+      console.log('Calling parent onDelete callback');
       onDelete();
+      
     } catch (error) {
       console.error('Error handling delete action:', error);
       toast.error('Erro ao processar exclusão do lembrete. Tente novamente.');
-    } finally {
       setIsDeleteDialogOpen(false);
     }
   };
@@ -81,7 +93,10 @@ export function LembreteActions({
                 Editar
               </DropdownMenuItem>
               <DropdownMenuItem 
-                onClick={() => setIsDeleteDialogOpen(true)}
+                onClick={() => {
+                  console.log('Delete menu item clicked for lembrete ID:', lembrete.id);
+                  setIsDeleteDialogOpen(true);
+                }}
                 className="text-red-600 focus:text-red-600"
                 disabled={isProcessing}
               >
@@ -101,7 +116,10 @@ export function LembreteActions({
 
       <DeleteLembreteDialog
         isOpen={isDeleteDialogOpen}
-        onClose={() => setIsDeleteDialogOpen(false)}
+        onClose={() => {
+          console.log('Delete dialog close request');
+          setIsDeleteDialogOpen(false);
+        }}
         onConfirm={handleDelete}
         lembrete={lembrete}
       />
