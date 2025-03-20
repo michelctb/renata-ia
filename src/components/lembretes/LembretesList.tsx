@@ -1,6 +1,6 @@
 
 import { Lembrete } from '@/lib/lembretes';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency } from '@/lib/utils';
 import { LembreteActions } from './LembreteActions';
@@ -53,6 +53,19 @@ export default function LembretesList({
     }
   };
 
+  // Função para formatar a data corretamente
+  const formatData = (dataString: string) => {
+    try {
+      // Criar uma data sem preocupação com fuso horário
+      const [year, month, day] = dataString.split('-').map(Number);
+      // Format usando parseISO para lidar com a string de data ISO
+      return format(new Date(year, month - 1, day), 'dd/MM/yyyy', { locale: ptBR });
+    } catch (error) {
+      console.error('Erro ao formatar data:', error, dataString);
+      return 'Data inválida';
+    }
+  };
+
   return (
     <ScrollArea className="h-[calc(100vh-230px)] pr-4">
       <div className="space-y-4">
@@ -76,7 +89,7 @@ export default function LembretesList({
                   <p className="text-sm text-muted-foreground">Vencimento</p>
                   <p className="font-medium">
                     {lembrete.vencimento ? 
-                      format(new Date(lembrete.vencimento), 'dd/MM/yyyy', { locale: ptBR }) : 
+                      formatData(lembrete.vencimento) : 
                       'Data não definida'}
                   </p>
                 </div>

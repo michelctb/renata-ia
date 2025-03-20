@@ -70,8 +70,18 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
       console.log('Form submitted with values:', values);
       console.log('Editing mode:', editingLembrete ? true : false);
       
-      // Format the date to YYYY-MM-DD
-      const formattedDate = values.vencimento.toISOString().split('T')[0];
+      // Corrigir o problema de fuso horário criando uma nova data com UTC
+      const vencimentoDate = new Date(values.vencimento);
+      // Ajustar para manter o dia correto independente do fuso horário
+      const formattedDate = new Date(
+        vencimentoDate.getFullYear(),
+        vencimentoDate.getMonth(),
+        vencimentoDate.getDate(),
+        12, 0, 0 // Meio-dia para evitar problemas de fuso horário
+      ).toISOString().split('T')[0];
+      
+      console.log('Original date:', values.vencimento);
+      console.log('Formatted date for storage:', formattedDate);
       
       // Get client details to set cliente (name) and telefone
       let clienteData;

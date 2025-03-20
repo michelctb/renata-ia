@@ -49,8 +49,13 @@ export function useLembretes({ userId, isUserActive }: UseLembretesProps) {
 
   // Separate effect for delete requests
   useEffect(() => {
+    if (deleteRequestId === null || !userId) return;
+    
     const processDelete = async () => {
-      if (deleteRequestId === null || !userId || isProcessing) return;
+      if (isProcessing) {
+        console.log('Already processing, will try again later');
+        return;
+      }
       
       try {
         console.log('Starting delete processing for ID:', deleteRequestId);
@@ -129,6 +134,7 @@ export function useLembretes({ userId, isUserActive }: UseLembretesProps) {
     
     if (isProcessing) {
       console.log('Already processing an operation, ignoring delete');
+      toast.error('Outra operação está em andamento. Tente novamente em instantes.');
       return;
     }
     
