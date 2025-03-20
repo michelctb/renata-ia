@@ -61,10 +61,19 @@ export function useTransactionActions({
           console.log('Updated transaction:', updated);
           
           if (updated) {
-            setTransactions(prev => 
-              prev.map(t => (t.id === transaction.id ? updated : t))
-            );
+            console.log('Setting updated transaction in state');
+            setTransactions(prev => {
+              // Create a new array with the updated transaction
+              const newTransactions = prev.map(t => 
+                t.id === transaction.id ? updated : t
+              );
+              console.log('New transactions array after update:', newTransactions.length);
+              return newTransactions;
+            });
             toast.success('Transação atualizada com sucesso!');
+            
+            // Close the form after update is successful and state is updated
+            console.log('Closing form after successful update');
             onCloseForm();
           } else {
             console.error('No updated transaction returned from the API');
@@ -79,8 +88,17 @@ export function useTransactionActions({
           console.log('Added transaction:', added);
           
           if (added) {
-            setTransactions(prev => [added, ...prev]);
+            console.log('Setting added transaction in state');
+            setTransactions(prev => {
+              // Create a new array with the added transaction at the beginning
+              const newTransactions = [added, ...prev];
+              console.log('New transactions array after add:', newTransactions.length);
+              return newTransactions;
+            });
             toast.success('Transação adicionada com sucesso!');
+            
+            // Close the form after add is successful and state is updated
+            console.log('Closing form after successful add');
             onCloseForm();
           } else {
             console.error('No added transaction returned from the API');
@@ -94,6 +112,7 @@ export function useTransactionActions({
     } catch (error) {
       console.error('Error with transaction:', error);
       toast.error('Erro ao salvar a transação. Tente novamente.');
+      // Don't close the form on error
     }
   };
 
@@ -113,13 +132,20 @@ export function useTransactionActions({
       const success = await deleteTransaction(transactionToDelete);
       
       if (success) {
-        setTransactions(prev => prev.filter(t => t.id !== transactionToDelete));
+        console.log('Setting state after transaction deletion');
+        setTransactions(prev => {
+          // Create a new array without the deleted transaction
+          const newTransactions = prev.filter(t => t.id !== transactionToDelete);
+          console.log('New transactions array after delete:', newTransactions.length);
+          return newTransactions;
+        });
         toast.success('Transação excluída com sucesso!');
       }
     } catch (error) {
       console.error('Error deleting transaction:', error);
       toast.error('Erro ao excluir a transação. Tente novamente.');
     } finally {
+      console.log('Cleaning up after delete operation');
       setDeleteConfirmOpen(false);
       setTransactionToDelete(null);
     }

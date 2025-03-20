@@ -71,6 +71,7 @@ const TransactionsTab = ({
     setIsTransactionFormOpen(true);
   };
   
+  // Use the transaction actions hook
   const { 
     deleteConfirmOpen, 
     setDeleteConfirmOpen,
