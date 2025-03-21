@@ -1,9 +1,8 @@
-
 import { useAuth } from '@/contexts/AuthContext';
 import { Lembrete } from '@/lib/lembretes';
 import { toast } from 'sonner';
 import LembretesList from '@/components/lembretes/LembretesList';
-import { useLembretes } from '@/hooks/useLembretes';
+import { useLembretes } from '@/hooks/lembretes';
 import { LembretesHeader } from '@/components/lembretes/LembretesHeader';
 import { useState } from 'react';
 import LembreteForm from '@/components/lembretes/LembreteForm';
