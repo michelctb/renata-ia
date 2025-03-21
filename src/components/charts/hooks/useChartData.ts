@@ -1,137 +1,131 @@
 
 import { useMemo } from 'react';
-import { Transaction } from '@/lib/supabase/types';
+import { Transaction } from '@/lib/supabase';
 import { DateRange } from 'react-day-picker';
-import { isWithinInterval, parseISO } from 'date-fns';
+import { format, parseISO, isWithinInterval } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
-/**
- * Hook to filter transactions by date range
- */
 export function useFilteredTransactions(
-  transactions: Transaction[],
+  transactions: Transaction[], 
   dateRange?: DateRange | null
 ) {
   return useMemo(() => {
-    if (!dateRange?.from) {
-      return transactions;
-    }
-
+    if (!dateRange || !dateRange.from) return transactions;
+    
+    console.log(`Filtering chart data with date range: ${dateRange.from.toISOString()} to ${dateRange.to?.toISOString() || 'none'}`);
+    
     return transactions.filter(transaction => {
       try {
-        const transactionDate = parseISO(transaction.data);
+        // Parse the date directly from ISO string
+        const transactionDateStr = transaction.data;
+        const transactionDate = parseISO(transactionDateStr);
         
-        // If only 'from' date is provided
-        if (dateRange.from && !dateRange.to) {
-          return transactionDate >= dateRange.from;
+        if (dateRange.from && dateRange.to) {
+          return isWithinInterval(transactionDate, { 
+            start: dateRange.from, 
+            end: dateRange.to 
+          });
         }
         
-        // If both 'from' and 'to' dates are provided
-        if (dateRange.from && dateRange.to) {
-          return isWithinInterval(transactionDate, {
-            start: dateRange.from,
-            end: dateRange.to
-          });
+        if (dateRange.from) {
+          return transactionDate >= dateRange.from;
         }
         
         return true;
       } catch (error) {
-        console.error('Error filtering transaction by date:', error);
+        console.error('Error parsing date for charts:', transaction.data, error);
         return false;
       }
     });
   }, [transactions, dateRange]);
 }
 
-/**
- * Hook to prepare data for monthly chart
- */
-export function useMonthlyChartData(transactions: Transaction[]) {
+export function useMonthlyChartData(filteredTransactions: Transaction[]) {
   return useMemo(() => {
-    // Group transactions by month, calculate monthly income and expenses
-    const monthlyData = transactions.reduce((acc, transaction) => {
+    const months = new Map();
+    
+    filteredTransactions.forEach(transaction => {
       try {
-        // Extract month and year from the transaction date
-        const date = parseISO(transaction.data);
-        const month = date.getMonth();
-        const year = date.getFullYear();
-        const monthKey = `${year}-${month + 1}`;
+        // Parse the date directly
+        const dateStr = transaction.data;
+        const date = parseISO(dateStr);
         
-        // Initialize the month if it doesn't exist in the accumulator
-        if (!acc[monthKey]) {
-          acc[monthKey] = {
-            month: month + 1,
-            year,
-            entrada: 0,
-            saída: 0,
-            name: new Date(year, month).toLocaleDateString('pt-BR', { month: 'short' })
-          };
+        const monthKey = format(date, 'yyyy-MM');
+        const monthLabel = format(date, 'MMM yyyy', { locale: ptBR });
+        const operationType = transaction.operação?.toLowerCase() || '';
+        
+        if (!months.has(monthKey)) {
+          months.set(monthKey, { 
+            name: monthLabel, 
+            entrada: 0, 
+            saída: 0 
+          });
         }
         
-        // Add to income or expenses based on transaction type
-        const amount = transaction.valor;
-        const operationType = (transaction.operação || '').toLowerCase();
+        const monthData = months.get(monthKey);
         
         if (operationType === 'entrada') {
-          acc[monthKey].entrada += amount;
-        } else if (operationType === 'saída') {
-          acc[monthKey].saída += amount;
+          monthData.entrada += Number(transaction.valor);
+        } else if (operationType === 'saída' || operationType === 'saida') {
+          monthData.saída += Number(transaction.valor);
         }
-        
-        return acc;
       } catch (error) {
-        console.error('Error processing transaction for monthly chart:', error);
-        return acc;
+        console.error('Error processing date for monthly chart:', transaction.data, error);
       }
-    }, {} as Record<string, { month: number; year: number; entrada: number; saída: number; name: string }>);
-    
-    // Convert the object to an array sorted by year and month
-    return Object.values(monthlyData).sort((a, b) => {
-      if (a.year !== b.year) {
-        return a.year - b.year;
-      }
-      return a.month - b.month;
     });
-  }, [transactions]);
+    
+    return Array.from(months.values())
+      .sort((a, b) => {
+        // Fix the Month type error by correctly parsing the month names to dates
+        const getMonthNumber = (monthName: string) => {
+          const months = {
+            'jan': 0, 'fev': 1, 'mar': 2, 'abr': 3, 'mai': 4, 'jun': 5,
+            'jul': 6, 'ago': 7, 'set': 8, 'out': 9, 'nov': 10, 'dez': 11
+          };
+          return months[monthName.toLowerCase().substring(0, 3)] || 0;
+        };
+        
+        const [monthA, yearA] = a.name.split(' ');
+        const [monthB, yearB] = b.name.split(' ');
+        
+        const yearDiff = parseInt(yearA) - parseInt(yearB);
+        if (yearDiff !== 0) return yearDiff;
+        
+        return getMonthNumber(monthA) - getMonthNumber(monthB);
+      });
+  }, [filteredTransactions]);
 }
 
-/**
- * Hook to prepare data for category charts
- */
 export function useCategoryChartData(
-  transactions: Transaction[], 
-  transactionType: 'entrada' | 'saída',
-  goalsByCategory?: Record<string, number>
+  filteredTransactions: Transaction[], 
+  transactionType: 'saída' | 'entrada'
 ) {
   return useMemo(() => {
-    // Filter transactions by type
-    const filteredTransactions = transactions.filter(
-      transaction => transaction.operação?.toLowerCase() === transactionType
-    );
+    const categories = new Map();
     
-    // Group by category and sum values
-    const categoryMap = filteredTransactions.reduce((acc, transaction) => {
-      const category = transaction.categoria;
-      
-      if (!acc[category]) {
-        acc[category] = 0;
-      }
-      
-      acc[category] += transaction.valor;
-      
-      return acc;
-    }, {} as Record<string, number>);
+    // Process transactions based on selected transaction type with case-insensitive check
+    filteredTransactions
+      .filter(t => {
+        const opType = t.operação?.toLowerCase() || '';
+        return opType === transactionType || opType === transactionType.replace('í', 'i');
+      })
+      .forEach(transaction => {
+        // Handle empty or undefined category
+        const category = transaction.categoria?.trim() || 'Sem categoria';
+        
+        if (!categories.has(category)) {
+          categories.set(category, { 
+            name: category, 
+            value: 0 
+          });
+        }
+        
+        const categoryData = categories.get(category);
+        categoryData.value += Number(transaction.valor || 0);
+      });
     
-    // Convert to array format for charts
-    const data = Object.entries(categoryMap)
-      .map(([name, value]) => ({
-        name,
-        value,
-        goalValue: goalsByCategory?.[name]
-      }))
-      .filter(item => item.value > 0);
-    
-    console.log(`Category data for ${transactionType}:`, data);
-    
-    return { data, goalValues: goalsByCategory };
-  }, [transactions, transactionType, goalsByCategory]);
+    // Convert the Map to Array and sort by value (highest first)
+    return Array.from(categories.values())
+      .sort((a, b) => b.value - a.value);
+  }, [filteredTransactions, transactionType]);
 }

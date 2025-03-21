@@ -9,17 +9,11 @@ interface ExpensesRankingProps {
   data: Array<{
     name: string;
     value: number;
-    goalValue?: number;
   }>;
   transactionType: 'entrada' | 'saída';
-  onCategoryClick?: (category: string) => void;
 }
 
-export function ExpensesRanking({ 
-  data, 
-  transactionType,
-  onCategoryClick 
-}: ExpensesRankingProps) {
+export function ExpensesRanking({ data, transactionType }: ExpensesRankingProps) {
   const { 
     hasData, 
     dataToShow, 
@@ -45,10 +39,8 @@ export function ExpensesRanking({
               key={index}
               name={category.name}
               value={category.value}
-              goalValue={category.goalValue}
               index={index}
               transactionType={transactionType}
-              onClick={onCategoryClick}
             />
           ))}
           

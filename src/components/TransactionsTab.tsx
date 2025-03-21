@@ -9,8 +9,6 @@ import { TransactionFormContainer } from './transactions/TransactionFormContaine
 import { DeleteTransactionContainer } from './transactions/DeleteTransactionContainer';
 import SummaryCards from './SummaryCards';
 import DashboardCharts from './DashboardCharts';
-import { Badge } from './ui/badge';
-import { X } from 'lucide-react';
 
 // Types
 type TransactionsTabProps = {
@@ -37,9 +35,6 @@ const TransactionsTab = ({
   isFormOpen: propIsFormOpen,
   setIsFormOpen: propSetIsFormOpen
 }: TransactionsTabProps) => {
-  // Category filter state
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  
   // Initialize local state if props weren't provided
   const [localTransactions, setLocalTransactions] = useState<Transaction[]>([]);
   const [localDateRange, setLocalDateRange] = useState<DateRange | undefined>(() => {
@@ -66,7 +61,7 @@ const TransactionsTab = ({
     transactionToDelete,
     searchTerm,
     setSearchTerm,
-    filteredTransactions: baseFilteredTransactions,
+    filteredTransactions,
     hasFilters,
     totalReceived, 
     totalSpent,
@@ -89,25 +84,6 @@ const TransactionsTab = ({
     isFormOpen,
     setIsFormOpen
   });
-
-  // Apply additional category filter if one is selected
-  const filteredTransactions = selectedCategory
-    ? baseFilteredTransactions.filter(t => t.categoria === selectedCategory)
-    : baseFilteredTransactions;
-  
-  // Handle category selection from charts
-  const handleCategorySelect = (category: string | null) => {
-    setSelectedCategory(category);
-    // Optional: adjust the searchTerm to be empty when selecting a category
-    if (category) {
-      setSearchTerm('');
-    }
-  };
-  
-  // Clear category filter
-  const clearCategoryFilter = () => {
-    setSelectedCategory(null);
-  };
   
   return (
     <div className="space-y-6">
@@ -120,26 +96,7 @@ const TransactionsTab = ({
         dateRange={dateRange}
         clientId={clientId}
         viewMode={viewMode}
-        onCategorySelect={handleCategorySelect}
-        selectedCategory={selectedCategory}
       />
-      
-      {/* Active category filter indicator */}
-      {selectedCategory && (
-        <div className="bg-white dark:bg-gray-800 p-3 rounded-md shadow-sm flex items-center">
-          <span className="mr-2 text-sm text-muted-foreground">Filtrando por categoria:</span>
-          <Badge className="bg-primary font-medium">
-            {selectedCategory}
-            <button 
-              className="ml-1 hover:text-gray-200" 
-              onClick={clearCategoryFilter}
-              aria-label="Limpar filtro de categoria"
-            >
-              <X size={14} />
-            </button>
-          </Badge>
-        </div>
-      )}
       
       <TransactionsHeaderContainer 
         onSearch={setSearchTerm}
@@ -161,7 +118,7 @@ const TransactionsTab = ({
           searchTerm,
           setSearchTerm,
           filteredTransactions,
-          hasFilters: hasFilters || !!selectedCategory,
+          hasFilters,
           totalReceived,
           totalSpent
         }}
