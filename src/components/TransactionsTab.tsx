@@ -1,19 +1,12 @@
 
-import { useState, useEffect, useCallback } from 'react';
-import { toast } from 'sonner';
-import { DateRange } from 'react-day-picker';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState } from 'react';
 import { Transaction } from '@/lib/supabase/types';
-import TransactionTable from './TransactionTable';
-import { TransactionFormDialog } from './transactions/TransactionFormDialog';
-import { TransactionsHeader } from './transactions/TransactionsHeader';
-import { DeleteTransactionDialog } from './transactions/DeleteTransactionDialog';
-import { useTransactionFiltering } from './transactions/useTransactionFiltering';
-import { 
-  useTransactionSubmit,
-  useTransactionDelete,
-  useTransactionReload
-} from './transactions/hooks';
+import { DateRange } from 'react-day-picker';
+import { useTransactionsTabState } from './transactions/hooks/useTransactionsTabState';
+import { TransactionsHeaderContainer } from './transactions/TransactionsHeaderContainer';
+import { TransactionTableContainer } from './transactions/TransactionTableContainer';
+import { TransactionFormContainer } from './transactions/TransactionFormContainer';
+import { DeleteTransactionContainer } from './transactions/DeleteTransactionContainer';
 
 // Types
 type TransactionsTabProps = {
@@ -25,6 +18,9 @@ type TransactionsTabProps = {
   viewMode?: 'user' | 'admin' | 'consultor';
 };
 
+/**
+ * Main transactions tab component with state management and layout
+ */
 const TransactionsTab = ({ 
   transactions: propTransactions, 
   setTransactions: propSetTransactions, 
@@ -33,12 +29,6 @@ const TransactionsTab = ({
   clientId,
   viewMode = 'user'
 }: TransactionsTabProps) => {
-  const { user, isUserActive } = useAuth();
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
-  const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  
   // Initialize local state if props weren't provided
   const [localTransactions, setLocalTransactions] = useState<Transaction[]>([]);
   const [localDateRange, setLocalDateRange] = useState<DateRange | undefined>(() => {
@@ -54,141 +44,55 @@ const TransactionsTab = ({
   const dateRange = propDateRange !== undefined ? propDateRange : localDateRange;
   const setDateRange = propSetDateRange || setLocalDateRange;
   
-  // Get the correct user ID based on view mode
-  const userId = (viewMode === 'consultor' && clientId) ? clientId : user?.id;
-  
-  // Custom hooks for transaction management
-  const { 
-    searchTerm, 
-    setSearchTerm, 
+  // Use the custom hook for state and logic
+  const {
+    userId,
+    isFormOpen,
+    deleteDialogOpen,
+    editingTransaction,
+    transactionToDelete,
+    searchTerm,
+    setSearchTerm,
     filteredTransactions,
     hasFilters,
-    totalReceived,
-    totalSpent
-  } = useTransactionFiltering(transactions, dateRange);
-  
-  const { 
-    handleSubmitTransaction, 
-    isSubmitting 
-  } = useTransactionSubmit({
-    userId: userId || '',
+    totalReceived, 
+    totalSpent,
+    handleAddNew,
+    handleEdit,
+    handleDeleteRequest,
+    handleConfirmDelete,
+    handleCloseForm,
+    handleSubmitTransaction,
+    setDeleteDialogOpen,
+    isUserActive,
+    isReadOnly
+  } = useTransactionsTabState({
+    transactions,
     setTransactions,
-    onSuccess: () => {
-      setIsFormOpen(false);
-      setEditingTransaction(null);
-    }
+    dateRange,
+    setDateRange,
+    clientId,
+    viewMode
   });
-  
-  const { 
-    handleDeleteTransaction,
-    isDeleting
-  } = useTransactionDelete({
-    setTransactions,
-    onSuccess: () => {
-      setDeleteDialogOpen(false);
-      setTransactionToDelete(null);
-    }
-  });
-  
-  const {
-    reloadTransactions,
-    isReloading
-  } = useTransactionReload({
-    userId: userId || '',
-    setTransactions
-  });
-  
-  // Reload when date range changes
-  useEffect(() => {
-    if (userId) {
-      reloadTransactions();
-    }
-  }, [userId, dateRange]);
-  
-  // Open form for new transaction
-  const handleAddNew = () => {
-    if (!isUserActive()) {
-      toast.error('Sua conta está inativa. Por favor, atualize seu plano para continuar.');
-      return;
-    }
-    
-    // Disable adding in consultor view
-    if (viewMode === 'consultor') {
-      return;
-    }
-    
-    setEditingTransaction(null);
-    setIsFormOpen(true);
-  };
-  
-  // Open form to edit transaction
-  const handleEdit = (transaction: Transaction) => {
-    if (!isUserActive()) {
-      toast.error('Sua conta está inativa. Por favor, atualize seu plano para continuar.');
-      return;
-    }
-    
-    // Disable editing in consultor view
-    if (viewMode === 'consultor') {
-      return;
-    }
-    
-    setEditingTransaction(transaction);
-    setIsFormOpen(true);
-  };
-  
-  // Request to delete transaction
-  const handleDeleteRequest = (id: number) => {
-    if (!isUserActive()) {
-      toast.error('Sua conta está inativa. Por favor, atualize seu plano para continuar.');
-      return;
-    }
-    
-    // Disable deleting in consultor view
-    if (viewMode === 'consultor') {
-      return;
-    }
-    
-    const transaction = transactions.find(t => t.id === id);
-    if (transaction) {
-      setTransactionToDelete(transaction);
-      setDeleteDialogOpen(true);
-    }
-  };
-  
-  // Confirm delete
-  const handleConfirmDelete = async () => {
-    if (transactionToDelete) {
-      await handleDeleteTransaction(transactionToDelete.id as number);
-    }
-  };
-  
-  // Close form
-  const handleCloseForm = () => {
-    setIsFormOpen(false);
-    setEditingTransaction(null);
-  };
-
-  const isLoading = isSubmitting || isDeleting || isReloading;
   
   return (
     <div className="space-y-6">
-      <TransactionsHeader 
+      <TransactionsHeaderContainer 
         onSearch={setSearchTerm}
         searchTerm={searchTerm}
         dateRange={dateRange}
         onDateRangeChange={setDateRange}
         onAddNew={handleAddNew}
-        isUserActive={isUserActive()}
+        isUserActive={isUserActive}
         viewMode={viewMode}
       />
       
-      <TransactionTable 
+      <TransactionTableContainer
         transactions={transactions}
         onEditTransaction={handleEdit}
         onDeleteTransaction={handleDeleteRequest}
-        isUserActive={isUserActive()}
-        isReadOnly={viewMode === 'consultor'}
+        isUserActive={isUserActive}
+        isReadOnly={isReadOnly}
         filteringData={{
           searchTerm,
           setSearchTerm,
@@ -200,7 +104,7 @@ const TransactionsTab = ({
       />
       
       {userId && (
-        <TransactionFormDialog
+        <TransactionFormContainer
           isOpen={isFormOpen}
           onClose={handleCloseForm}
           onSubmit={handleSubmitTransaction}
@@ -209,7 +113,7 @@ const TransactionsTab = ({
         />
       )}
       
-      <DeleteTransactionDialog
+      <DeleteTransactionContainer
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
