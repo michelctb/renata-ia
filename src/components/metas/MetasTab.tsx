@@ -59,12 +59,12 @@ export function MetasTab({ userId }: MetasTabProps) {
 
   // Show form or list based on state
   return (
-    <Tabs defaultValue="metas">
-      <div className="py-10">
-        <div className="container max-w-[1000px]">
-          <MetasHeader />
+    <div className="py-10">
+      <div className="container max-w-[1000px]">
+        <MetasHeader />
 
-          {/* Show form if requested */}
+        {/* Show form if requested */}
+        <Tabs defaultValue="metas">
           <TabsContent value="metas">
             {showForm ? (
               <MetaForm
@@ -98,8 +98,8 @@ export function MetasTab({ userId }: MetasTabProps) {
               </>
             )}
           </TabsContent>
-        </div>
+        </Tabs>
       </div>
-    </Tabs>
+    </div>
   );
 }

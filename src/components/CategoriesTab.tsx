@@ -104,9 +104,9 @@ const CategoriesTab = ({ clientId, viewMode = 'user' }: CategoriesTabProps) => {
   };
   
   return (
-    <Tabs defaultValue="categories">
-      <TabsContent value="categories">
-        <div className="space-y-4">
+    <div className="space-y-4">
+      <Tabs defaultValue="categories">
+        <TabsContent value="categories">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Categorias</h2>
             <CategoryActions 
@@ -138,9 +138,9 @@ const CategoriesTab = ({ clientId, viewMode = 'user' }: CategoriesTabProps) => {
             onConfirm={handleConfirmDelete}
             categoryId={categoryToDelete}
           />
-        </div>
-      </TabsContent>
-    </Tabs>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 

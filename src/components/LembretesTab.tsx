@@ -111,9 +111,9 @@ const LembretesTab = ({ clientId, viewMode = 'user' }: LembretesTabProps) => {
   };
   
   return (
-    <Tabs defaultValue="lembretes">
-      <TabsContent value="lembretes">
-        <div className="space-y-6">
+    <div className="space-y-6">
+      <Tabs defaultValue="lembretes">
+        <TabsContent value="lembretes">
           <LembretesHeader 
             onAddNew={handleAddNew} 
             isUserActive={isUserActive()} 
@@ -143,9 +143,9 @@ const LembretesTab = ({ clientId, viewMode = 'user' }: LembretesTabProps) => {
             onConfirm={handleConfirmDelete}
             lembreteId={lembreteToDelete}
           />
-        </div>
-      </TabsContent>
-    </Tabs>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 
