@@ -1,9 +1,12 @@
 
+import { DateRange } from 'react-day-picker';
 import { TransactionsHeader } from './TransactionsHeader';
 
 interface TransactionsHeaderContainerProps {
   onSearch: (value: string) => void;
   searchTerm: string;
+  dateRange?: DateRange;
+  onDateRangeChange?: (range: DateRange | undefined) => void;
   onAddNew: () => void;
   isUserActive: boolean;
   viewMode: 'user' | 'admin' | 'consultor';
@@ -16,6 +19,8 @@ interface TransactionsHeaderContainerProps {
 export function TransactionsHeaderContainer({
   onSearch,
   searchTerm,
+  dateRange,
+  onDateRangeChange,
   onAddNew,
   isUserActive,
   viewMode,
