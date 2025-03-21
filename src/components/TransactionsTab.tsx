@@ -45,6 +45,9 @@ const TransactionsTab = ({
   });
   const [localIsFormOpen, setLocalIsFormOpen] = useState(false);
   
+  // Estado para categoria selecionada
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  
   // Use provided props or local state
   const transactions = propTransactions !== undefined ? propTransactions : localTransactions;
   const setTransactions = propSetTransactions || setLocalTransactions;
@@ -82,8 +85,22 @@ const TransactionsTab = ({
     clientId,
     viewMode,
     isFormOpen,
-    setIsFormOpen
+    setIsFormOpen,
+    selectedCategory,  // Passar categoria selecionada para o hook
   });
+  
+  // Função para lidar com clique em categoria
+  const handleCategoryClick = (category: string) => {
+    if (selectedCategory === category) {
+      // Se clicar na mesma categoria, desseleciona
+      setSelectedCategory(null);
+      setSearchTerm(''); // Limpar busca para mostrar todos os registros
+    } else {
+      // Seleciona nova categoria
+      setSelectedCategory(category);
+      setSearchTerm(category); // Define termo de busca para filtrar transações
+    }
+  };
   
   return (
     <div className="space-y-6">
@@ -96,6 +113,8 @@ const TransactionsTab = ({
         dateRange={dateRange}
         clientId={clientId}
         viewMode={viewMode}
+        selectedCategory={selectedCategory}
+        onCategoryClick={handleCategoryClick}
       />
       
       <TransactionsHeaderContainer 

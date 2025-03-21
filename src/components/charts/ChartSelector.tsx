@@ -1,12 +1,20 @@
 
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Dispatch, SetStateAction } from 'react';
 
 interface ChartSelectorProps {
   transactionType: 'saída' | 'entrada';
   setTransactionType: (value: 'saída' | 'entrada') => void;
+  selectedView?: 'pie' | 'ranking';
+  setSelectedView?: Dispatch<SetStateAction<'pie' | 'ranking'>>;
 }
 
-export function ChartSelector({ transactionType, setTransactionType }: ChartSelectorProps) {
+export function ChartSelector({ 
+  transactionType, 
+  setTransactionType, 
+  selectedView, 
+  setSelectedView 
+}: ChartSelectorProps) {
   return (
     <ToggleGroup 
       type="single" 
