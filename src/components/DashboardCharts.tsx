@@ -9,6 +9,7 @@ import { useMetasProgress } from './charts/hooks/useMetaProgress';
 import { useMetaVsActualData } from './charts/hooks/useMetaVsActualData';
 import { MonthlyChartCard } from './charts/MonthlyChartCard';
 import { CategoryChartsContainer } from './charts/CategoryChartsContainer';
+import { RankingChartsContainer } from './charts/RankingChartsContainer';
 import { MetaProgressDisplay } from './charts/MetaProgressDisplay';
 import { MetaVsActualChart } from './charts/MetaVsActualChart';
 
@@ -66,7 +67,7 @@ export default function DashboardCharts({
       {/* Monthly Chart Card */}
       <MonthlyChartCard data={monthlyData} />
       
-      {/* Category Charts (Pie Chart and Ranking) */}
+      {/* Category Charts (Pie Chart) */}
       <CategoryChartsContainer 
         categoryData={categoryData}
         transactionType={transactionType}
@@ -74,11 +75,19 @@ export default function DashboardCharts({
         selectedCategory={selectedCategory}
         onCategoryClick={onCategoryClick}
       />
+
+      {/* Ranking Charts */}
+      <RankingChartsContainer 
+        categoryData={categoryData}
+        transactionType={transactionType}
+        selectedCategory={selectedCategory}
+        onCategoryClick={onCategoryClick}
+      />
       
       {/* Meta Progress Display */}
       <MetaProgressDisplay metasComProgresso={metasComProgresso} />
       
-      {/* Meta vs Actual Chart - Nova adição */}
+      {/* Meta vs Actual Chart */}
       <MetaVsActualChart 
         data={chartData}
         totalMeta={totalMeta}

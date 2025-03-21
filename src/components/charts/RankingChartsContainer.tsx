@@ -1,7 +1,6 @@
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ExpensesPieChart } from './ExpensesPieChart';
-import { ChartSelector } from './ChartSelector';
+import { ExpensesRanking } from './ranking/ExpensesRanking';
 
 // Interface para os dados de categoria
 interface CategoryData {
@@ -9,50 +8,39 @@ interface CategoryData {
   value: number;
 }
 
-interface CategoryChartsContainerProps {
+interface RankingChartsContainerProps {
   categoryData: CategoryData[];
   transactionType: 'saída' | 'entrada';
-  setTransactionType: (value: 'saída' | 'entrada') => void;
   selectedCategory?: string | null;
   onCategoryClick?: (category: string) => void;
 }
 
-export function CategoryChartsContainer({ 
+export function RankingChartsContainer({ 
   categoryData, 
   transactionType,
-  setTransactionType,
   selectedCategory,
   onCategoryClick
-}: CategoryChartsContainerProps) {
+}: RankingChartsContainerProps) {
   // Título baseado no tipo de transação
-  const chartTitle = transactionType === 'saída' ? 'Gastos por Categoria' : 'Receitas por Categoria';
+  const chartTitle = transactionType === 'saída' ? 'Ranking de Gastos' : 'Ranking de Receitas';
   
   return (
-    <Card className="border-none shadow-md animate-fade-up col-span-1" style={{ animationDelay: '0.2s' }}>
+    <Card className="border-none shadow-md animate-fade-up col-span-1" style={{ animationDelay: '0.3s' }}>
       <CardHeader className="pb-2">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <CardTitle>{chartTitle}</CardTitle>
             <CardDescription>
-              Distribuição de {transactionType === 'saída' ? 'despesas' : 'receitas'} por categoria
+              Maiores {transactionType === 'saída' ? 'despesas' : 'receitas'} por categoria
             </CardDescription>
-          </div>
-          
-          <div className="flex gap-2">
-            {/* Seletor para alternar entre entradas e saídas */}
-            <ChartSelector 
-              transactionType={transactionType} 
-              setTransactionType={setTransactionType}
-            />
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        {/* Exibir apenas o gráfico de pizza */}
         <div className="h-[300px] flex flex-col">
-          <ExpensesPieChart 
+          <ExpensesRanking 
             data={categoryData} 
-            transactionType={transactionType} 
+            transactionType={transactionType}
             onCategoryClick={onCategoryClick}
             selectedCategory={selectedCategory}
           />

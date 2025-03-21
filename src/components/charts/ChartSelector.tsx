@@ -1,40 +1,25 @@
 
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Dispatch, SetStateAction } from 'react';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ChartSelectorProps {
   transactionType: 'saída' | 'entrada';
   setTransactionType: (value: 'saída' | 'entrada') => void;
-  selectedView?: 'pie' | 'ranking';
-  setSelectedView?: Dispatch<SetStateAction<'pie' | 'ranking'>>;
 }
 
 export function ChartSelector({ 
   transactionType, 
-  setTransactionType, 
-  selectedView, 
-  setSelectedView 
+  setTransactionType
 }: ChartSelectorProps) {
   return (
-    <ToggleGroup 
-      type="single" 
+    <Tabs 
       value={transactionType} 
-      onValueChange={(value) => value && setTransactionType(value as 'saída' | 'entrada')}
+      onValueChange={(value) => setTransactionType(value as 'saída' | 'entrada')}
+      className="hidden sm:block"
     >
-      <ToggleGroupItem 
-        value="saída" 
-        aria-label="Mostrar saídas" 
-        className={transactionType === 'saída' ? 'bg-expense text-white hover:text-white' : ''}
-      >
-        Saídas
-      </ToggleGroupItem>
-      <ToggleGroupItem 
-        value="entrada" 
-        aria-label="Mostrar entradas" 
-        className={transactionType === 'entrada' ? 'bg-income text-white hover:text-white' : ''}
-      >
-        Entradas
-      </ToggleGroupItem>
-    </ToggleGroup>
+      <TabsList className="bg-background">
+        <TabsTrigger value="saída" className="text-xs">Despesas</TabsTrigger>
+        <TabsTrigger value="entrada" className="text-xs">Receitas</TabsTrigger>
+      </TabsList>
+    </Tabs>
   );
 }
