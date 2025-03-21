@@ -139,30 +139,37 @@ export default function ConsultorClientView() {
         </div>
         
         <div className="animate-fade-in">
-          <TabsContent value="transactions" className="animate-fade-up">
-            <TransactionsTab 
-              transactions={transactions}
-              setTransactions={setTransactions}
-              dateRange={dateRange}
-              setDateRange={setDateRange}
-              clientId={clientId}
-              viewMode="consultor"
-            />
-          </TabsContent>
+          {/* Wrap each TabsContent in its own Tabs component */}
+          <Tabs value={activeTab}>
+            <TabsContent value="transactions" className="animate-fade-up">
+              <TransactionsTab 
+                transactions={transactions}
+                setTransactions={setTransactions}
+                dateRange={dateRange}
+                setDateRange={setDateRange}
+                clientId={clientId}
+                viewMode="consultor"
+              />
+            </TabsContent>
+          </Tabs>
           
-          <TabsContent value="categories" className="animate-fade-up">
-            <CategoriesTab 
-              clientId={clientId}
-              viewMode="consultor"
-            />
-          </TabsContent>
+          <Tabs value={activeTab}>
+            <TabsContent value="categories" className="animate-fade-up">
+              <CategoriesTab 
+                clientId={clientId}
+                viewMode="consultor"
+              />
+            </TabsContent>
+          </Tabs>
           
-          <TabsContent value="lembretes" className="animate-fade-up">
-            <LembretesTab 
-              clientId={clientId}
-              viewMode="consultor"
-            />
-          </TabsContent>
+          <Tabs value={activeTab}>
+            <TabsContent value="lembretes" className="animate-fade-up">
+              <LembretesTab 
+                clientId={clientId}
+                viewMode="consultor"
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
