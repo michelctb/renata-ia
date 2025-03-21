@@ -1,16 +1,9 @@
 
 import { formatCurrency } from '@/lib/utils';
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-
-// Expanded color palette to match the pie chart
-const COLORS = [
-  '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A569BD', 
-  '#5DADE2', '#F4D03F', '#EC7063', '#45B39D', '#AF7AC5', 
-  '#5499C7', '#F5B041', '#EB984E', '#58D68D', '#3498DB',
-  '#1ABC9C', '#9B59B6', '#2ECC71', '#E67E22', '#E74C3C',
-  '#34495E', '#16A085', '#27AE60', '#8E44AD', '#F39C12'
-];
+import { useExpensesRankingData } from './hooks/useExpensesRankingData';
+import { EmptyRankingMessage } from './ranking/EmptyRankingMessage';
+import { RankingCategoryItem } from './ranking/RankingCategoryItem';
 
 interface ExpensesRankingProps {
   data: Array<{
@@ -21,30 +14,17 @@ interface ExpensesRankingProps {
 }
 
 export function ExpensesRanking({ data, transactionType }: ExpensesRankingProps) {
-  console.log(`Raw data received in ranking (${transactionType}):`, data);
+  const { 
+    hasData, 
+    dataToShow, 
+    totalValue, 
+    showMoreMessage, 
+    totalCategories 
+  } = useExpensesRankingData(data, transactionType);
   
-  if (!data || data.length === 0) {
-    return (
-      <div className="h-[290px] flex items-center justify-center text-muted-foreground">
-        {transactionType === 'saída' 
-          ? 'Sem dados de saída para exibir no período selecionado'
-          : 'Sem dados de entrada para exibir no período selecionado'
-        }
-      </div>
-    );
+  if (!hasData) {
+    return <EmptyRankingMessage transactionType={transactionType} />;
   }
-
-  // Show all categories sorted by value (highest first)
-  const sortedData = [...data].sort((a, b) => b.value - a.value);
-  
-  // Show only top categories if there are too many
-  const dataToShow = sortedData.slice(0, 15); // Show at most 15 categories
-
-  // Calculate total of all displayed values
-  const totalValue = dataToShow.reduce((sum, category) => sum + category.value, 0);
-
-  console.log(`Processed data for ranking (${transactionType}):`, dataToShow);
-  console.log(`Total value for ranking (${transactionType}):`, totalValue);
 
   // Determine text color based on transaction type
   const valueTextColor = transactionType === 'saída' ? 'text-expense' : 'text-income';
@@ -55,27 +35,19 @@ export function ExpensesRanking({ data, transactionType }: ExpensesRankingProps)
       <ScrollArea className="flex-1">
         <div className="space-y-2">
           {dataToShow.map((category, index) => (
-            <div key={index} className="flex items-center justify-between p-2 border-b">
-              <Badge 
-                className="font-medium truncate max-w-[140px] text-sm text-white" 
-                style={{ 
-                  backgroundColor: COLORS[index % COLORS.length],
-                  borderColor: COLORS[index % COLORS.length] 
-                }}
-                title={category.name}
-              >
-                {category.name}
-              </Badge>
-              <span className={`font-medium ${valueTextColor}`}>
-                {formatCurrency(category.value)}
-              </span>
-            </div>
+            <RankingCategoryItem
+              key={index}
+              name={category.name}
+              value={category.value}
+              index={index}
+              transactionType={transactionType}
+            />
           ))}
           
           {/* Show the "more categories" message if needed */}
-          {data.length > 15 && (
+          {showMoreMessage && (
             <div className="text-center text-sm text-muted-foreground pt-2 pb-2">
-              Mostrando 15 de {data.length} categorias
+              Mostrando 15 de {totalCategories} categorias
             </div>
           )}
         </div>
