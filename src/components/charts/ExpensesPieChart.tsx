@@ -95,7 +95,7 @@ export function ExpensesPieChart({
               />
             ))}
           </Pie>
-          <Tooltip content={<PieChartTooltip totalValue={totalValue} />} />
+          <Tooltip content={<PieChartTooltip />} />
         </PieChart>
       </ResponsiveContainer>
       

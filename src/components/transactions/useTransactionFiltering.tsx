@@ -1,87 +1,81 @@
 
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Transaction } from '@/lib/supabase/types';
 import { DateRange } from 'react-day-picker';
+import { isWithinInterval, parseISO, isValid } from 'date-fns';
 
-/**
- * Custom hook for filtering transactions based on search term and date range
- * 
- * @param {Transaction[]} transactions - The list of transactions to filter
- * @param {DateRange | undefined} dateRange - The optional date range to filter by
- * @returns {Object} Object containing filtered transactions and filtering state
- */
 export function useTransactionFiltering(
-  transactions: Transaction[],
-  dateRange?: DateRange | undefined
+  transactions: Transaction[], 
+  dateRange?: DateRange | undefined,
+  selectedCategory?: string | null
 ) {
   const [searchTerm, setSearchTerm] = useState('');
   
+  // Set a default search term if a category is selected
+  useMemo(() => {
+    if (selectedCategory) {
+      setSearchTerm(selectedCategory);
+    }
+  }, [selectedCategory]);
+  
   const filteredTransactions = useMemo(() => {
-    let filtered = transactions;
+    if (!transactions) return [];
     
-    // Filter by date range if provided
-    if (dateRange?.from || dateRange?.to) {
-      filtered = filtered.filter(transaction => {
-        const transactionDate = new Date(transaction.data);
-        
-        // Filter by start date if provided
-        if (dateRange.from && transactionDate < dateRange.from) {
-          return false;
-        }
-        
-        // Filter by end date if provided
-        if (dateRange.to) {
-          const endDate = new Date(dateRange.to);
-          endDate.setHours(23, 59, 59, 999); // End of day
-          if (transactionDate > endDate) {
-            return false;
-          }
-        }
-        
-        return true;
-      });
-    }
-    
-    // Filter by search term if provided
-    if (searchTerm.trim()) {
-      const normalizedSearchTerm = searchTerm.toLowerCase().trim();
+    return transactions.filter(transaction => {
+      let matches = true;
       
-      filtered = filtered.filter(transaction => {
-        const description = transaction.descrição.toLowerCase();
-        const category = transaction.categoria.toLowerCase();
-        
-        // Check if any field contains the search term
-        return (
-          description.includes(normalizedSearchTerm) ||
-          category.includes(normalizedSearchTerm)
-        );
-      });
-    }
-    
-    return filtered;
+      // Filter by search term if provided
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        const matchesSearch = 
+          (transaction.categoria && transaction.categoria.toLowerCase().includes(searchLower)) ||
+          (transaction.descricao && transaction.descricao.toLowerCase().includes(searchLower)) ||
+          String(transaction.valor).includes(searchLower);
+          
+        if (!matchesSearch) matches = false;
+      }
+      
+      // Filter by date range if provided
+      if (dateRange?.from && transaction.data) {
+        try {
+          const transactionDate = parseISO(transaction.data);
+          
+          if (isValid(transactionDate)) {
+            const withinRange = dateRange.to 
+              ? isWithinInterval(transactionDate, { start: dateRange.from, end: dateRange.to })
+              : transactionDate >= dateRange.from;
+              
+            if (!withinRange) matches = false;
+          }
+        } catch (error) {
+          console.error('Invalid date format:', transaction.data);
+          matches = false;
+        }
+      }
+      
+      return matches;
+    });
   }, [transactions, searchTerm, dateRange]);
-
-  // Check if any filters are applied
-  const hasFilters = searchTerm.trim().length > 0 || (dateRange?.from !== undefined || dateRange?.to !== undefined);
-
-  // Calculate totals for income and expense transactions
-  const { totalReceived, totalSpent } = useMemo(() => {
+  
+  // Calculate totals
+  const [totalReceived, totalSpent] = useMemo(() => {
+    if (!filteredTransactions.length) return [0, 0];
+    
     return filteredTransactions.reduce(
       (acc, transaction) => {
-        const operationType = transaction.operação?.toLowerCase();
-        
-        if (operationType === 'entrada') {
-          acc.totalReceived += transaction.valor;
-        } else if (operationType === 'saída') {
-          acc.totalSpent += transaction.valor;
+        if (transaction.operação === 'entrada') {
+          acc[0] += transaction.valor || 0;
+        } else if (transaction.operação === 'saída') {
+          acc[1] += transaction.valor || 0;
         }
-        
         return acc;
       },
-      { totalReceived: 0, totalSpent: 0 }
+      [0, 0]
     );
   }, [filteredTransactions]);
-
+  
+  const hasFilters = !!searchTerm || (!!dateRange?.from || !!dateRange?.to);
+  
   return {
     searchTerm,
     setSearchTerm,

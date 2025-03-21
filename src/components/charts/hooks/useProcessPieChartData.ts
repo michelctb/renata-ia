@@ -18,17 +18,22 @@ export interface CategoryData {
   value: number;
 }
 
-export function useProcessPieChartData(data: CategoryData[], transactionType: 'entrada' | 'saída') {
+export function useProcessPieChartData(data: CategoryData[]) {
   return useMemo(() => {
-    console.log(`Raw data received in pie chart (${transactionType}):`, data);
-    
     if (!data || data.length === 0) {
       return {
         hasData: false,
         processedData: [],
-        renderColors: []
+        renderColors: [],
+        totalValue: 0,
+        COLORS: COLORS,
+        RADIAN: Math.PI / 180,
+        otherCategories: []
       };
     }
+
+    // Calculate total value of all categories
+    const totalValue = data.reduce((acc, item) => acc + item.value, 0);
 
     // Process the data to group small categories as "Outros" if there are too many categories
     const processedData = (() => {
@@ -57,8 +62,6 @@ export function useProcessPieChartData(data: CategoryData[], transactionType: 'e
       return topCategories;
     })();
 
-    console.log(`Processed data for pie chart (${transactionType}):`, processedData);
-
     // Ensure we have enough colors
     const renderColors = [...COLORS];
     // If we have an "Outros" category, use a specific color for it
@@ -66,10 +69,17 @@ export function useProcessPieChartData(data: CategoryData[], transactionType: 'e
       renderColors[9] = OTHER_COLOR;
     }
 
+    // Get list of otherCategories if we grouped them
+    const otherCategories = data.length > 10 ? data.slice(9) : [];
+
     return {
       hasData: true,
       processedData,
-      renderColors
+      renderColors,
+      totalValue,
+      COLORS: COLORS,
+      RADIAN: Math.PI / 180,
+      otherCategories
     };
-  }, [data, transactionType]);
+  }, [data]);
 }
