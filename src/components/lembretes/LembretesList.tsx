@@ -4,7 +4,15 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency } from '@/lib/utils';
 import { LembreteActions } from './LembreteActions';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableFooter,
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -25,11 +33,9 @@ export default function LembretesList({
 }: LembretesListProps) {
   if (lembretes.length === 0) {
     return (
-      <Card className="border-dashed mt-4">
-        <CardContent className="pt-6 text-center text-muted-foreground">
-          Nenhum lembrete cadastrado.
-        </CardContent>
-      </Card>
+      <div className="text-center py-8 border border-dashed rounded-md mt-4 dark:border-gray-700 dark:text-gray-300">
+        Nenhum lembrete cadastrado.
+      </div>
     );
   }
 
@@ -43,17 +49,17 @@ export default function LembretesList({
   const getLembreteBadge = (tipo: string) => {
     switch (tipo.toLowerCase()) {
       case 'fixo':
-        return <Badge className="bg-blue-500">Fixo</Badge>;
+        return <Badge className="bg-blue-500 hover:bg-blue-600">Fixo</Badge>;
       case 'variável':
-        return <Badge className="bg-amber-500">Variável</Badge>;
+        return <Badge className="bg-amber-500 hover:bg-amber-600">Variável</Badge>;
       case 'eventual':
-        return <Badge className="bg-purple-500">Eventual</Badge>;
+        return <Badge className="bg-purple-500 hover:bg-purple-600">Eventual</Badge>;
       default:
         return <Badge>{tipo}</Badge>;
     }
   };
 
-  // Função corrigida para formatar a data adequadamente
+  // Função para formatar a data adequadamente
   const formatData = (dataString: string) => {
     try {
       // Extrair ano, mês e dia diretamente da string de data
@@ -70,47 +76,61 @@ export default function LembretesList({
     }
   };
 
+  // Calculate total value
+  const totalValue = sortedLembretes.reduce((sum, lembrete) => {
+    return sum + (lembrete.valor || 0);
+  }, 0);
+
   return (
-    <ScrollArea className="h-[calc(100vh-230px)] pr-4">
-      <div className="space-y-4">
-        {sortedLembretes.map((lembrete) => (
-          <Card key={lembrete.id} className="relative">
-            <CardHeader className="pb-2">
-              <div className="flex justify-between items-start">
-                <CardTitle className="text-lg">{lembrete.lembrete}</CardTitle>
-                <LembreteActions 
-                  lembrete={lembrete}
-                  onEdit={() => onEdit(lembrete)}
-                  onDelete={() => lembrete.id && onDelete(lembrete.id)}
-                  isUserActive={isUserActive}
-                  isProcessing={isProcessing}
-                />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Vencimento</p>
-                  <p className="font-medium">
-                    {lembrete.vencimento ? 
-                      formatData(lembrete.vencimento) : 
-                      'Data não definida'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Valor</p>
-                  <p className="font-medium">
-                    {lembrete.valor ? formatCurrency(lembrete.valor) : 'Não informado'}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4">
-                {getLembreteBadge(lembrete.tipo || '')}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </ScrollArea>
+    <div className="rounded-md border border-border dark:border-gray-700 overflow-hidden mt-4">
+      <ScrollArea className="h-[calc(100vh-280px)]">
+        <Table>
+          <TableHeader className="bg-muted/50 dark:bg-gray-800">
+            <TableRow className="hover:bg-transparent dark:border-gray-700">
+              <TableHead className="text-foreground dark:text-gray-300">Nome</TableHead>
+              <TableHead className="text-foreground dark:text-gray-300">Vencimento</TableHead>
+              <TableHead className="text-foreground dark:text-gray-300">Tipo</TableHead>
+              <TableHead className="text-foreground dark:text-gray-300">Valor</TableHead>
+              <TableHead className="text-right text-foreground dark:text-gray-300">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {sortedLembretes.map((lembrete) => (
+              <TableRow 
+                key={lembrete.id}
+                className="dark:border-gray-700 dark:bg-gray-800/40 dark:hover:bg-gray-700/40"
+              >
+                <TableCell className="font-medium dark:text-gray-200">{lembrete.lembrete}</TableCell>
+                <TableCell className="dark:text-gray-300">
+                  {lembrete.vencimento ? formatData(lembrete.vencimento) : 'Não definida'}
+                </TableCell>
+                <TableCell>
+                  {lembrete.tipo ? getLembreteBadge(lembrete.tipo) : '-'}
+                </TableCell>
+                <TableCell className="dark:text-gray-300">
+                  {lembrete.valor ? formatCurrency(lembrete.valor) : '-'}
+                </TableCell>
+                <TableCell className="text-right">
+                  <LembreteActions 
+                    lembrete={lembrete}
+                    onEdit={() => onEdit(lembrete)}
+                    onDelete={() => lembrete.id && onDelete(lembrete.id)}
+                    isUserActive={isUserActive}
+                    isProcessing={isProcessing}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+          <TableFooter className="bg-muted/30 dark:bg-gray-800/80 dark:border-t dark:border-gray-700">
+            <TableRow className="dark:border-gray-700">
+              <TableCell colSpan={3} className="font-medium text-right dark:text-gray-200">Total:</TableCell>
+              <TableCell className="font-bold dark:text-white">{formatCurrency(totalValue)}</TableCell>
+              <TableCell></TableCell>
+            </TableRow>
+          </TableFooter>
+        </Table>
+      </ScrollArea>
+    </div>
   );
 }

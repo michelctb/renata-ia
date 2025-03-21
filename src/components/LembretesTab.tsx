@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/contexts/AuthContext';
 import { Lembrete } from '@/lib/lembretes';
 import { toast } from 'sonner';
@@ -60,14 +61,16 @@ const LembretesTab = () => {
 
   if (isLoading && lembretes.length === 0) {
     return (
-      <div className="flex justify-center p-8">
-        <div className="animate-pulse text-lg">Carregando lembretes...</div>
+      <div className="p-4 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-lg shadow-sm">
+        <div className="flex justify-center p-8">
+          <div className="animate-pulse text-lg dark:text-gray-300">Carregando lembretes...</div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="p-4 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-lg shadow-sm">
       <LembretesHeader 
         onAddNew={handleAddNew} 
         isUserActive={isUserActive()} 
