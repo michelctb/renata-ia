@@ -10,7 +10,7 @@ import TransactionsTab from '@/components/TransactionsTab';
 import CategoriesTab from '@/components/CategoriesTab';
 import LembretesTab from '@/components/LembretesTab';
 import { toast } from 'sonner';
-import { parseISO } from 'date-fns';
+import { startOfMonth, endOfMonth } from 'date-fns';
 
 const Dashboard = () => {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -18,7 +18,20 @@ const Dashboard = () => {
   
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [dateRange, setDateRange] = useState<DateRange | null>(null);
+  
+  // Define o mês atual como período padrão
+  const today = new Date();
+  const firstDayOfMonth = startOfMonth(today);
+  firstDayOfMonth.setHours(0, 0, 0, 0);
+  
+  const lastDayOfMonth = endOfMonth(today);
+  lastDayOfMonth.setHours(23, 59, 59, 999);
+  
+  const [dateRange, setDateRange] = useState<DateRange | null>({
+    from: firstDayOfMonth,
+    to: lastDayOfMonth
+  });
+  
   const [activeTab, setActiveTab] = useState("transactions");
   
   useEffect(() => {

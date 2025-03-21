@@ -21,10 +21,12 @@ export function TransactionsHeader({
     <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center mb-6">
       <h2 className="text-2xl font-bold">Transações</h2>
       <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-        <DateRangePicker
-          dateRange={dateRange}
-          onDateRangeChange={setDateRange}
-        />
+        <div className="w-full">
+          <DateRangePicker
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
+          />
+        </div>
         <Button onClick={onAddNew} disabled={!isUserActive}>
           <PlusIcon className="h-4 w-4 mr-1" />
           Nova Transação

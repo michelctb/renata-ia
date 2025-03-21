@@ -1,6 +1,7 @@
+
 import * as React from "react";
 import { CalendarIcon } from "lucide-react";
-import { addDays, format } from "date-fns";
+import { addDays, format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 
@@ -12,13 +13,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface DateRangePickerProps {
   dateRange: DateRange | null;
@@ -28,79 +23,68 @@ interface DateRangePickerProps {
 export function DateRangePicker({ dateRange, onDateRangeChange }: DateRangePickerProps) {
   const [isOpen, setIsOpen] = React.useState(false);
 
-  // Predefined ranges
-  const handleSelectPredefined = (value: string) => {
+  // Seleciona o mês atual por padrão quando o componente é montado
+  React.useEffect(() => {
+    if (!dateRange) {
+      handleSelectPeriod("thisMonth");
+    }
+  }, []);
+
+  // Funções para períodos predefinidos
+  const handleSelectPeriod = (value: string) => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set to start of day
+    today.setHours(0, 0, 0, 0); // Define para o início do dia
     
     switch (value) {
-      case "today":
+      case "today": {
+        // Hoje (início e fim do dia atual)
+        const endOfDay = new Date(today);
+        endOfDay.setHours(23, 59, 59, 999);
+        
         onDateRangeChange({
           from: today,
-          to: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999) // End of day
-        });
-        break;
-      case "yesterday": {
-        const yesterday = addDays(today, -1);
-        onDateRangeChange({
-          from: yesterday,
-          to: new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59, 59, 999)
+          to: endOfDay
         });
         break;
       }
-      case "7days": {
+      case "thisWeek": {
+        // Esta semana (início da semana atual até hoje)
+        const weekStart = startOfWeek(today, { locale: ptBR });
+        const weekEnd = endOfWeek(today, { locale: ptBR });
+        weekEnd.setHours(23, 59, 59, 999);
+        
         onDateRangeChange({
-          from: addDays(today, -6),
-          to: today,
-        });
-        break;
-      }
-      case "30days": {
-        onDateRangeChange({
-          from: addDays(today, -29),
-          to: today,
+          from: weekStart,
+          to: weekEnd
         });
         break;
       }
       case "thisMonth": {
-        // Definir primeiro dia do mês atual à 00:00:00
-        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-        firstDay.setHours(0, 0, 0, 0);
+        // Mês atual (do primeiro ao último dia do mês)
+        const firstDayOfMonth = startOfMonth(today);
+        firstDayOfMonth.setHours(0, 0, 0, 0);
         
-        // Definir último dia do mês atual às 23:59:59
-        const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        lastDay.setHours(23, 59, 59, 999);
-        
-        // Log para debug
-        console.log('Filtro este mês:', 
-          `De: ${firstDay.toISOString()} (${format(firstDay, 'dd/MM/yyyy HH:mm:ss')})`, 
-          `Até: ${lastDay.toISOString()} (${format(lastDay, 'dd/MM/yyyy HH:mm:ss')})`
-        );
+        const lastDayOfMonth = endOfMonth(today);
+        lastDayOfMonth.setHours(23, 59, 59, 999);
         
         onDateRangeChange({
-          from: firstDay,
-          to: lastDay,
+          from: firstDayOfMonth,
+          to: lastDayOfMonth,
         });
         break;
       }
       case "lastMonth": {
-        // Definir primeiro dia do mês anterior à 00:00:00
-        const firstDay = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-        firstDay.setHours(0, 0, 0, 0);
+        // Mês anterior
+        const lastMonth = subMonths(today, 1);
+        const firstDayOfLastMonth = startOfMonth(lastMonth);
+        firstDayOfLastMonth.setHours(0, 0, 0, 0);
         
-        // Definir último dia do mês anterior às 23:59:59
-        const lastDay = new Date(today.getFullYear(), today.getMonth(), 0);
-        lastDay.setHours(23, 59, 59, 999);
-        
-        // Log para debug
-        console.log('Filtro mês anterior:', 
-          `De: ${firstDay.toISOString()} (${format(firstDay, 'dd/MM/yyyy HH:mm:ss')})`, 
-          `Até: ${lastDay.toISOString()} (${format(lastDay, 'dd/MM/yyyy HH:mm:ss')})`
-        );
+        const lastDayOfLastMonth = endOfMonth(lastMonth);
+        lastDayOfLastMonth.setHours(23, 59, 59, 999);
         
         onDateRangeChange({
-          from: firstDay,
-          to: lastDay,
+          from: firstDayOfLastMonth,
+          to: lastDayOfLastMonth,
         });
         break;
       }
@@ -110,29 +94,94 @@ export function DateRangePicker({ dateRange, onDateRangeChange }: DateRangePicke
     }
   };
 
+  // Determina qual período está selecionado
+  const getSelectedPeriod = (): string => {
+    if (!dateRange?.from || !dateRange?.to) return "";
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endOfToday = new Date(today);
+    endOfToday.setHours(23, 59, 59, 999);
+    
+    // Verificação para hoje
+    if (
+      dateRange.from.getDate() === today.getDate() &&
+      dateRange.from.getMonth() === today.getMonth() &&
+      dateRange.from.getFullYear() === today.getFullYear() &&
+      dateRange.to.getDate() === today.getDate() &&
+      dateRange.to.getMonth() === today.getMonth() &&
+      dateRange.to.getFullYear() === today.getFullYear()
+    ) {
+      return "today";
+    }
+    
+    // Verificação para esta semana
+    const weekStart = startOfWeek(today, { locale: ptBR });
+    const weekEnd = endOfWeek(today, { locale: ptBR });
+    weekEnd.setHours(23, 59, 59, 999);
+    
+    if (
+      dateRange.from.getTime() === weekStart.getTime() &&
+      dateRange.to.getTime() === weekEnd.getTime()
+    ) {
+      return "thisWeek";
+    }
+    
+    // Verificação para mês atual
+    const firstDayOfMonth = startOfMonth(today);
+    firstDayOfMonth.setHours(0, 0, 0, 0);
+    
+    const lastDayOfMonth = endOfMonth(today);
+    lastDayOfMonth.setHours(23, 59, 59, 999);
+    
+    if (
+      dateRange.from.getTime() === firstDayOfMonth.getTime() &&
+      dateRange.to.getTime() === lastDayOfMonth.getTime()
+    ) {
+      return "thisMonth";
+    }
+    
+    // Verificação para mês anterior
+    const lastMonth = subMonths(today, 1);
+    const firstDayOfLastMonth = startOfMonth(lastMonth);
+    firstDayOfLastMonth.setHours(0, 0, 0, 0);
+    
+    const lastDayOfLastMonth = endOfMonth(lastMonth);
+    lastDayOfLastMonth.setHours(23, 59, 59, 999);
+    
+    if (
+      dateRange.from.getTime() === firstDayOfLastMonth.getTime() &&
+      dateRange.to.getTime() === lastDayOfLastMonth.getTime()
+    ) {
+      return "lastMonth";
+    }
+    
+    return "";
+  };
+
   return (
-    <div className="flex items-center space-x-2">
-      <Select onValueChange={handleSelectPredefined}>
-        <SelectTrigger className="h-10 w-[180px]">
-          <SelectValue placeholder="Selecionar período" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="today">Hoje</SelectItem>
-          <SelectItem value="yesterday">Ontem</SelectItem>
-          <SelectItem value="7days">Últimos 7 dias</SelectItem>
-          <SelectItem value="30days">Últimos 30 dias</SelectItem>
-          <SelectItem value="thisMonth">Este mês</SelectItem>
-          <SelectItem value="lastMonth">Mês anterior</SelectItem>
-          <SelectItem value="clear">Limpar filtro</SelectItem>
-        </SelectContent>
-      </Select>
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+      <ToggleGroup type="single" value={getSelectedPeriod()} onValueChange={handleSelectPeriod} className="flex flex-wrap bg-background dark:bg-gray-800 p-1 rounded-md border dark:border-gray-700">
+        <ToggleGroupItem value="today" className="text-xs px-2 py-1 h-auto">
+          Hoje
+        </ToggleGroupItem>
+        <ToggleGroupItem value="thisWeek" className="text-xs px-2 py-1 h-auto">
+          Esta semana
+        </ToggleGroupItem>
+        <ToggleGroupItem value="thisMonth" className="text-xs px-2 py-1 h-auto">
+          Mês atual
+        </ToggleGroupItem>
+        <ToggleGroupItem value="lastMonth" className="text-xs px-2 py-1 h-auto">
+          Mês anterior
+        </ToggleGroupItem>
+      </ToggleGroup>
 
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Button
             variant={"outline"}
             className={cn(
-              "w-[280px] justify-start text-left font-normal",
+              "w-full sm:w-[230px] justify-start text-left font-normal",
               !dateRange?.from && "text-muted-foreground"
             )}
           >

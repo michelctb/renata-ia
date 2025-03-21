@@ -124,6 +124,19 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* Melhorias para o modo escuro */
+.dark .bg-white {
+  background-color: rgba(17, 24, 39, 0.8);
+}
+
+.dark .border-gray-200 {
+  border-color: rgba(55, 65, 81, 0.5);
+}
+
+.dark .shadow {
+  --tw-shadow-color: rgba(0, 0, 0, 0.3);
+}
+
 .transaction-card {
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
@@ -131,4 +144,23 @@
 .transaction-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Ajustes para o ToggleGroup no dark mode */
+.dark [data-state="on"].toggle-group-item {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.dark .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .rdp-day_selected, 
+.dark .rdp-day_selected:hover {
+  background-color: hsl(var(--primary));
+}
+
+.dark .rdp-day_outside {
+  opacity: 0.5;
 }
