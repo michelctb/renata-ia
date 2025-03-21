@@ -1,6 +1,4 @@
 
-import { useState } from 'react';
-import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { Category } from '@/lib/categories';
 import { MetaCategoria } from '@/lib/metas';
@@ -27,11 +25,17 @@ export function CategoryFormManager({
     return null;
   }
 
+  // Create a wrapper function to handle the return type mismatch
+  const handleSubmit = async (category: Category, metaData?: { hasMeta: boolean, valorMeta?: number }) => {
+    await onSubmit(category, metaData);
+    // No return value needed, which matches the Promise<void> type
+  };
+
   return (
     <CategoryForm
       isOpen={isOpen}
       onClose={onClose}
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit}
       editingCategory={editingCategory}
       meta={editingMeta}
       userId={user.id}
