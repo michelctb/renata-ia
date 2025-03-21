@@ -13,6 +13,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import {
@@ -30,6 +31,8 @@ import {
   DialogFooter,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { MetaCategoria } from '@/lib/metas';
 
 // Schema para validação do formulário
 const formSchema = z.object({
@@ -38,13 +41,19 @@ const formSchema = z.object({
     message: 'O nome deve ter pelo menos 2 caracteres.',
   }),
   tipo: z.enum(['entrada', 'saída', 'ambos']),
+  hasMeta: z.boolean().default(false),
+  valorMeta: z.number().optional()
+    .refine(val => !val || val > 0, {
+      message: "O valor da meta deve ser maior que zero",
+    }),
 });
 
 interface CategoryFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: Category) => Promise<void>;
+  onSubmit: (data: Category, metaData?: { hasMeta: boolean, valorMeta?: number }) => Promise<void>;
   editingCategory: Category | null;
+  meta?: MetaCategoria | null;
   userId: string;
 }
 
@@ -53,6 +62,7 @@ export function CategoryForm({
   onClose,
   onSubmit,
   editingCategory,
+  meta,
   userId,
 }: CategoryFormProps) {
   // Inicializar formulário
@@ -61,24 +71,21 @@ export function CategoryForm({
     defaultValues: {
       nome: '',
       tipo: 'ambos',
+      hasMeta: false,
+      valorMeta: 0,
     },
   });
 
   // Atualizar valores do formulário ao editar categoria
   useEffect(() => {
-    if (editingCategory) {
-      form.reset({
-        id: editingCategory.id,
-        nome: editingCategory.nome,
-        tipo: editingCategory.tipo,
-      });
-    } else {
-      form.reset({
-        nome: '',
-        tipo: 'ambos',
-      });
-    }
-  }, [editingCategory, form]);
+    form.reset({
+      id: editingCategory?.id,
+      nome: editingCategory?.nome || '',
+      tipo: editingCategory?.tipo || 'ambos',
+      hasMeta: !!meta,
+      valorMeta: meta?.valor_meta || 0,
+    });
+  }, [editingCategory, meta, form]);
 
   // Gerenciar envio do formulário
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -92,11 +99,18 @@ export function CategoryForm({
         nome: values.nome,
         tipo: values.tipo,
         cliente: userId,
-        padrao: false // Garantir que novas categorias nunca são padrão
+        padrao: editingCategory?.padrao || false // Garantir que novas categorias nunca são padrão
+      };
+      
+      const metaData = {
+        hasMeta: values.hasMeta,
+        valorMeta: values.hasMeta ? values.valorMeta : undefined
       };
       
       console.log('Submitting category to backend:', category);
-      await onSubmit(category);
+      console.log('Meta data:', metaData);
+      
+      await onSubmit(category, metaData);
       
       toast.success(
         editingCategory 
@@ -111,6 +125,9 @@ export function CategoryForm({
       toast.error(`Erro ao salvar a categoria: ${errorMessage}`);
     }
   };
+
+  // Monitorar mudanças no checkbox de meta
+  const hasMetaValue = form.watch("hasMeta");
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -166,6 +183,51 @@ export function CategoryForm({
                 </FormItem>
               )}
             />
+            
+            <FormField
+              control={form.control}
+              name="hasMeta"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Definir meta de gastos</FormLabel>
+                    <FormDescription>
+                      Marque esta opção para definir uma meta de gastos para esta categoria
+                    </FormDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
+            
+            {hasMetaValue && (
+              <FormField
+                control={form.control}
+                name="valorMeta"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Valor da Meta (R$)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        step="0.01" 
+                        min="0" 
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e.target.valueAsNumber || 0);
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             
             <DialogFooter>
               <Button type="button" variant="outline" onClick={onClose}>

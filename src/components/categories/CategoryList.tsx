@@ -1,9 +1,10 @@
 
 import { useState } from 'react';
 import { Category } from '@/lib/categories';
+import { MetaCategoria } from '@/lib/metas';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { PencilIcon, TrashIcon } from 'lucide-react';
+import { PencilIcon, TrashIcon, TargetIcon } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -16,13 +17,21 @@ import { Badge } from "@/components/ui/badge";
 
 interface CategoryListProps {
   categories: Category[];
-  onEdit: (category: Category) => void;
+  metas: Record<string, MetaCategoria>;
+  onEdit: (category: Category, meta?: MetaCategoria | null) => void;
   onDelete: (id: number, isPadrao: boolean) => void;
   isLoading: boolean;
   isUserActive?: boolean;
 }
 
-export function CategoryList({ categories, onEdit, onDelete, isLoading, isUserActive = true }: CategoryListProps) {
+export function CategoryList({ 
+  categories, 
+  metas, 
+  onEdit, 
+  onDelete, 
+  isLoading, 
+  isUserActive = true 
+}: CategoryListProps) {
   if (isLoading) {
     return (
       <div className="p-4 flex justify-center">
@@ -39,6 +48,13 @@ export function CategoryList({ categories, onEdit, onDelete, isLoading, isUserAc
     );
   }
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -46,63 +62,79 @@ export function CategoryList({ categories, onEdit, onDelete, isLoading, isUserAc
           <TableHead>Nome</TableHead>
           <TableHead>Tipo</TableHead>
           <TableHead>Status</TableHead>
+          <TableHead>Meta</TableHead>
           <TableHead className="text-right">Ações</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {categories.map((category) => (
-          <TableRow key={category.id} className={category.padrao ? "bg-slate-50" : ""}>
-            <TableCell className="font-medium">{category.nome}</TableCell>
-            <TableCell>
-              {category.tipo === 'entrada' && 'Entrada'}
-              {category.tipo === 'saída' && 'Saída'}
-              {category.tipo === 'ambos' && 'Ambos'}
-            </TableCell>
-            <TableCell>
-              {category.padrao ? (
-                <Badge variant="secondary">Padrão</Badge>
-              ) : (
-                <Badge variant="outline">Personalizada</Badge>
-              )}
-            </TableCell>
-            <TableCell className="text-right">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onEdit(category)}
-                className="h-8 w-8 p-0 mr-1"
-                disabled={category.padrao || !isUserActive}
-                title={
-                  category.padrao 
-                    ? "Categorias padrão não podem ser editadas" 
-                    : !isUserActive 
-                      ? "Assinatura inativa. Não é possível editar categorias."
-                      : "Editar categoria"
-                }
-              >
-                <PencilIcon className="h-4 w-4" />
-                <span className="sr-only">Editar</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onDelete(category.id!, category.padrao || false)}
-                className={`h-8 w-8 p-0 ${category.padrao || !isUserActive ? "text-muted-foreground" : "text-destructive hover:text-destructive"}`}
-                disabled={category.padrao || !isUserActive}
-                title={
-                  category.padrao 
-                    ? "Categorias padrão não podem ser excluídas" 
-                    : !isUserActive 
-                      ? "Assinatura inativa. Não é possível excluir categorias."
-                      : "Excluir categoria"
-                }
-              >
-                <TrashIcon className="h-4 w-4" />
-                <span className="sr-only">Excluir</span>
-              </Button>
-            </TableCell>
-          </TableRow>
-        ))}
+        {categories.map((category) => {
+          const meta = metas[category.nome];
+          const hasMeta = !!meta;
+          
+          return (
+            <TableRow key={category.id} className={category.padrao ? "bg-slate-50" : ""}>
+              <TableCell className="font-medium">{category.nome}</TableCell>
+              <TableCell>
+                {category.tipo === 'entrada' && 'Entrada'}
+                {category.tipo === 'saída' && 'Saída'}
+                {category.tipo === 'ambos' && 'Ambos'}
+              </TableCell>
+              <TableCell>
+                {category.padrao ? (
+                  <Badge variant="secondary">Padrão</Badge>
+                ) : (
+                  <Badge variant="outline">Personalizada</Badge>
+                )}
+              </TableCell>
+              <TableCell>
+                {hasMeta ? (
+                  <div className="flex items-center gap-1">
+                    <TargetIcon className="h-4 w-4 text-green-600" />
+                    <span className="text-sm">{formatCurrency(meta.valor_meta)}</span>
+                  </div>
+                ) : (
+                  <span className="text-muted-foreground text-sm">Não definida</span>
+                )}
+              </TableCell>
+              <TableCell className="text-right">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onEdit(category, meta || null)}
+                  className="h-8 w-8 p-0 mr-1"
+                  disabled={category.padrao || !isUserActive}
+                  title={
+                    category.padrao 
+                      ? "Categorias padrão não podem ser editadas" 
+                      : !isUserActive 
+                        ? "Assinatura inativa. Não é possível editar categorias."
+                        : "Editar categoria"
+                  }
+                >
+                  <PencilIcon className="h-4 w-4" />
+                  <span className="sr-only">Editar</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onDelete(category.id!, category.padrao || false)}
+                  className={`h-8 w-8 p-0 ${category.padrao || !isUserActive ? "text-muted-foreground" : "text-destructive hover:text-destructive"}`}
+                  disabled={category.padrao || !isUserActive}
+                  title={
+                    category.padrao 
+                      ? "Categorias padrão não podem ser excluídas" 
+                      : !isUserActive 
+                        ? "Assinatura inativa. Não é possível excluir categorias."
+                        : "Excluir categoria"
+                  }
+                >
+                  <TrashIcon className="h-4 w-4" />
+                  <span className="sr-only">Excluir</span>
+                </Button>
+              </TableCell>
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
   );
