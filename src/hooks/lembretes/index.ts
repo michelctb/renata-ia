@@ -49,5 +49,3 @@ export function useLembretes({ userId, isUserActive }: UseLembretesProps) {
   };
 }
 
-// Re-export the hook
-export { useLembretes };
