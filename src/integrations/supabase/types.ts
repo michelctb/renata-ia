@@ -168,6 +168,39 @@ export type Database = {
         }
         Relationships: []
       }
+      metas_categorias: {
+        Row: {
+          ano_referencia: number | null
+          categoria: string
+          created_at: string
+          id: number
+          id_cliente: string
+          mes_referencia: number | null
+          periodo: string
+          valor_meta: number
+        }
+        Insert: {
+          ano_referencia?: number | null
+          categoria: string
+          created_at?: string
+          id?: number
+          id_cliente: string
+          mes_referencia?: number | null
+          periodo?: string
+          valor_meta: number
+        }
+        Update: {
+          ano_referencia?: number | null
+          categoria?: string
+          created_at?: string
+          id?: number
+          id_cliente?: string
+          mes_referencia?: number | null
+          periodo?: string
+          valor_meta?: number
+        }
+        Relationships: []
+      }
       "Sistema Financeiro": {
         Row: {
           categoria: string | null

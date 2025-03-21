@@ -8,7 +8,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { MonthlyChart } from './charts/MonthlyChart';
 import { ExpensesPieChart } from './charts/ExpensesPieChart';
 import { ExpensesRanking } from './charts/ExpensesRanking';
+import { MetaProgressBar } from './metas/MetaProgressBar';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { fetchMetasPeriodo, MetaCategoria, LIMITE_BAIXO, LIMITE_MEDIO, LIMITE_ALTO } from '@/lib/metas';
+import { useAuth } from '@/contexts/AuthContext';
+import { useEffect } from 'react';
 
 type DashboardChartsProps = {
   transactions: Transaction[];
@@ -16,7 +20,34 @@ type DashboardChartsProps = {
 };
 
 export default function DashboardCharts({ transactions, dateRange }: DashboardChartsProps) {
+  const { user } = useAuth();
   const [transactionType, setTransactionType] = useState<'saída' | 'entrada'>('saída');
+  const [metas, setMetas] = useState<MetaCategoria[]>([]);
+  
+  // Buscar metas para o período atual
+  useEffect(() => {
+    const loadMetas = async () => {
+      if (!user || !dateRange?.from) return;
+      
+      try {
+        const mesReferencia = dateRange.from.getMonth() + 1;
+        const anoReferencia = dateRange.from.getFullYear();
+        
+        const metasPeriodo = await fetchMetasPeriodo(
+          user.id, 
+          'mensal', 
+          mesReferencia, 
+          anoReferencia
+        );
+        
+        setMetas(metasPeriodo);
+      } catch (error) {
+        console.error('Erro ao carregar metas para dashboard:', error);
+      }
+    };
+    
+    loadMetas();
+  }, [user, dateRange]);
   
   // Filter transactions by date range
   const filteredTransactions = useMemo(() => {
@@ -134,6 +165,43 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
       .sort((a, b) => b.value - a.value);
   }, [filteredTransactions, transactionType]);
 
+  // Calcular progresso das metas
+  const metasComProgresso = useMemo(() => {
+    if (!metas.length || !filteredTransactions.length) return [];
+    
+    return metas.map(meta => {
+      // Filtrar transações apenas de saída e da categoria específica
+      const gastosPorCategoria = filteredTransactions
+        .filter(t => 
+          t.operação?.toLowerCase() === 'saída' && 
+          t.categoria === meta.categoria
+        )
+        .reduce((total, t) => total + (t.valor || 0), 0);
+      
+      // Calcular porcentagem
+      const porcentagem = meta.valor_meta > 0 ? gastosPorCategoria / meta.valor_meta : 0;
+      
+      // Determinar status baseado na porcentagem
+      let status: 'baixo' | 'médio' | 'alto' | 'excedido' = 'baixo';
+      if (porcentagem > LIMITE_ALTO) {
+        status = 'excedido';
+      } else if (porcentagem > LIMITE_MEDIO) {
+        status = 'alto';
+      } else if (porcentagem > LIMITE_BAIXO) {
+        status = 'médio';
+      }
+      
+      return {
+        meta,
+        valor_atual: gastosPorCategoria,
+        porcentagem,
+        status
+      };
+    })
+    .sort((a, b) => b.porcentagem - a.porcentagem)
+    .slice(0, 5); // Mostrar apenas as 5 metas com maior progresso
+  }, [metas, filteredTransactions]);
+
   const chartTitle = transactionType === 'saída' ? 'Saídas por Categoria' : 'Entradas por Categoria';
   const rankingTitle = transactionType === 'saída' ? 'Ranking de Categorias (Saídas)' : 'Ranking de Categorias (Entradas)';
   const chartDescription = transactionType === 'saída' 
@@ -184,6 +252,33 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
           <ExpensesRanking data={categoryData} transactionType={transactionType} />
         </CardContent>
       </Card>
+      
+      {metasComProgresso.length > 0 && (
+        <Card className="border-none shadow-md animate-fade-up col-span-1 lg:col-span-3" style={{ animationDelay: '0.4s' }}>
+          <CardHeader className="pb-2">
+            <CardTitle>Progresso das Metas</CardTitle>
+            <CardDescription>Acompanhamento das metas de gastos por categoria</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {metasComProgresso.map((item, index) => (
+                <div key={index} className="space-y-1">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">{item.meta.categoria}</span>
+                    <span className="text-sm text-muted-foreground">
+                      Meta: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.meta.valor_meta)}
+                    </span>
+                  </div>
+                  <MetaProgressBar 
+                    valor={item.porcentagem} 
+                    status={item.status} 
+                  />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
