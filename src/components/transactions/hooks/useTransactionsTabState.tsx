@@ -13,6 +13,8 @@ type UseTransactionsTabStateProps = {
   setDateRange: React.Dispatch<React.SetStateAction<any>>;
   clientId?: string;
   viewMode?: 'user' | 'admin' | 'consultor';
+  isFormOpen?: boolean;
+  setIsFormOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 /**
@@ -24,13 +26,19 @@ export function useTransactionsTabState({
   dateRange,
   setDateRange,
   clientId,
-  viewMode = 'user'
+  viewMode = 'user',
+  isFormOpen: propIsFormOpen,
+  setIsFormOpen: propSetIsFormOpen
 }: UseTransactionsTabStateProps) {
   const { user, isUserActive } = useAuth();
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [localIsFormOpen, setLocalIsFormOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  
+  // Use provided props or local state for form open state
+  const isFormOpen = propIsFormOpen !== undefined ? propIsFormOpen : localIsFormOpen;
+  const setIsFormOpen = propSetIsFormOpen || setLocalIsFormOpen;
   
   // Get the correct user ID based on view mode
   const userId = (viewMode === 'consultor' && clientId) ? clientId : user?.id;
@@ -176,6 +184,7 @@ export function useTransactionsTabState({
     
     // Setters
     setDeleteDialogOpen,
+    setIsFormOpen,
     
     // User state
     isUserActive: isUserActive(),
