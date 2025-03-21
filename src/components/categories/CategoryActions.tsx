@@ -4,21 +4,25 @@ import { PlusIcon } from 'lucide-react';
 
 interface CategoryActionsProps {
   onAddNew: () => void;
-  isUserActive: boolean;
+  isActive: boolean;
+  isProcessing?: boolean;
+  viewMode?: 'user' | 'admin' | 'consultor';
 }
 
-export function CategoryActions({ onAddNew, isUserActive }: CategoryActionsProps) {
+export function CategoryActions({ 
+  onAddNew, 
+  isActive,
+  isProcessing = false,
+  viewMode = 'user'
+}: CategoryActionsProps) {
   return (
-    <div className="flex flex-row justify-between items-center mb-6">
-      <h2 className="text-2xl font-bold dark:text-white">Categorias</h2>
-      <Button 
-        onClick={onAddNew} 
-        disabled={!isUserActive}
-        className="dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
-      >
-        <PlusIcon className="h-4 w-4 mr-1" />
-        Nova Categoria
-      </Button>
-    </div>
+    <Button 
+      onClick={onAddNew} 
+      disabled={!isActive || isProcessing || viewMode === 'consultor'}
+      className="bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
+    >
+      <PlusIcon className="h-4 w-4 mr-1" />
+      {viewMode === 'consultor' ? 'Modo Visualização' : 'Nova Categoria'}
+    </Button>
   );
 }

@@ -1,96 +1,89 @@
 
-import { useAuth } from '@/contexts/AuthContext';
-import { Lembrete } from '@/lib/lembretes';
-import { toast } from 'sonner';
-import LembretesList from '@/components/lembretes/LembretesList';
-import { useLembretes } from '@/hooks/lembretes';
-import { LembretesHeader } from '@/components/lembretes/LembretesHeader';
 import { useState } from 'react';
-import LembreteForm from '@/components/lembretes/LembreteForm';
+import { useAuth } from '@/contexts/AuthContext';
+import { LembretesHeader } from '@/components/lembretes/LembretesHeader';
+import { LembretesList } from '@/components/lembretes/LembretesList';
+import { LembreteFormManager } from '@/components/lembretes/LembreteFormManager';
+import { DeleteLembreteDialog } from '@/components/lembretes/DeleteLembreteDialog';
+import { LembreteSchema } from '@/components/lembretes/lembreteFormSchema';
+import { useBasicLembretes } from '@/hooks/lembretes/useBasicLembretes';
+import { useDeletion } from '@/hooks/lembretes/useDeletion';
+import { useFormOperations } from '@/hooks/lembretes/useFormOperations';
 
-const LembretesTab = () => {
+type LembretesTabProps = {
+  clientId?: string;
+  viewMode?: 'user' | 'admin' | 'consultor';
+};
+
+const LembretesTab = ({ clientId, viewMode = 'user' }: LembretesTabProps) => {
   const { user, isUserActive } = useAuth();
-  const { lembretes, isLoading, isProcessing, handleFormSubmit, handleDelete } = useLembretes({
-    userId: user?.id,
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingLembrete, setEditingLembrete] = useState<LembreteSchema | null>(null);
+  
+  // Use client ID if in consultor view mode
+  const userId = viewMode === 'consultor' && clientId ? clientId : user?.id;
+  
+  // Load lembretes data
+  const { 
+    lembretes, 
+    isLoading, 
+    refetchLembretes
+  } = useBasicLembretes(userId);
+  
+  // Deletion handling
+  const {
+    lembreteToDelete,
+    deleteDialogOpen,
+    setDeleteDialogOpen,
+    handleDeleteRequest,
+    handleConfirmDelete
+  } = useDeletion({ onSuccess: refetchLembretes });
+  
+  // Form operations
+  const {
+    handleAddNew,
+    handleEdit,
+    handleCloseForm,
+    handleSubmitForm,
+    isProcessing
+  } = useFormOperations({
+    setIsFormOpen,
+    setEditingLembrete,
+    refetchLembretes,
     isUserActive: isUserActive(),
+    viewMode
   });
   
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingLembrete, setEditingLembrete] = useState<Lembrete | null>(null);
-
-  const handleAddNew = () => {
-    // Block inactive users from adding lembretes
-    if (!isUserActive()) {
-      toast.error('Sua assinatura está inativa. Você não pode adicionar lembretes.');
-      return;
-    }
-    
-    console.log('Adding new lembrete, clearing editing state');
-    setEditingLembrete(null);
-    setIsFormOpen(true);
-  };
-
-  const handleEdit = (lembrete: Lembrete) => {
-    // Block inactive users from editing lembretes
-    if (!isUserActive()) {
-      toast.error('Sua assinatura está inativa. Você não pode editar lembretes.');
-      return;
-    }
-    
-    console.log('Editing lembrete with ID:', lembrete.id);
-    console.log('Editing lembrete:', lembrete);
-    
-    // Make sure we create a deep copy of the object
-    const lembreteCopy = JSON.parse(JSON.stringify(lembrete));
-    setEditingLembrete(lembreteCopy);
-    
-    // Set form open after editing state is set
-    setTimeout(() => {
-      setIsFormOpen(true);
-    }, 0);
-  };
-
-  const handleFormClose = () => {
-    console.log('Form closed, cleaning up state');
-    setIsFormOpen(false);
-    // Clear the editing lembrete after a short delay to avoid timing issues
-    setTimeout(() => {
-      setEditingLembrete(null);
-    }, 100);
-  };
-
-  if (isLoading && lembretes.length === 0) {
-    return (
-      <div className="p-4 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-lg shadow-sm">
-        <div className="flex justify-center p-8">
-          <div className="animate-pulse text-lg dark:text-gray-300">Carregando lembretes...</div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-4 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-lg shadow-sm">
+    <div className="space-y-6">
       <LembretesHeader 
         onAddNew={handleAddNew} 
         isUserActive={isUserActive()} 
         isProcessing={isProcessing}
       />
-
+      
       <LembretesList 
         lembretes={lembretes}
+        isLoading={isLoading}
         onEdit={handleEdit}
-        onDelete={handleDelete}
+        onDelete={handleDeleteRequest}
         isUserActive={isUserActive()}
-        isProcessing={isProcessing}
+        viewMode={viewMode}
       />
-
-      <LembreteForm
+      
+      <LembreteFormManager
         isOpen={isFormOpen}
-        onClose={handleFormClose}
-        onSubmit={handleFormSubmit}
+        onClose={handleCloseForm}
+        onSubmit={handleSubmitForm}
         editingLembrete={editingLembrete}
-        userId={user?.id || ''}
+        userId={userId}
+      />
+      
+      <DeleteLembreteDialog 
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        lembreteId={lembreteToDelete}
       />
     </div>
   );

@@ -1,66 +1,104 @@
 
-import { useCallback } from 'react';
-import { Lembrete } from '@/lib/lembretes';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import { LembreteSchema } from '@/components/lembretes/lembreteFormSchema';
+import { useFormSubmission } from './useFormSubmission';
 
-/**
- * Hook to handle form submission operations.
- * Manages adding and updating lembretes through form submission.
- * 
- * @param {boolean} isProcessing - Whether an operation is in progress
- * @param {Function} setLembretes - Function to update lembretes state
- * @param {Function} incrementFormSubmissionCount - Function to trigger a reload
- * @returns {Object} Object containing form operation handlers
- * @property {Function} handleFormSubmit - Function to handle form submission
- */
-export function useFormOperations(
-  isProcessing: boolean,
-  setLembretes: React.Dispatch<React.SetStateAction<Lembrete[]>>,
-  incrementFormSubmissionCount: () => void
-) {
-  /**
-   * Handles form submission for adding or updating a lembrete.
-   * Updates local state optimistically, then triggers a reload.
-   * 
-   * @param {Lembrete} data - The lembrete data to submit
-   */
-  const handleFormSubmit = useCallback(async (data: Lembrete) => {
-    if (isProcessing) {
-      console.log('Already processing a submission, ignoring');
+interface FormOperationsProps {
+  setIsFormOpen: (open: boolean) => void;
+  setEditingLembrete: (lembrete: LembreteSchema | null) => void;
+  refetchLembretes: () => void;
+  isUserActive: boolean;
+  viewMode?: 'user' | 'admin' | 'consultor';
+}
+
+export const useFormOperations = ({
+  setIsFormOpen,
+  setEditingLembrete,
+  refetchLembretes,
+  isUserActive,
+  viewMode = 'user'
+}: FormOperationsProps) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { submitLembrete } = useFormSubmission();
+  
+  // Handler for opening form to add a new lembrete
+  const handleAddNew = () => {
+    if (!isUserActive) {
+      toast.error('Sua assinatura está inativa. Você não pode adicionar lembretes.');
       return;
     }
     
-    try {
-      console.log('Starting form submission processing');
-      console.log('Form submitted with data:', data);
-      
-      // Update local list first with the new lembrete
-      if (data.id) {
-        // Edit case - update existing item
-        console.log('Updating local list with edited item');
-        setLembretes(prevLembretes => 
-          prevLembretes.map(item => 
-            item.id === data.id ? data : item
-          )
-        );
-      } else {
-        // Add case - add new item
-        console.log('Adding new item to local list');
-        if (data.id) {
-          setLembretes(prevLembretes => [...prevLembretes, data]);
-        }
-      }
-      
-      // Trigger a reload via the submission counter
-      incrementFormSubmissionCount();
-      
-    } catch (error) {
-      console.error('Error updating lembretes list:', error);
-      toast.error('Erro ao atualizar a lista de lembretes.');
+    if (viewMode === 'consultor') {
+      toast.error('Você não tem permissão para adicionar lembretes para este cliente.');
+      return;
     }
-  }, [isProcessing, setLembretes, incrementFormSubmissionCount]);
-
-  return {
-    handleFormSubmit
+    
+    setEditingLembrete(null);
+    setIsFormOpen(true);
   };
-}
+  
+  // Handler for opening form to edit an existing lembrete
+  const handleEdit = (lembrete: LembreteSchema) => {
+    if (!isUserActive) {
+      toast.error('Sua assinatura está inativa. Você não pode editar lembretes.');
+      return;
+    }
+    
+    if (viewMode === 'consultor') {
+      toast.error('Você não tem permissão para editar lembretes deste cliente.');
+      return;
+    }
+    
+    setEditingLembrete(lembrete);
+    setIsFormOpen(true);
+  };
+  
+  // Handler for closing the form
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    
+    // Clear editing state after a brief delay to prevent UI flicker
+    setTimeout(() => {
+      setEditingLembrete(null);
+    }, 100);
+  };
+  
+  // Handler for submitting the form
+  const handleSubmitForm = async (formData: LembreteSchema) => {
+    setIsProcessing(true);
+    
+    try {
+      await submitLembrete(formData);
+      
+      // Refetch lembretes to update the list
+      refetchLembretes();
+      
+      // Close the form
+      setIsFormOpen(false);
+      
+      // Show success message
+      toast.success(
+        formData.id ? 'Lembrete atualizado com sucesso!' : 'Lembrete adicionado com sucesso!'
+      );
+    } catch (error) {
+      console.error('Error submitting lembrete:', error);
+      toast.error('Erro ao salvar lembrete. Tente novamente.');
+    } finally {
+      setIsProcessing(false);
+      
+      // Clear editing state after a brief delay
+      setTimeout(() => {
+        setEditingLembrete(null);
+      }, 100);
+    }
+  };
+  
+  return {
+    isProcessing,
+    handleAddNew,
+    handleEdit,
+    handleCloseForm,
+    handleSubmitForm
+  };
+};

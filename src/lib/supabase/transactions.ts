@@ -1,4 +1,3 @@
-
 import { supabase, FINANCIAL_TABLE } from './client';
 import { Transaction } from './types';
 import { formatPhoneForWhatsApp, getClientPhone } from './utils';
@@ -19,6 +18,25 @@ export async function fetchTransactions(userId: string) {
   }
 
   console.log('Transactions fetched:', data?.length || 0);
+  return data || [];
+}
+
+// Fetch transactions for a client by their ID (used by consultors)
+export async function fetchTransactionsByClientId(clientId: string) {
+  console.log('Fetching transactions for client:', clientId);
+  
+  const { data, error } = await supabase
+    .from(FINANCIAL_TABLE)
+    .select('*')
+    .eq('id_cliente', clientId)
+    .order('data', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching client transactions:', error);
+    throw error;
+  }
+
+  console.log('Client transactions fetched:', data?.length || 0);
   return data || [];
 }
 

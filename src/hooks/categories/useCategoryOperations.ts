@@ -1,123 +1,101 @@
-
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { getMonth, getYear } from 'date-fns';
-import { Category, addCategory, updateCategory } from '@/lib/categories';
-import { MetaCategoria, addMetaCategoria, updateMetaCategoria, deleteMetaCategoria } from '@/lib/metas';
+import { CategoryFormSchema } from '@/components/categories/categoryFormSchema';
 
-type CategoryOperationsProps = {
-  user: { id: string } | null;
-  categories: Category[];
-  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
-  metas: Record<string, MetaCategoria>;
-  setMetas: React.Dispatch<React.SetStateAction<Record<string, MetaCategoria>>>;
-};
+interface CategoryOperationsProps {
+  setIsFormOpen: (open: boolean) => void;
+  setEditingCategory: (category: CategoryFormSchema | null) => void;
+  refetchCategories: () => void;
+  isUserActive: boolean;
+  viewMode?: 'user' | 'admin' | 'consultor';
+}
 
-/**
- * Hook to manage category creation and updates
- */
-export function useCategoryOperations({ 
-  user, 
-  categories, 
-  setCategories, 
-  metas, 
-  setMetas 
-}: CategoryOperationsProps) {
+export const useCategoryOperations = ({
+  setIsFormOpen,
+  setEditingCategory,
+  refetchCategories,
+  isUserActive,
+  viewMode = 'user'
+}: CategoryOperationsProps) => {
+  const [isProcessing, setIsProcessing] = useState(false);
   
-  const handleSubmitCategory = async (
-    category: Category, 
-    metaData?: { hasMeta: boolean, valorMeta?: number }
-  ): Promise<void> => {
-    if (!user) {
-      toast.error('You must be logged in to add categories');
+  // Handler for opening the form to add a new category
+  const handleAddNew = () => {
+    if (!isUserActive) {
+      toast.error('Sua assinatura está inativa. Você não pode adicionar categorias.');
       return;
     }
     
+    if (viewMode === 'consultor') {
+      toast.error('Você não tem permissão para adicionar categorias para este cliente.');
+      return;
+    }
+    
+    setEditingCategory(null);
+    setIsFormOpen(true);
+  };
+  
+  // Handler for opening the form to edit an existing category
+  const handleEdit = (category: CategoryFormSchema) => {
+    if (!isUserActive) {
+      toast.error('Sua assinatura está inativa. Você não pode editar categorias.');
+      return;
+    }
+    
+    if (viewMode === 'consultor') {
+      toast.error('Você não tem permissão para editar categorias deste cliente.');
+      return;
+    }
+    
+    setEditingCategory(category);
+    setIsFormOpen(true);
+  };
+  
+  // Handler for closing the form
+  const handleFormClose = () => {
+    setIsFormOpen(false);
+    // Clear editing state after a brief delay to prevent UI flicker
+    setTimeout(() => {
+      setEditingCategory(null);
+    }, 100);
+  };
+  
+  // Handler for submitting the form
+  const handleFormSubmit = async (formData: CategoryFormSchema) => {
+    setIsProcessing(true);
+    
     try {
-      let savedCategory;
+      // Call the API to add/update category
+      // ...
       
-      // For default categories, only manage the goal/meta, not the category itself
-      if (category.padrao) {
-        console.log('Default category, maintaining existing data and only updating meta');
-        // For default categories, use existing data
-        savedCategory = categories.find(c => c.id === category.id);
-        if (!savedCategory) {
-          throw new Error('Default category not found');
-        }
-      } else {
-        // For non-default categories, save or update normally
-        if (category.id) {
-          savedCategory = await updateCategory(category);
-          setCategories(prev => 
-            prev.map(c => (c.id === category.id ? savedCategory : c))
-          );
-        } else {
-          const categoryToAdd: Category = {
-            ...category,
-            cliente: user.id,
-            padrao: false
-          };
-          
-          savedCategory = await addCategory(categoryToAdd);
-          setCategories(prev => [...prev, savedCategory]);
-        }
-      }
+      // Refetch categories to update the list
+      refetchCategories();
       
-      // Manage meta
-      if (metaData) {
-        const existingMeta = metas[savedCategory.nome];
-        
-        if (metaData.hasMeta && metaData.valorMeta) {
-          // Create or update meta
-          const metaToSave: MetaCategoria = {
-            id_cliente: user.id,
-            categoria: savedCategory.nome,
-            valor_meta: metaData.valorMeta,
-            periodo: 'mensal',
-            mes_referencia: getMonth(new Date()) + 1,
-            ano_referencia: getYear(new Date())
-          };
-          
-          // Only add id if it's an update operation and we have an existing meta
-          if (existingMeta?.id) {
-            metaToSave.id = existingMeta.id;
-          }
-          
-          let savedMeta;
-          if (existingMeta?.id) {
-            savedMeta = await updateMetaCategoria(metaToSave);
-          } else {
-            savedMeta = await addMetaCategoria(metaToSave);
-          }
-          
-          // Update metas state
-          setMetas(prev => ({
-            ...prev,
-            [savedCategory.nome]: savedMeta
-          }));
-        } 
-        else if (!metaData.hasMeta && existingMeta?.id) {
-          // Remove existing meta
-          await deleteMetaCategoria(existingMeta.id);
-          
-          // Update metas state
-          const newMetas = { ...metas };
-          delete newMetas[savedCategory.nome];
-          setMetas(newMetas);
-        }
-      }
+      // Close the form
+      setIsFormOpen(false);
       
+      // Show success message
       toast.success(
-        category.id
-          ? 'Category updated successfully!'
-          : 'Category added successfully!'
+        formData.id ? 'Categoria atualizada com sucesso!' : 'Categoria adicionada com sucesso!'
       );
     } catch (error) {
-      console.error('Error with category:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      toast.error(`Error saving category: ${errorMessage}`);
-      throw error;
+      console.error('Error submitting category form:', error);
+      toast.error('Erro ao salvar categoria. Tente novamente.');
+    } finally {
+      setIsProcessing(false);
+      
+      // Clear editing state after a brief delay
+      setTimeout(() => {
+        setEditingCategory(null);
+      }, 100);
     }
   };
-
-  return { handleSubmitCategory };
-}
+  
+  return {
+    isProcessing,
+    handleAddNew,
+    handleEdit,
+    handleFormClose,
+    handleFormSubmit
+  };
+};

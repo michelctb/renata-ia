@@ -1,109 +1,91 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
-import { Category } from '@/lib/categories';
-import { MetaCategoria } from '@/lib/metas';
-import { CategoryList } from './categories/CategoryList';
-import { DeleteCategoryDialog } from './categories/DeleteCategoryDialog';
-import { CategoryFormManager } from './categories/CategoryFormManager';
-import { CategoryActions } from './categories/CategoryActions';
-import { useCategories } from '@/hooks/categories';
+import { CategoryList } from '@/components/categories/CategoryList';
+import { CategoryActions } from '@/components/categories/CategoryActions';
+import { DeleteCategoryDialog } from '@/components/categories/DeleteCategoryDialog';
+import { useCategoriesData } from '@/hooks/categories/useCategoriesData';
+import { useCategoryDelete } from '@/hooks/categories/useCategoryDelete';
+import { useCategoryOperations } from '@/hooks/categories/useCategoryOperations';
+import { CategoryFormSchema } from '@/components/categories/categoryFormSchema';
+import { CategoryFormManager } from '@/components/categories/CategoryFormManager';
 
-const CategoriesTab = () => {
-  const { isUserActive } = useAuth();
-  const [isCategoryFormOpen, setIsCategoryFormOpen] = useState(false);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+type CategoriesTabProps = {
+  clientId?: string;
+  viewMode?: 'user' | 'admin' | 'consultor';
+};
+
+const CategoriesTab = ({ clientId, viewMode = 'user' }: CategoriesTabProps) => {
+  const { user, isUserActive } = useAuth();
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<CategoryFormSchema | null>(null);
   
-  const {
-    categories,
-    metas,
-    isLoading,
-    editingCategory,
-    setEditingCategory,
-    editingMeta,
-    setEditingMeta,
+  // Use client ID if in consultor view mode
+  const userId = viewMode === 'consultor' && clientId ? clientId : user?.id;
+  
+  // Fetch categories for the user or client
+  const { 
+    categories, 
+    loading, 
+    refetchCategories 
+  } = useCategoriesData(userId);
+  
+  // Deletion dialog state and handlers
+  const { 
     categoryToDelete,
-    setCategoryToDelete,
-    handleSubmitCategory,
-    deleteSelectedCategory
-  } = useCategories();
-
-  const handleEdit = (category: Category, meta: MetaCategoria | null) => {
-    // Block inactive users from editing categories
-    if (!isUserActive()) {
-      toast.error('Sua assinatura está inativa. Você não pode editar categorias.');
-      return;
-    }
-    
-    setEditingCategory(category);
-    setEditingMeta(meta);
-    setIsCategoryFormOpen(true);
-  };
-
-  const handleDeleteRequest = (id: number, isPadrao: boolean) => {
-    // Block inactive users from deleting categories
-    if (!isUserActive()) {
-      toast.error('Sua assinatura está inativa. Você não pode excluir categorias.');
-      return;
-    }
-    
-    if (isPadrao) {
-      toast.error('Categorias padrão não podem ser excluídas.');
-      return;
-    }
-    setCategoryToDelete(id);
-    setDeleteConfirmOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    const success = await deleteSelectedCategory();
-    if (success) {
-      setDeleteConfirmOpen(false);
-      setCategoryToDelete(null);
-    }
-  };
-
-  const handleAddNew = () => {
-    setEditingCategory(null);
-    setEditingMeta(null);
-    setIsCategoryFormOpen(true);
-  };
-
-  const handleCloseForm = () => {
-    setIsCategoryFormOpen(false);
-    setEditingCategory(null);
-    setEditingMeta(null);
-  };
-
+    deleteDialogOpen,
+    setDeleteDialogOpen,
+    handleDeleteRequest,
+    handleConfirmDelete
+  } = useCategoryDelete({ onSuccess: refetchCategories });
+  
+  // Category form operations (add/edit)
+  const {
+    handleAddNew,
+    handleEdit,
+    handleFormClose,
+    handleFormSubmit
+  } = useCategoryOperations({
+    setIsFormOpen,
+    setEditingCategory,
+    refetchCategories,
+    isUserActive: isUserActive(),
+    viewMode
+  });
+  
   return (
-    <div className="p-4 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-lg shadow-sm">
-      <CategoryActions 
-        onAddNew={handleAddNew}
-        isUserActive={isUserActive()}
-      />
-
-      <CategoryList
-        categories={categories}
-        metas={metas}
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Categorias</h2>
+        <CategoryActions 
+          onAddNew={handleAddNew} 
+          isActive={isUserActive()}
+          viewMode={viewMode}
+        />
+      </div>
+      
+      <CategoryList 
+        categories={categories} 
+        loading={loading}
         onEdit={handleEdit}
         onDelete={handleDeleteRequest}
-        isLoading={isLoading}
         isUserActive={isUserActive()}
+        viewMode={viewMode}
       />
-
+      
       <CategoryFormManager
+        isOpen={isFormOpen}
+        onClose={handleFormClose}
+        onSubmit={handleFormSubmit}
         editingCategory={editingCategory}
-        editingMeta={editingMeta}
-        isOpen={isCategoryFormOpen}
-        onClose={handleCloseForm}
-        onSubmit={handleSubmitCategory}
+        userId={userId}
       />
-
+      
       <DeleteCategoryDialog
-        isOpen={deleteConfirmOpen}
-        onOpenChange={setDeleteConfirmOpen}
-        onConfirm={confirmDelete}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        categoryId={categoryToDelete}
       />
     </div>
   );
