@@ -61,8 +61,8 @@ export function MetasList({ metas, onEditClick, onDeleteClick, categoriesWithMet
       )}
 
       <DeleteMetaDialog
-        isOpen={showDeleteDialog}
-        onClose={() => setShowDeleteDialog(false)}
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
         onConfirm={confirmDelete}
         metaName={metaToDelete?.categoria || ''}
       />

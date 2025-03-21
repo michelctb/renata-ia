@@ -14,14 +14,14 @@ interface DeleteMetaDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
-  categoria: string;
+  metaName: string;
 }
 
 export function DeleteMetaDialog({
   open,
   onOpenChange,
   onConfirm,
-  categoria,
+  metaName,
 }: DeleteMetaDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -29,7 +29,7 @@ export function DeleteMetaDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
           <AlertDialogDescription>
-            Você tem certeza que deseja excluir a meta para a categoria <strong>{categoria}</strong>? 
+            Você tem certeza que deseja excluir a meta para a categoria <strong>{metaName}</strong>? 
             Esta ação não pode ser desfeita.
           </AlertDialogDescription>
         </AlertDialogHeader>

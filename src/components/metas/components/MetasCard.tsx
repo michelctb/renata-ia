@@ -1,22 +1,21 @@
 
 import { format } from 'date-fns';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { MetaProgresso } from '@/lib/metas';
-import { MetasList } from '../MetasList';
+import { MetaCategoria, MetaProgresso } from '@/lib/metas';
 
 interface MetasCardProps {
   userId: string;
-  metasProgresso: MetaProgresso[];
+  metas: MetaCategoria[];
   periodoAtual: string;
-  onSaveMeta: (meta: any) => Promise<void>;
+  onEditMeta: (meta: MetaCategoria) => void;
   onDeleteMeta: (id: number) => Promise<void>;
 }
 
 export function MetasCard({ 
   userId,
-  metasProgresso,
+  metas,
   periodoAtual,
-  onSaveMeta,
+  onEditMeta,
   onDeleteMeta
 }: MetasCardProps) {
   return (
@@ -28,12 +27,20 @@ export function MetasCard({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <MetasList 
-          userId={userId}
-          metas={metasProgresso}
-          onSaveMeta={onSaveMeta}
-          onDeleteMeta={onDeleteMeta}
-        />
+        {metas.length > 0 ? (
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {metas.map(meta => (
+              <div key={meta.id} className="bg-background p-4 rounded-lg">
+                <h3 className="font-medium">{meta.categoria}</h3>
+                <p>Valor: R${meta.valor_meta.toFixed(2)}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-muted-foreground text-center py-4">
+            Nenhuma meta definida para este período
+          </p>
+        )}
       </CardContent>
     </Card>
   );

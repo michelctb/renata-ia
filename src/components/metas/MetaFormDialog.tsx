@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/dialog';
 import { MetaForm } from './MetaForm';
 import { MetaCategoria } from '@/lib/metas';
+import { CategoryWithMeta } from '@/hooks/useCategoriesWithMetas';
 
 interface MetaFormDialogProps {
   userId: string;
@@ -14,6 +15,7 @@ interface MetaFormDialogProps {
   metaAtual: MetaCategoria | null;
   onOpenChange: (open: boolean) => void;
   onSave: (meta: MetaCategoria) => Promise<void>;
+  availableCategories: CategoryWithMeta[];
 }
 
 export function MetaFormDialog({
@@ -22,6 +24,7 @@ export function MetaFormDialog({
   metaAtual,
   onOpenChange,
   onSave,
+  availableCategories,
 }: MetaFormDialogProps) {
   const handleSave = async (meta: MetaCategoria) => {
     await onSave(meta);
@@ -46,6 +49,7 @@ export function MetaFormDialog({
           metaAtual={metaAtual}
           onSubmit={handleSave}
           onCancel={handleCancel}
+          availableCategories={availableCategories}
         />
       </DialogContent>
     </Dialog>

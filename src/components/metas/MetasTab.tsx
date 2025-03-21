@@ -90,7 +90,7 @@ export function MetasTab({ userId }: MetasTabProps) {
                 categoriesWithMetas={categoriesWithMetas}
               />
             ) : (
-              <MetasEmptyState onAddClick={handleAddClick} />
+              <MetasEmptyState onAddMeta={handleAddClick} />
             )}
           </>
         )}

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,7 +8,7 @@ import DashboardHeader from '@/components/DashboardHeader';
 import TransactionsTab from '@/components/TransactionsTab';
 import CategoriesTab from '@/components/CategoriesTab';
 import LembretesTab from '@/components/LembretesTab';
-import MetasTab from '@/components/metas/MetasTab';
+import { MetasTab } from '@/components/metas/MetasTab';
 import { toast } from 'sonner';
 import { parseISO } from 'date-fns';
 
@@ -37,29 +36,24 @@ const Dashboard = () => {
         const data = await fetchTransactions(user.id);
         console.log(`Loaded ${data.length} transactions for user ${user.id}`);
         
-        // Normalize transaction operation types for case-insensitivity and ensure dates are preserved
         const normalizedData = data.map(transaction => {
           let operationType = transaction.operação;
           
-          // Normalize the operation type to lowercase
           if (operationType) {
             if (operationType.toLowerCase() === 'entrada' || operationType.toLowerCase() === 'saída') {
               operationType = operationType.toLowerCase();
             }
           }
           
-          // Ensure date is in ISO format and doesn't lose the day due to timezone conversion
           const dateStr = transaction.data;
           
           return {
             ...transaction,
             operação: operationType,
-            // Keep the original date string to avoid timezone issues
             data: dateStr
           };
         });
         
-        // Verify all categories in transactions
         const categories = [...new Set(normalizedData.map(t => t.categoria))];
         console.log('Categories found in transactions:', categories);
         console.log('Operation types found:', [...new Set(normalizedData.map(t => t.operação))]);
@@ -111,11 +105,7 @@ const Dashboard = () => {
           </TabsContent>
           
           <TabsContent value="metas" className="animate-fade-up">
-            <MetasTab 
-              transactions={transactions}
-              dateRange={dateRange}
-              setDateRange={setDateRange}
-            />
+            <MetasTab userId={user?.id} />
           </TabsContent>
           
           <TabsContent value="lembretes" className="animate-fade-up">

@@ -9,12 +9,12 @@ import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 
 interface MetaItemProps {
-  metaProgresso: MetaProgresso;
-  onEdit: (meta: MetaCategoria) => void;
-  onDelete: (id: number, categoria: string) => void;
+  meta: MetaCategoria;
+  onEditClick: () => void;
+  onDeleteClick: () => void;
 }
 
-export function MetaItem({ metaProgresso, onEdit, onDelete }: MetaItemProps) {
+export function MetaItem({ meta, onEditClick, onDeleteClick }: MetaItemProps) {
   // Renderizar período da meta em formato legível
   const renderPeriodo = (meta: MetaCategoria) => {
     if (meta.periodo === 'mensal' && meta.mes_referencia && meta.ano_referencia) {
@@ -28,18 +28,18 @@ export function MetaItem({ metaProgresso, onEdit, onDelete }: MetaItemProps) {
   };
 
   return (
-    <Card key={metaProgresso.meta.id} className="overflow-hidden">
+    <Card className="overflow-hidden">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg font-semibold">
-            {metaProgresso.meta.categoria}
+            {meta.categoria}
           </CardTitle>
           
           <div className="flex gap-1">
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => onEdit(metaProgresso.meta)}
+              onClick={onEditClick}
               className="h-8 w-8"
             >
               <Pencil className="h-4 w-4" />
@@ -48,7 +48,7 @@ export function MetaItem({ metaProgresso, onEdit, onDelete }: MetaItemProps) {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => onDelete(metaProgresso.meta.id!, metaProgresso.meta.categoria)}
+              onClick={onDeleteClick}
               className="h-8 w-8 text-red-500 hover:text-red-600"
             >
               <Trash className="h-4 w-4" />
@@ -57,16 +57,16 @@ export function MetaItem({ metaProgresso, onEdit, onDelete }: MetaItemProps) {
         </div>
         
         <div className="text-sm text-muted-foreground">
-          Período: {renderPeriodo(metaProgresso.meta)}
+          Período: {renderPeriodo(meta)}
         </div>
       </CardHeader>
       
       <CardContent>
         <MetaProgressBar
-          valor_atual={metaProgresso.valor_atual}
-          valor_meta={metaProgresso.meta.valor_meta}
-          porcentagem={metaProgresso.porcentagem}
-          status={metaProgresso.status}
+          valor_atual={0} // Default to 0 since we don't have progress data here
+          valor_meta={meta.valor_meta}
+          porcentagem={0} // Default to 0%
+          status="baixo" // Default status
         />
       </CardContent>
     </Card>
