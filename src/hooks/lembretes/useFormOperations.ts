@@ -28,7 +28,7 @@ export function useFormOperations({ userId, onSuccess }: UseFormOperationsProps)
     setIsProcessing(true);
     try {
       // Submit the form data
-      const submitResult = await incrementFormSubmissionCount(formData);
+      incrementFormSubmissionCount();
       
       if (onSuccess) {
         onSuccess();

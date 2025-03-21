@@ -14,6 +14,7 @@ import DashboardCharts from '@/components/DashboardCharts';
 import LembretesTab from '@/components/LembretesTab';
 import { Cliente } from '@/lib/clientes';
 import { DateRange } from 'react-day-picker';
+import { Transaction } from '@/lib/supabase/types';
 
 const ConsultorClientView = () => {
   const { clientId } = useParams<{ clientId: string }>();
@@ -22,7 +23,8 @@ const ConsultorClientView = () => {
   const [activeTab, setActiveTab] = useState('resumo');
   const [clientData, setClientData] = useState<Cliente | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [dateRange, setDateRange] = useState<DateRange | null>(() => {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
     const today = new Date();
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
@@ -120,6 +122,8 @@ const ConsultorClientView = () => {
             
             <TabsContent value="transacoes" className="space-y-4 animate-fade-up">
               <TransactionsTab 
+                transactions={transactions}
+                setTransactions={setTransactions}
                 dateRange={dateRange}
                 setDateRange={setDateRange}
                 clientId={clientId}

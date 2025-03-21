@@ -79,13 +79,13 @@ const CategoriesTab = ({ clientId, viewMode = 'user' }: CategoriesTabProps) => {
   const handleFormSubmit = async (formData: CategoryFormValues) => {
     const success = await handleSubmitCategory({
       id: formData.id,
-      nome: formData.name,
-      tipo: formData.type,
+      nome: formData.nome,
+      tipo: formData.tipo,
       cliente: userId || '',
-      padrao: !!formData.isDefault
+      padrao: !!formData.hasMeta
     }, {
       hasMeta: formData.hasMeta,
-      valorMeta: formData.metaValue
+      valorMeta: formData.valorMeta
     });
     
     if (success) {

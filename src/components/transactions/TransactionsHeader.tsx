@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { SearchInput } from './SearchInput';
 import { DateRangePicker } from '@/components/DateRangePicker';
-import { TransactionActions } from '@/components/transactions/TransactionActions';
-import { usePeriodoDateRange } from '../metas/hooks/usePeriodoDateRange';
+import { Button } from '@/components/ui/button';
+import { PlusCircle } from 'lucide-react';
 
 interface TransactionsHeaderProps {
   onSearch: (term: string) => void;
@@ -35,16 +35,21 @@ export function TransactionsHeader({
         />
         
         <DateRangePicker 
-          value={dateRange}
-          onValueChange={onDateRangeChange}
+          dateRange={dateRange}
+          onChange={onDateRangeChange}
         />
       </div>
       
-      <TransactionActions 
-        onAddNew={onAddNew} 
-        isActive={isUserActive}
-        viewMode={viewMode}
-      />
+      <div>
+        <Button
+          onClick={onAddNew}
+          disabled={!isUserActive || viewMode === 'consultor'}
+          className="w-full md:w-auto"
+        >
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Nova Transação
+        </Button>
+      </div>
     </div>
   );
 }

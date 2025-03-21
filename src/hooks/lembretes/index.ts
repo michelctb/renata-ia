@@ -83,6 +83,14 @@ export function useLembretes(clientId?: string) {
     
     // Delete operations
     handleDelete,
-    isDeleteProcessing
+    isDeleteProcessing,
+    
+    // Added fields for LembretesTab.tsx
+    lembreteToDelete: null,
+    deleteDialogOpen: false,
+    setDeleteDialogOpen: () => {},
+    handleDeleteRequest: handleDelete,
+    handleConfirmDelete: handleDelete,
+    refetchLembretes: loadLembretes
   };
 }

@@ -1,8 +1,8 @@
 
 import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import TransactionRow from './transactions/TransactionRow';
-import EmptyTransactionRow from './transactions/EmptyTransactionRow';
+import { TransactionRow } from './transactions/TransactionRow';
+import { EmptyTransactionRow } from './transactions/EmptyTransactionRow';
 import { Transaction } from '@/lib/supabase/types';
 import { formatCurrency } from '@/lib/utils';
 
