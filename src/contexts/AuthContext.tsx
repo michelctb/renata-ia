@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -9,7 +10,7 @@ export type User = {
   email?: string;
   name?: string;
   isActive?: boolean;
-  perfil?: 'user' | 'adm' | 'consultor' | string;
+  perfil?: 'user' | 'adm' | 'consultor' | 'consultorado' | string;
   consultor?: string;
   plano?: string;
 };
@@ -23,6 +24,7 @@ type AuthContextType = {
   isUserActive: () => boolean;
   isAdmin: () => boolean;
   isConsultor: () => boolean;
+  isConsultorado: () => boolean;
 };
 
 // Create context
@@ -141,6 +143,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const isConsultor = () => {
     return user?.perfil === 'consultor';
   };
+  
+  // Helper function to check if user is consultorado
+  const isConsultorado = () => {
+    return user?.perfil === 'consultorado';
+  };
 
   const value = {
     user,
@@ -150,6 +157,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isUserActive,
     isAdmin,
     isConsultor,
+    isConsultorado,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

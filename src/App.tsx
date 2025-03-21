@@ -12,6 +12,7 @@ import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import DirectAccess from "./pages/DirectAccess";
 import Subscription from "./pages/Subscription";
+import ConsultorClientView from "./pages/ConsultorClientView";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/subscription" element={<Subscription />} />
+              <Route path="/client/:clientId" element={<ConsultorClientView />} />
               <Route path="/:userId" element={<DirectAccess />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

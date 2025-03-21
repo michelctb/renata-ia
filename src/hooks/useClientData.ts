@@ -28,10 +28,10 @@ export const useClientData = () => {
       let loadedClients: Cliente[] = [];
       
       if (isAdmin()) {
-        // Administrators see all clients
+        // Administradores veem todos os clientes
         loadedClients = await fetchClientes();
       } else if (isConsultor() && user?.id) {
-        // Consultants see only their clients
+        // Consultores veem apenas seus clientes
         loadedClients = await fetchConsultorClients(user.id);
       }
       
@@ -44,7 +44,7 @@ export const useClientData = () => {
     }
   };
 
-  // Load clients when the user is authenticated
+  // Carregar clientes quando o usuário estiver autenticado
   useEffect(() => {
     if (user) {
       loadClients();

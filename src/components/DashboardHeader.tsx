@@ -65,10 +65,10 @@ const DashboardHeader = () => {
           <Button 
             variant="outline" 
             onClick={handleAdminClick}
-            className="flex items-center gap-2 shadow-sm hover:shadow"
+            className="flex items-center gap-2 shadow-sm hover:shadow dark:border-gray-700 dark:text-white"
           >
             <Shield className="h-4 w-4" />
-            <span>Administração</span>
+            <span>{isAdmin() ? 'Administração' : 'Gerenciar Clientes'}</span>
           </Button>
         )}
         
@@ -100,8 +100,15 @@ const DashboardHeader = () => {
                 <Shield className="mr-2 h-4 w-4" />
                 <span>Perfil: {
                   user.perfil === 'adm' ? 'Administrador' : 
-                  user.perfil === 'consultor' ? 'Consultor' : 'Usuário'
+                  user.perfil === 'consultor' ? 'Consultor' : 
+                  user.perfil === 'consultorado' ? 'Cliente Consultorado' : 'Usuário'
                 }</span>
+              </DropdownMenuItem>
+            )}
+            {user?.consultor && (
+              <DropdownMenuItem>
+                <Shield className="mr-2 h-4 w-4" />
+                <span>Consultor: {user.consultor}</span>
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
