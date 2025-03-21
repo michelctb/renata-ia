@@ -1,41 +1,29 @@
 
-import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { toast } from 'sonner';
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
-import { Category } from '@/lib/categories/types';
-import { MetaCategoria, PERIODO_OPTIONS } from '@/lib/metas';
+import { useState, useEffect } from 'react';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { format, getMonth, getYear } from 'date-fns';
+import { pt } from 'date-fns/locale';
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { fetchCategories } from '@/lib/categories';
+import { toast } from 'sonner';
+import { PERIODO_OPTIONS, MetaCategoria } from '@/lib/metas';
 
-// Schema para validação do formulário
-const metaSchema = z.object({
+// Schema for form validation
+const formSchema = z.object({
   id: z.number().optional(),
-  categoria: z.string().min(1, 'Categoria é obrigatória'),
-  valor_meta: z.coerce.number().positive('O valor da meta deve ser maior que zero'),
+  categoria: z.string().min(1, { message: 'Selecione uma categoria' }),
+  valor_meta: z.coerce.number().positive({ message: 'O valor deve ser maior que zero' }),
   periodo: z.enum(['mensal', 'trimestral', 'anual']),
-  mes_referencia: z.coerce.number().min(1).max(12).optional().nullable(),
-  ano_referencia: z.coerce.number().positive().optional().nullable(),
+  mes_referencia: z.number().optional(),
+  ano_referencia: z.number().optional(),
 });
 
-type MetaFormValues = z.infer<typeof metaSchema>;
+type FormValues = z.infer<typeof formSchema>;
 
 interface MetaFormProps {
   userId: string;
@@ -45,215 +33,116 @@ interface MetaFormProps {
 }
 
 export function MetaForm({ userId, metaAtual, onSubmit, onCancel }: MetaFormProps) {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [categorias, setCategorias] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   
-  // Inicializar formulário
-  const form = useForm<MetaFormValues>({
-    resolver: zodResolver(metaSchema),
-    defaultValues: {
-      categoria: '',
-      valor_meta: 0,
-      periodo: 'mensal',
-      mes_referencia: null,
-      ano_referencia: null,
-    },
-  });
-
-  // Carregar categorias
+  // Carregar categorias de gastos do usuário
   useEffect(() => {
-    const loadCategories = async () => {
+    const loadCategorias = async () => {
       if (!userId) return;
       
+      setIsLoading(true);
       try {
-        const data = await fetchCategories(userId);
-        // Filtrar apenas categorias de saída
-        const categoriaSaida = data.filter(
-          cat => cat.tipo === 'saída' || cat.tipo === 'ambos'
-        );
-        setCategories(categoriaSaida);
+        const cats = await fetchCategories(userId);
+        // Filtrar apenas categorias de saída (gastos)
+        const gastosCategorias = cats
+          .filter(cat => cat.tipo === 'saída' || cat.tipo === 'ambos')
+          .map(cat => cat.nome);
+        setCategorias(gastosCategorias);
       } catch (error) {
         console.error('Erro ao carregar categorias:', error);
-        toast.error('Erro ao carregar as categorias');
+        toast.error('Erro ao carregar categorias de gastos');
       } finally {
-        setIsLoadingCategories(false);
+        setIsLoading(false);
       }
     };
     
-    loadCategories();
+    loadCategorias();
   }, [userId]);
   
-  // Atualizar valores do formulário quando receber metaAtual
-  useEffect(() => {
-    if (metaAtual) {
-      form.reset({
-        id: metaAtual.id,
-        categoria: metaAtual.categoria,
-        valor_meta: metaAtual.valor_meta,
-        periodo: metaAtual.periodo,
-        mes_referencia: metaAtual.mes_referencia || null,
-        ano_referencia: metaAtual.ano_referencia || null,
-      });
-    } else {
-      form.reset({
-        categoria: '',
-        valor_meta: 0,
-        periodo: 'mensal',
-        mes_referencia: new Date().getMonth() + 1, // Mês atual
-        ano_referencia: new Date().getFullYear(), // Ano atual
-      });
-    }
-  }, [metaAtual, form]);
+  // Gerar meses para seleção
+  const meses = Array.from({ length: 12 }, (_, i) => {
+    return {
+      value: i + 1,
+      label: format(new Date(2024, i, 1), 'MMMM', { locale: pt }),
+    };
+  });
+  
+  // Gerar anos para seleção (ano atual e próximos 5 anos)
+  const anoAtual = new Date().getFullYear();
+  const anos = Array.from({ length: 6 }, (_, i) => {
+    const ano = anoAtual + i;
+    return {
+      value: ano,
+      label: ano.toString(),
+    };
+  });
 
-  // Handler para o período selecionado
-  const handlePeriodoChange = (value: string) => {
-    form.setValue('periodo', value as 'mensal' | 'trimestral' | 'anual');
-    
-    // Resetar campos de referência conforme o período
-    if (value === 'anual') {
-      form.setValue('mes_referencia', null);
-      if (!form.getValues('ano_referencia')) {
-        form.setValue('ano_referencia', new Date().getFullYear());
-      }
-    } else if (value === 'mensal') {
-      if (!form.getValues('mes_referencia')) {
-        form.setValue('mes_referencia', new Date().getMonth() + 1);
-      }
-      if (!form.getValues('ano_referencia')) {
-        form.setValue('ano_referencia', new Date().getFullYear());
-      }
-    }
-  };
-
-  // Submit handler
-  const handleSubmit = async (values: MetaFormValues) => {
+  // Inicializar form
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      categoria: metaAtual?.categoria || '',
+      valor_meta: metaAtual?.valor_meta || 0,
+      periodo: metaAtual?.periodo || 'mensal',
+      mes_referencia: metaAtual?.mes_referencia || getMonth(new Date()) + 1,
+      ano_referencia: metaAtual?.ano_referencia || getYear(new Date()),
+    },
+  });
+  
+  // Monitorar mudanças no período para mostrar/esconder campos relevantes
+  const periodoSelecionado = form.watch('periodo');
+  
+  const handleSubmit = async (values: FormValues) => {
     try {
       const meta: MetaCategoria = {
-        ...values,
         id_cliente: userId,
+        categoria: values.categoria,
+        valor_meta: values.valor_meta,
+        periodo: values.periodo
       };
+      
+      // Adicionar ID se estiver editando
+      if (metaAtual?.id) {
+        meta.id = metaAtual.id;
+      }
+      
+      // Adicionar mês e ano para metas mensais
+      if (values.periodo === 'mensal') {
+        meta.mes_referencia = values.mes_referencia;
+        meta.ano_referencia = values.ano_referencia;
+      } 
+      // Adicionar apenas ano para metas anuais
+      else if (values.periodo === 'anual') {
+        meta.ano_referencia = values.ano_referencia;
+      }
+      // Para trimestral, podemos implementar lógica específica aqui
       
       await onSubmit(meta);
       form.reset();
     } catch (error) {
       console.error('Erro ao salvar meta:', error);
-      toast.error('Erro ao salvar meta. Tente novamente.');
     }
   };
-
-  // Renderizar campos de mês/ano conforme o período selecionado
-  const renderPeriodoFields = () => {
-    const periodo = form.watch('periodo');
-    
-    if (periodo === 'mensal') {
-      return (
-        <>
-          <FormField
-            control={form.control}
-            name="mes_referencia"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Mês de Referência</FormLabel>
-                <Select
-                  onValueChange={(value) => field.onChange(parseInt(value))}
-                  value={field.value?.toString() || ''}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o mês" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="1">Janeiro</SelectItem>
-                    <SelectItem value="2">Fevereiro</SelectItem>
-                    <SelectItem value="3">Março</SelectItem>
-                    <SelectItem value="4">Abril</SelectItem>
-                    <SelectItem value="5">Maio</SelectItem>
-                    <SelectItem value="6">Junho</SelectItem>
-                    <SelectItem value="7">Julho</SelectItem>
-                    <SelectItem value="8">Agosto</SelectItem>
-                    <SelectItem value="9">Setembro</SelectItem>
-                    <SelectItem value="10">Outubro</SelectItem>
-                    <SelectItem value="11">Novembro</SelectItem>
-                    <SelectItem value="12">Dezembro</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="ano_referencia"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Ano de Referência</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="Ano"
-                    {...field}
-                    value={field.value || ''}
-                    onChange={(e) => field.onChange(e.target.value === '' ? null : parseInt(e.target.value))}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </>
-      );
-    } else if (periodo === 'anual') {
-      return (
-        <FormField
-          control={form.control}
-          name="ano_referencia"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Ano de Referência</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="Ano"
-                  {...field}
-                  value={field.value || ''}
-                  onChange={(e) => field.onChange(e.target.value === '' ? null : parseInt(e.target.value))}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      );
-    }
-    
-    return null;
-  };
-
-  if (isLoadingCategories) {
-    return <div className="flex justify-center p-4">Carregando categorias...</div>;
-  }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
         <FormField
           control={form.control}
           name="categoria"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Categoria</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma categoria" />
+                    <SelectValue placeholder="Selecione a categoria" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.nome}>
-                      {category.nome}
-                    </SelectItem>
+                  {categorias.map((cat) => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -267,15 +156,9 @@ export function MetaForm({ userId, metaAtual, onSubmit, onCancel }: MetaFormProp
           name="valor_meta"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Valor da Meta</FormLabel>
+              <FormLabel>Valor da Meta (R$)</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="R$ 0,00"
-                  {...field}
-                />
+                <Input type="number" step="0.01" min="0" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -288,10 +171,10 @@ export function MetaForm({ userId, metaAtual, onSubmit, onCancel }: MetaFormProp
           render={({ field }) => (
             <FormItem>
               <FormLabel>Período</FormLabel>
-              <Select onValueChange={handlePeriodoChange} value={field.value}>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecione um período" />
+                    <SelectValue placeholder="Selecione o período" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -307,14 +190,95 @@ export function MetaForm({ userId, metaAtual, onSubmit, onCancel }: MetaFormProp
           )}
         />
         
-        {renderPeriodoFields()}
+        {/* Campos específicos para período mensal */}
+        {periodoSelecionado === 'mensal' && (
+          <>
+            <FormField
+              control={form.control}
+              name="mes_referencia"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Mês</FormLabel>
+                  <Select onValueChange={(v) => field.onChange(parseInt(v))} value={field.value?.toString()}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o mês" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {meses.map((mes) => (
+                        <SelectItem key={mes.value} value={mes.value.toString()}>
+                          {mes.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="ano_referencia"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ano</FormLabel>
+                  <Select onValueChange={(v) => field.onChange(parseInt(v))} value={field.value?.toString()}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o ano" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {anos.map((ano) => (
+                        <SelectItem key={ano.value} value={ano.value.toString()}>
+                          {ano.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </>
+        )}
+        
+        {/* Campo de ano para período anual */}
+        {periodoSelecionado === 'anual' && (
+          <FormField
+            control={form.control}
+            name="ano_referencia"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Ano</FormLabel>
+                <Select onValueChange={(v) => field.onChange(parseInt(v))} value={field.value?.toString()}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o ano" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {anos.map((ano) => (
+                      <SelectItem key={ano.value} value={ano.value.toString()}>
+                        {ano.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         
         <div className="flex justify-end space-x-2 pt-4">
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancelar
           </Button>
           <Button type="submit">
-            {metaAtual ? 'Atualizar' : 'Adicionar'} Meta
+            {metaAtual ? 'Atualizar' : 'Criar'} Meta
           </Button>
         </div>
       </form>

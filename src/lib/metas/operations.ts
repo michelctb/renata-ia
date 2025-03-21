@@ -1,5 +1,5 @@
 
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { MetaCategoria } from './types';
 import { METAS_TABLE } from './constants';
 

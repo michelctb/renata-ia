@@ -11,3 +11,18 @@ export type Transaction = {
   categoria: string;
   valor: number;
 };
+
+// Type for client records
+export type Cliente = {
+  id_cliente: string;
+  nome?: string;
+  telefone?: string;
+  email?: string;
+  cpf?: number;
+  ativo?: boolean;
+  plano?: string;
+  lembrete?: string;
+  perfil?: 'user' | 'adm' | 'consultor' | string;
+  consultor?: string;
+  created_at?: string;
+};

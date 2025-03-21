@@ -1,8 +1,7 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { fetchClienteById } from '@/lib/clientes';
+import { fetchClienteById } from '@/lib/supabase/clients';
 
 // Type for our user
 export type User = {

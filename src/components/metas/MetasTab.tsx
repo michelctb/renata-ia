@@ -30,7 +30,7 @@ import { MetasList } from './MetasList';
 interface MetasTabProps {
   transactions: Transaction[];
   dateRange: DateRange | null;
-  setDateRange: React.Dispatch<React.SetStateAction<DateRange | null>>;
+  setDateRange: (dateRange: DateRange | null) => void;
 }
 
 export default function MetasTab({ transactions, dateRange, setDateRange }: MetasTabProps) {
@@ -241,7 +241,7 @@ export default function MetasTab({ transactions, dateRange, setDateRange }: Meta
           
           <DateRangePicker 
             dateRange={dateRange} 
-            setDateRange={setDateRange} 
+            onUpdate={setDateRange} 
           />
         </div>
       </div>

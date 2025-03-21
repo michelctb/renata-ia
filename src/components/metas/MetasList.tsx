@@ -1,14 +1,14 @@
 
 import { useState } from 'react';
-import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { MetaCategoria, MetaProgresso } from '@/lib/metas';
-import { formatCurrency } from '@/lib/utils';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { MetaProgressBar } from './MetaProgressBar';
 import { MetaFormDialog } from './MetaFormDialog';
 import { DeleteMetaDialog } from './DeleteMetaDialog';
-import { MetaProgressBar } from './MetaProgressBar';
+import { Plus, Pencil, Trash } from 'lucide-react';
+import { MetaCategoria, MetaProgresso } from '@/lib/metas';
+import { format } from 'date-fns';
+import { pt } from 'date-fns/locale';
 
 interface MetasListProps {
   userId: string;
@@ -18,146 +18,136 @@ interface MetasListProps {
 }
 
 export function MetasList({ userId, metas, onSaveMeta, onDeleteMeta }: MetasListProps) {
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [editingMeta, setEditingMeta] = useState<MetaCategoria | null>(null);
-  const [deletingMeta, setDeletingMeta] = useState<MetaCategoria | null>(null);
+  const [metaFormOpen, setMetaFormOpen] = useState(false);
+  const [metaAtual, setMetaAtual] = useState<MetaCategoria | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [metaToDelete, setMetaToDelete] = useState<number | null>(null);
   
-  const handleEdit = (meta: MetaCategoria) => {
-    setEditingMeta(meta);
-    setIsFormOpen(true);
+  // Ordenar metas por porcentagem (crescente)
+  const metasOrdenadas = [...metas].sort((a, b) => b.porcentagem - a.porcentagem);
+  
+  // Solicitar adição de uma nova meta
+  const handleAddMeta = () => {
+    setMetaAtual(null);
+    setMetaFormOpen(true);
   };
   
-  const handleAddNew = () => {
-    setEditingMeta(null);
-    setIsFormOpen(true);
+  // Solicitar edição de uma meta existente
+  const handleEditMeta = (meta: MetaCategoria) => {
+    setMetaAtual(meta);
+    setMetaFormOpen(true);
   };
   
-  const handleDelete = (meta: MetaCategoria) => {
-    setDeletingMeta(meta);
-    setIsDeleteOpen(true);
+  // Abrir diálogo de confirmação para excluir meta
+  const handleDeleteRequest = (id: number) => {
+    setMetaToDelete(id);
+    setDeleteConfirmOpen(true);
   };
   
+  // Confirmar exclusão de meta
   const confirmDelete = async () => {
-    if (deletingMeta?.id) {
-      await onDeleteMeta(deletingMeta.id);
-      setIsDeleteOpen(false);
+    if (metaToDelete !== null) {
+      await onDeleteMeta(metaToDelete);
+      setMetaToDelete(null);
+      setDeleteConfirmOpen(false);
     }
   };
   
-  // Renderizar uma mensagem quando não houver metas
-  if (metas.length === 0) {
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-medium">Metas de Gastos</h3>
-          <Button onClick={handleAddNew} variant="default" size="sm">
-            <PlusCircle className="h-4 w-4 mr-2" /> Nova Meta
-          </Button>
-        </div>
-        
-        <div className="text-center py-8 text-muted-foreground">
-          <p>Você ainda não definiu nenhuma meta de gastos.</p>
-          <p className="mt-2">Crie metas para ajudar a controlar seus gastos por categoria.</p>
-        </div>
-        
-        <MetaFormDialog
-          userId={userId}
-          isOpen={isFormOpen}
-          metaAtual={editingMeta}
-          onOpenChange={setIsFormOpen}
-          onSave={onSaveMeta}
-        />
-      </div>
-    );
-  }
-  
+  // Renderizar período da meta em formato legível
+  const renderPeriodo = (meta: MetaCategoria) => {
+    if (meta.periodo === 'mensal' && meta.mes_referencia && meta.ano_referencia) {
+      const date = new Date(meta.ano_referencia, meta.mes_referencia - 1, 1);
+      return format(date, 'MMMM / yyyy', { locale: pt });
+    } else if (meta.periodo === 'anual' && meta.ano_referencia) {
+      return `Ano ${meta.ano_referencia}`;
+    } else {
+      return meta.periodo;
+    }
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Metas de Gastos</h3>
-        <Button onClick={handleAddNew} variant="default" size="sm">
-          <PlusCircle className="h-4 w-4 mr-2" /> Nova Meta
+    <div className="space-y-6">
+      {/* Botão para adicionar nova meta */}
+      <div className="flex justify-end">
+        <Button onClick={handleAddMeta} className="flex items-center gap-1">
+          <Plus className="h-4 w-4" />
+          Nova Meta
         </Button>
       </div>
       
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Categoria</TableHead>
-              <TableHead>Período</TableHead>
-              <TableHead>Meta</TableHead>
-              <TableHead>Gasto Atual</TableHead>
-              <TableHead>Progresso</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {metas.map((metaProgresso) => {
-              const { meta, valor_atual, porcentagem, status } = metaProgresso;
-              
-              // Formatar texto do período
-              let periodoText = meta.periodo;
-              if (meta.periodo === 'mensal' && meta.mes_referencia && meta.ano_referencia) {
-                const month = new Date(0, meta.mes_referencia - 1).toLocaleString('pt-BR', { month: 'long' });
-                periodoText = `${month} / ${meta.ano_referencia}`;
-              } else if (meta.periodo === 'anual' && meta.ano_referencia) {
-                periodoText = `Ano ${meta.ano_referencia}`;
-              }
-              
-              return (
-                <TableRow key={meta.id}>
-                  <TableCell>{meta.categoria}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="capitalize">
-                      {periodoText}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{formatCurrency(meta.valor_meta)}</TableCell>
-                  <TableCell>{formatCurrency(valor_atual)}</TableCell>
-                  <TableCell>
-                    <MetaProgressBar valor={porcentagem} status={status} />
-                  </TableCell>
-                  <TableCell className="text-right">
+      {/* Lista de metas */}
+      {metasOrdenadas.length > 0 ? (
+        <div className="grid grid-cols-1 gap-4">
+          {metasOrdenadas.map((metaProgresso) => (
+            <Card key={metaProgresso.meta.id} className="overflow-hidden">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-lg font-semibold">
+                    {metaProgresso.meta.categoria}
+                  </CardTitle>
+                  
+                  <div className="flex gap-1">
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleEdit(meta)}
-                      title="Editar meta"
+                      onClick={() => handleEditMeta(metaProgresso.meta)}
+                      className="h-8 w-8"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
+                    
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleDelete(meta)}
-                      title="Excluir meta"
-                      className="text-red-500 hover:text-red-600"
+                      onClick={() => handleDeleteRequest(metaProgresso.meta.id!)}
+                      className="h-8 w-8 text-red-500 hover:text-red-600"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash className="h-4 w-4" />
                     </Button>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </div>
+                  </div>
+                </div>
+                
+                <div className="text-sm text-muted-foreground">
+                  Período: {renderPeriodo(metaProgresso.meta)}
+                </div>
+              </CardHeader>
+              
+              <CardContent>
+                <MetaProgressBar
+                  valor_atual={metaProgresso.valor_atual}
+                  valor_meta={metaProgresso.meta.valor_meta}
+                  porcentagem={metaProgresso.porcentagem}
+                  status={metaProgresso.status}
+                />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-8">
+          <p className="text-muted-foreground mb-4">
+            Você ainda não definiu nenhuma meta de gastos.
+          </p>
+          <Button onClick={handleAddMeta} className="flex items-center gap-1">
+            <Plus className="h-4 w-4" />
+            Adicionar Meta
+          </Button>
+        </div>
+      )}
       
-      <MetaFormDialog
+      {/* Diálogos */}
+      <MetaFormDialog 
         userId={userId}
-        isOpen={isFormOpen}
-        metaAtual={editingMeta}
-        onOpenChange={setIsFormOpen}
-        onSave={onSaveMeta}
+        isOpen={metaFormOpen} 
+        metaAtual={metaAtual}
+        onOpenChange={setMetaFormOpen} 
+        onSave={onSaveMeta} 
       />
       
-      <DeleteMetaDialog
-        open={isDeleteOpen}
-        onOpenChange={setIsDeleteOpen}
+      <DeleteMetaDialog 
+        isOpen={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
         onConfirm={confirmDelete}
-        categoria={deletingMeta?.categoria || ''}
       />
     </div>
   );
