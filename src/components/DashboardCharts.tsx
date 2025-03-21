@@ -9,6 +9,7 @@ import { useMetasProgress } from './charts/hooks/useMetaProgress';
 import { MonthlyChartCard } from './charts/MonthlyChartCard';
 import { CategoryChartsContainer } from './charts/CategoryChartsContainer';
 import { MetaProgressDisplay } from './charts/MetaProgressDisplay';
+import { MetaComparisonChart } from './charts/MetaComparisonChart';
 
 type DashboardChartsProps = {
   transactions?: Transaction[];
@@ -53,19 +54,26 @@ export default function DashboardCharts({
   const metasComProgresso = useMetasProgress(metas, filteredTransactions);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-      {/* Monthly Chart Card */}
-      <MonthlyChartCard data={monthlyData} />
+    <>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        {/* Monthly Chart Card */}
+        <MonthlyChartCard data={monthlyData} />
+        
+        {/* Category Charts (Pie Chart and Ranking) */}
+        <CategoryChartsContainer 
+          categoryData={categoryData}
+          transactionType={transactionType}
+          setTransactionType={setTransactionType}
+        />
+        
+        {/* Meta Progress Display */}
+        <MetaProgressDisplay metasComProgresso={metasComProgresso} />
+      </div>
       
-      {/* Category Charts (Pie Chart and Ranking) */}
-      <CategoryChartsContainer 
-        categoryData={categoryData}
-        transactionType={transactionType}
-        setTransactionType={setTransactionType}
-      />
-      
-      {/* Meta Progress Display */}
-      <MetaProgressDisplay metasComProgresso={metasComProgresso} />
-    </div>
+      {/* Novo gráfico de Comparativo de Gastos vs Metas */}
+      <div className="mb-6">
+        <MetaComparisonChart metasComProgresso={metasComProgresso} />
+      </div>
+    </>
   );
 }
