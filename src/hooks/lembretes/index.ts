@@ -10,3 +10,6 @@ export { useFormSubmission } from './useFormSubmission';
 
 // Export functions from useFormOperations
 export { useFormOperations } from './useFormOperations';
+
+// Export the combined hook
+export { useLembretes } from './useLembretes';
