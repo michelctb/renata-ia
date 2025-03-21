@@ -29,7 +29,7 @@ export function useTransactionFiltering(
         const searchLower = searchTerm.toLowerCase();
         const matchesSearch = 
           (transaction.categoria && transaction.categoria.toLowerCase().includes(searchLower)) ||
-          (transaction.descricao && transaction.descricao.toLowerCase().includes(searchLower)) ||
+          (transaction.descrição && transaction.descrição.toLowerCase().includes(searchLower)) ||
           String(transaction.valor).includes(searchLower);
           
         if (!matchesSearch) matches = false;
