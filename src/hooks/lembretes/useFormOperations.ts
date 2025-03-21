@@ -1,105 +1,51 @@
 
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { LembreteFormValues } from '@/components/lembretes/lembreteFormSchema';
+import { Lembrete } from '@/lib/lembretes';
+import { lembreteSchema } from '@/components/lembretes/lembreteFormSchema';
+import { z } from 'zod';
 import { useFormSubmission } from './useFormSubmission';
 
-interface FormOperationsProps {
-  setIsFormOpen: (open: boolean) => void;
-  setEditingLembrete: (lembrete: LembreteFormValues | null) => void;
-  refetchLembretes: () => void;
-  isUserActive: boolean;
-  viewMode?: 'user' | 'admin' | 'consultor';
+type LembreteSchema = z.infer<typeof lembreteSchema>;
+
+interface UseFormOperationsProps {
+  userId: string;
+  onSuccess?: () => void;
 }
 
-export const useFormOperations = ({
-  setIsFormOpen,
-  setEditingLembrete,
-  refetchLembretes,
-  isUserActive,
-  viewMode = 'user'
-}: FormOperationsProps) => {
+export function useFormOperations({ userId, onSuccess }: UseFormOperationsProps) {
   const [isProcessing, setIsProcessing] = useState(false);
-  const { incrementFormSubmissionCount } = useFormSubmission();
+  const { formSubmissionCount, incrementFormSubmissionCount } = useFormSubmission();
   
-  // Handler for opening form to add a new lembrete
-  const handleAddNew = () => {
-    if (!isUserActive) {
-      toast.error('Sua assinatura está inativa. Você não pode adicionar lembretes.');
-      return;
+  // Handle form submission
+  const handleSubmitForm = async (formData: LembreteSchema) => {
+    if (!userId) {
+      toast.error('Usuário não encontrado');
+      return false;
     }
     
-    if (viewMode === 'consultor') {
-      toast.error('Você não tem permissão para adicionar lembretes para este cliente.');
-      return;
-    }
-    
-    setEditingLembrete(null);
-    setIsFormOpen(true);
-  };
-  
-  // Handler for opening form to edit an existing lembrete
-  const handleEdit = (lembrete: LembreteFormValues) => {
-    if (!isUserActive) {
-      toast.error('Sua assinatura está inativa. Você não pode editar lembretes.');
-      return;
-    }
-    
-    if (viewMode === 'consultor') {
-      toast.error('Você não tem permissão para editar lembretes deste cliente.');
-      return;
-    }
-    
-    setEditingLembrete(lembrete);
-    setIsFormOpen(true);
-  };
-  
-  // Handler for closing the form
-  const handleCloseForm = () => {
-    setIsFormOpen(false);
-    
-    // Clear editing state after a brief delay to prevent UI flicker
-    setTimeout(() => {
-      setEditingLembrete(null);
-    }, 100);
-  };
-  
-  // Handler for submitting the form
-  const handleSubmitForm = async (formData: LembreteFormValues) => {
     setIsProcessing(true);
-    
     try {
-      // Here we would call an API to save the lembrete
-      // But for now, we'll just simulate success
+      // Submit the form data
+      const submitResult = await incrementFormSubmissionCount(formData);
       
-      // Refetch lembretes to update the list
-      refetchLembretes();
+      if (onSuccess) {
+        onSuccess();
+      }
       
-      // Close the form
-      setIsFormOpen(false);
-      
-      // Show success message
-      toast.success(
-        formData.id ? 'Lembrete atualizado com sucesso!' : 'Lembrete adicionado com sucesso!'
-      );
+      return true;
     } catch (error) {
-      console.error('Error submitting lembrete:', error);
+      console.error('Erro ao salvar lembrete:', error);
       toast.error('Erro ao salvar lembrete. Tente novamente.');
+      return false;
     } finally {
       setIsProcessing(false);
-      
-      // Clear editing state after a brief delay
-      setTimeout(() => {
-        setEditingLembrete(null);
-      }, 100);
     }
   };
   
   return {
     isProcessing,
-    handleAddNew,
-    handleEdit,
-    handleCloseForm,
     handleSubmitForm
   };
-};
+}

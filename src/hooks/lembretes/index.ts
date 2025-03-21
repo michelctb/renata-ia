@@ -1,81 +1,88 @@
 
-import { useBasicLembretes } from './useBasicLembretes';
-import { useFormSubmission } from './useFormSubmission';
-import { useDeletion } from './useDeletion';
-import { useFormOperations } from './useFormOperations';
-import { Lembrete } from '@/lib/lembretes';
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+import { Lembrete } from '@/lib/lembretes';
+import { useBasicLembretes } from './useBasicLembretes';
+import { useFormOperations } from './useFormOperations';
+import { useDeletion } from './useDeletion';
+import { lembreteSchema } from '@/components/lembretes/lembreteFormSchema';
+import { z } from 'zod';
 
-interface UseLembretesProps {
-  userId: string | undefined;
-  isUserActive: boolean;
-  viewMode?: 'user' | 'admin' | 'consultor';
-}
+type LembreteSchema = z.infer<typeof lembreteSchema>;
 
-/**
- * Custom hook for managing lembretes (reminders).
- * Combines multiple smaller hooks to handle fetching, adding, updating, and deleting lembretes.
- */
-export function useLembretes({ userId, isUserActive, viewMode = 'user' }: UseLembretesProps) {
+export function useLembretes(clientId?: string) {
+  const { user } = useAuth();
+  const userId = clientId || user?.id;
+  
+  // State for form management
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingLembrete, setEditingLembrete] = useState<Lembrete | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [lembreteToDelete, setLembreteToDelete] = useState<number | null>(null);
   
-  // Load lembretes
-  const { lembretes, setLembretes, isLoading, loadLembretes } = useBasicLembretes(userId);
+  // Get basic lembretes data
+  const { 
+    lembretes, 
+    setLembretes, 
+    isLoading, 
+    loadLembretes 
+  } = useBasicLembretes(userId);
   
-  // Form operations
-  const { isProcessing, handleAddNew, handleEdit, handleCloseForm, handleSubmitForm } = 
-    useFormOperations({
-      setIsFormOpen,
-      setEditingLembrete,
-      refetchLembretes: loadLembretes,
-      isUserActive,
-      viewMode
-    });
+  // Get form operations
+  const { 
+    isProcessing: isFormProcessing, 
+    handleSubmitForm 
+  } = useFormOperations({ 
+    userId: userId || '',
+    onSuccess: loadLembretes
+  });
   
-  // Handle delete request
-  const handleDeleteRequest = (id: number) => {
-    if (!isUserActive) {
-      return;
-    }
-    
-    if (viewMode === 'consultor') {
-      return;
-    }
-    
-    setLembreteToDelete(id);
-    setDeleteDialogOpen(true);
+  // Get deletion operations
+  const { 
+    isProcessing: isDeleteProcessing, 
+    handleDelete 
+  } = useDeletion({ 
+    setLembretes, 
+    onSuccess: loadLembretes 
+  });
+  
+  // Open form for new lembrete
+  const handleAddNew = () => {
+    setEditingLembrete(null);
+    setIsFormOpen(true);
   };
   
-  // Delete handling
-  const { handleDelete } = useDeletion();
-  
-  // Confirm delete
-  const handleConfirmDelete = async () => {
-    if (lembreteToDelete) {
-      await handleDelete(lembreteToDelete);
-      setDeleteDialogOpen(false);
-      setLembreteToDelete(null);
-      loadLembretes();
-    }
+  // Open form to edit lembrete
+  const handleEdit = (lembrete: Lembrete) => {
+    setEditingLembrete({...lembrete});
+    setIsFormOpen(true);
   };
-
+  
+  // Close form
+  const handleFormClose = () => {
+    setIsFormOpen(false);
+    setTimeout(() => {
+      setEditingLembrete(null);
+    }, 100);
+  };
+  
   return {
+    // Basic data
     lembretes,
+    setLembretes,
     isLoading,
-    isProcessing,
+    loadLembretes,
+    
+    // Form state
     isFormOpen,
     editingLembrete,
-    deleteDialogOpen,
-    setDeleteDialogOpen,
-    lembreteToDelete,
     handleAddNew,
     handleEdit,
-    handleCloseForm,
-    handleSubmitForm,
-    handleDeleteRequest,
-    handleConfirmDelete
+    handleFormClose,
+    handleFormSubmit: handleSubmitForm,
+    isFormProcessing,
+    
+    // Delete operations
+    handleDelete,
+    isDeleteProcessing
   };
 }

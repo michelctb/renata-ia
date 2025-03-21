@@ -1,229 +1,209 @@
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { DateRange } from 'react-day-picker';
-import { Transaction } from '@/lib/supabase';
-import { fetchTransactionsByClientId } from '@/lib/supabase/transactions';
-import SummaryCards from '@/components/SummaryCards';
-import DashboardCharts from '@/components/DashboardCharts';
-import TransactionTable from '@/components/TransactionTable';
-import TransactionForm from '@/components/TransactionForm';
-import { TransactionsHeader } from '@/components/transactions/TransactionsHeader';
-import { useTransactionActions } from '@/components/transactions/TransactionActions';
-import { DeleteTransactionDialog } from '@/components/transactions/DeleteTransactionDialog';
-import { TransactionDeleteConfirmation } from '@/components/transactions/TransactionDeleteConfirmation';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
+import { DateRange } from 'react-day-picker';
+import { useAuth } from '@/contexts/AuthContext';
+import { Transaction, 
+  addTransaction, 
+  updateTransaction, 
+  deleteTransaction,
+  fetchTransactions
+} from '@/lib/supabase';
+import TransactionTable from './TransactionTable';
+import { TransactionFormDialog } from './transactions/TransactionFormDialog';
+import { TransactionsHeader } from './transactions/TransactionsHeader';
+import { DeleteTransactionDialog } from './transactions/DeleteTransactionDialog';
+import { useTransactionFiltering } from './transactions/useTransactionFiltering';
+import { 
+  useTransactionSubmit,
+  useTransactionDelete,
+  useTransactionReload
+} from './transactions/hooks';
 
+// Types
 type TransactionsTabProps = {
-  transactions?: Transaction[];
-  setTransactions?: React.Dispatch<React.SetStateAction<Transaction[]>>;
-  dateRange?: DateRange | null;
-  setDateRange?: React.Dispatch<React.SetStateAction<DateRange | null>>;
+  transactions: Transaction[];
+  setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
+  dateRange: DateRange | undefined;
+  setDateRange: React.Dispatch<React.SetStateAction<DateRange | undefined>>;
   clientId?: string;
   viewMode?: 'user' | 'admin' | 'consultor';
 };
 
 const TransactionsTab = ({ 
-  transactions: propTransactions, 
-  setTransactions: propSetTransactions, 
-  dateRange: propDateRange, 
-  setDateRange: propSetDateRange,
+  transactions, 
+  setTransactions, 
+  dateRange, 
+  setDateRange,
   clientId,
   viewMode = 'user'
 }: TransactionsTabProps) => {
   const { user, isUserActive } = useAuth();
-  
-  // Local state for when in consultor view mode
-  const [localTransactions, setLocalTransactions] = useState<Transaction[]>([]);
-  const [localDateRange, setLocalDateRange] = useState<DateRange | null>(() => {
-    const today = new Date();
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    return { from: startOfMonth, to: endOfMonth };
-  });
-  
-  // Determine which states to use based on props or local state
-  const transactions = propTransactions || localTransactions;
-  const setTransactions = propSetTransactions || setLocalTransactions;
-  const dateRange = propDateRange || localDateRange;
-  const setDateRange = propSetDateRange || setLocalDateRange;
-  
-  // Load client transactions if in consultor viewMode
-  useEffect(() => {
-    const loadClientTransactions = async () => {
-      if (!clientId || viewMode !== 'consultor') return;
-      
-      try {
-        const loadedTransactions = await fetchTransactionsByClientId(clientId);
-        setLocalTransactions(loadedTransactions);
-      } catch (error) {
-        console.error('Error loading client transactions:', error);
-        toast.error('Erro ao carregar transações do cliente');
-      }
-    };
-    
-    loadClientTransactions();
-  }, [clientId, viewMode]);
-  
-  const [isTransactionFormOpen, setIsTransactionFormOpen] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   
-  // Open form to add a new transaction
-  const handleAddNew = () => {
-    // Block inactive users from adding transactions
-    if (!isUserActive()) {
-      toast.error('Sua assinatura está inativa. Você não pode adicionar transações.');
-      return;
-    }
-    
-    // Block consultors from adding transactions to client accounts
-    if (viewMode === 'consultor') {
-      toast.error('Você não tem permissão para adicionar transações para este cliente.');
-      return;
-    }
-    
-    console.log('Opening form to add new transaction');
-    setEditingTransaction(null);
-    setIsTransactionFormOpen(true);
-  };
+  // Get the correct user ID based on view mode
+  const userId = (viewMode === 'consultor' && clientId) ? clientId : user?.id;
   
-  // Close the transaction form
-  const handleCloseForm = () => {
-    console.log('Transaction form close requested');
-    setIsTransactionFormOpen(false);
-    
-    // Clear the editing transaction after a short delay to avoid timing issues
-    setTimeout(() => {
-      console.log('Clearing editing transaction after form close');
-      setEditingTransaction(null);
-    }, 100);
-  };
-  
-  // Edit a transaction
-  const handleEdit = (transaction: Transaction) => {
-    // Block inactive users from editing transactions
-    if (!isUserActive()) {
-      toast.error('Sua assinatura está inativa. Você não pode editar transações.');
-      return;
-    }
-    
-    // Block consultors from editing client transactions
-    if (viewMode === 'consultor') {
-      toast.error('Você não tem permissão para editar transações deste cliente.');
-      return;
-    }
-    
-    console.log('Editing transaction with data:', transaction);
-    
-    // Make sure we have a proper id in the transaction object
-    const transactionCopy = {
-      ...transaction,
-      id: typeof transaction.id === 'number' ? transaction.id : undefined
-    };
-    
-    console.log('Prepared transaction for edit:', transactionCopy);
-    
-    // First set the transaction, then open the form
-    setEditingTransaction(transactionCopy);
-    
-    // Set form open after editing state is set with a small delay to ensure state updates
-    setTimeout(() => {
-      setIsTransactionFormOpen(true);
-    }, 0);
-  };
-  
-  // Use the transaction actions hook
+  // Custom hooks for transaction management
   const { 
-    deleteConfirmOpen, 
-    setDeleteConfirmOpen,
-    deleteSuccessOpen,
-    setDeleteSuccessOpen,
-    transactionToDelete,
-    handleSubmitTransaction,
-    handleDeleteRequest,
-    confirmDelete,
-    handleReloadAfterDelete
-  } = useTransactionActions({ 
-    setTransactions, 
-    onCloseForm: handleCloseForm 
+    searchTerm, 
+    setSearchTerm, 
+    filteredTransactions,
+    hasFilters,
+    totalReceived,
+    totalSpent
+  } = useTransactionFiltering(transactions, dateRange);
+  
+  const { 
+    handleSubmitTransaction, 
+    isSubmitting 
+  } = useTransactionSubmit({
+    userId: userId || '',
+    setTransactions,
+    onSuccess: () => {
+      setIsFormOpen(false);
+      setEditingTransaction(null);
+    }
   });
   
-  // Wrapper function for delete request that checks active status
-  const handleDeleteWrapper = (id: number) => {
-    // Block inactive users from deleting transactions
+  const { 
+    handleDeleteTransaction,
+    isDeleting
+  } = useTransactionDelete({
+    setTransactions,
+    onSuccess: () => {
+      setDeleteDialogOpen(false);
+      setTransactionToDelete(null);
+    }
+  });
+  
+  const {
+    reloadTransactions,
+    isReloading
+  } = useTransactionReload({
+    userId: userId || '',
+    setTransactions
+  });
+  
+  // Reload when date range changes
+  useEffect(() => {
+    if (userId) {
+      reloadTransactions();
+    }
+  }, [userId, dateRange]);
+  
+  // Open form for new transaction
+  const handleAddNew = () => {
     if (!isUserActive()) {
-      toast.error('Sua assinatura está inativa. Você não pode excluir transações.');
+      toast.error('Sua conta está inativa. Por favor, atualize seu plano para continuar.');
       return;
     }
     
-    // Block consultors from deleting client transactions
+    // Disable adding in consultor view
     if (viewMode === 'consultor') {
-      toast.error('Você não tem permissão para excluir transações deste cliente.');
       return;
     }
     
-    handleDeleteRequest(id);
+    setEditingTransaction(null);
+    setIsFormOpen(true);
+  };
+  
+  // Open form to edit transaction
+  const handleEdit = (transaction: Transaction) => {
+    if (!isUserActive()) {
+      toast.error('Sua conta está inativa. Por favor, atualize seu plano para continuar.');
+      return;
+    }
+    
+    // Disable editing in consultor view
+    if (viewMode === 'consultor') {
+      return;
+    }
+    
+    setEditingTransaction(transaction);
+    setIsFormOpen(true);
+  };
+  
+  // Request to delete transaction
+  const handleDeleteRequest = (id: number) => {
+    if (!isUserActive()) {
+      toast.error('Sua conta está inativa. Por favor, atualize seu plano para continuar.');
+      return;
+    }
+    
+    // Disable deleting in consultor view
+    if (viewMode === 'consultor') {
+      return;
+    }
+    
+    const transaction = transactions.find(t => t.id === id);
+    if (transaction) {
+      setTransactionToDelete(transaction);
+      setDeleteDialogOpen(true);
+    }
+  };
+  
+  // Confirm delete
+  const handleConfirmDelete = async () => {
+    if (transactionToDelete) {
+      await handleDeleteTransaction(transactionToDelete.id as number);
+    }
+  };
+  
+  // Close form
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setEditingTransaction(null);
   };
 
-  // Monitor form state for debugging
-  useEffect(() => {
-    console.log('Transaction form state changed - isOpen:', isTransactionFormOpen, 'editingTransaction:', editingTransaction?.id);
-  }, [isTransactionFormOpen, editingTransaction]);
-
+  const isLoading = isSubmitting || isDeleting || isReloading;
+  
   return (
     <div className="space-y-6">
-      <TransactionsHeader
+      <TransactionsHeader 
+        onSearch={setSearchTerm}
+        searchTerm={searchTerm}
         dateRange={dateRange}
-        setDateRange={setDateRange}
+        onDateRangeChange={setDateRange}
         onAddNew={handleAddNew}
         isUserActive={isUserActive()}
         viewMode={viewMode}
       />
-
-      <SummaryCards 
+      
+      <TransactionTable 
         transactions={transactions}
-        dateRange={dateRange}
+        onEditTransaction={handleEdit}
+        onDeleteTransaction={handleDeleteRequest}
+        isUserActive={isUserActive()}
+        isReadOnly={viewMode === 'consultor'}
+        filteringData={{
+          searchTerm,
+          setSearchTerm,
+          filteredTransactions,
+          hasFilters,
+          totalReceived,
+          totalSpent
+        }}
       />
       
-      <DashboardCharts
-        transactions={transactions}
-        dateRange={dateRange}
-        clientId={clientId}
-        viewMode={viewMode}
-      />
-      
-      <div className="mt-8">
-        <TransactionTable
-          transactions={transactions}
-          dateRange={dateRange}
-          onEdit={handleEdit}
-          onDelete={handleDeleteWrapper}
-          isUserActive={isUserActive()}
-          viewMode={viewMode}
-        />
-      </div>
-
-      {user && (
-        <TransactionForm
-          isOpen={isTransactionFormOpen}
+      {userId && (
+        <TransactionFormDialog
+          isOpen={isFormOpen}
           onClose={handleCloseForm}
           onSubmit={handleSubmitTransaction}
           editingTransaction={editingTransaction}
-          userId={viewMode === 'consultor' && clientId ? clientId : user.id}
+          userId={userId}
         />
       )}
       
       <DeleteTransactionDialog
-        open={deleteConfirmOpen} 
-        onOpenChange={setDeleteConfirmOpen}
-        onConfirm={confirmDelete}
-        transactionId={transactionToDelete}
-      />
-      
-      <TransactionDeleteConfirmation
-        open={deleteSuccessOpen}
-        onOpenChange={setDeleteSuccessOpen}
-        onReload={handleReloadAfterDelete}
+        isOpen={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        transaction={transactionToDelete}
       />
     </div>
   );

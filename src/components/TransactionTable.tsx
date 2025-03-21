@@ -1,95 +1,99 @@
 
-import React, { useState } from 'react';
-import { format, parseISO, isWithinInterval } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { DateRange } from 'react-day-picker';
-import { Transaction } from '@/lib/supabase';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { SearchInput } from '@/components/transactions/SearchInput';
-import { TransactionRow } from '@/components/transactions/TransactionRow';
-import { TransactionTableHeader } from '@/components/transactions/TransactionTableHeader';
-import { EmptyTransactionRow } from '@/components/transactions/EmptyTransactionRow';
-import { useTransactionFiltering } from '@/components/transactions/useTransactionFiltering';
+import { useState } from 'react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import TransactionRow from './transactions/TransactionRow';
+import EmptyTransactionRow from './transactions/EmptyTransactionRow';
+import { Transaction } from '@/lib/supabase/types';
+import { formatCurrency } from '@/lib/utils';
 
-export interface TransactionTableProps {
+interface TransactionTableProps {
   transactions: Transaction[];
-  dateRange: DateRange | null;
-  onEdit: (transaction: Transaction) => void;
-  onDelete: (id: number) => void;
+  onEditTransaction: (transaction: Transaction) => void;
+  onDeleteTransaction: (id: number) => void;
   isUserActive: boolean;
-  viewMode?: 'user' | 'admin' | 'consultor';
+  isReadOnly?: boolean;
+  filteringData: {
+    searchTerm: string;
+    setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
+    filteredTransactions: Transaction[];
+    hasFilters: boolean;
+    totalReceived: number;
+    totalSpent: number;
+  };
 }
 
-const TransactionTable = ({ 
-  transactions, 
-  dateRange,
-  onEdit,
-  onDelete,
+const TransactionTable = ({
+  transactions,
+  onEditTransaction,
+  onDeleteTransaction,
   isUserActive,
-  viewMode = 'user'
+  isReadOnly = false,
+  filteringData
 }: TransactionTableProps) => {
-  const { 
+  const {
     searchTerm,
     setSearchTerm,
     filteredTransactions,
-    totalIncome,
-    totalExpenses
-  } = useTransactionFiltering(transactions, dateRange);
-  
-  const isReadOnly = viewMode === 'consultor';
+    hasFilters,
+    totalReceived,
+    totalSpent
+  } = filteringData;
+
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
 
   return (
-    <Card className="overflow-hidden border-none shadow-md">
-      <div className="p-4 bg-white dark:bg-gray-800">
-        <SearchInput 
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Buscar transações..."
-        />
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+      <div className="flex justify-between p-4 border-b dark:border-gray-700">
+        <div className="text-2xl font-bold text-gray-800 dark:text-white">
+          Transações
+        </div>
+        <div className="flex gap-4">
+          <div className="text-sm">
+            <span className="text-green-500 font-medium">Entradas: </span>
+            <span className="font-bold">{formatCurrency(totalReceived)}</span>
+          </div>
+          <div className="text-sm">
+            <span className="text-red-500 font-medium">Saídas: </span>
+            <span className="font-bold">{formatCurrency(totalSpent)}</span>
+          </div>
+        </div>
       </div>
-      
+
       <div className="overflow-x-auto">
-        <table className="w-full">
-          <TransactionTableHeader />
-          
-          <tbody className="bg-white dark:bg-gray-800">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[100px]">Data</TableHead>
+              <TableHead>Descrição</TableHead>
+              <TableHead>Categoria</TableHead>
+              <TableHead className="text-right">Valor</TableHead>
+              {!isReadOnly && (
+                <TableHead className="text-right">Ações</TableHead>
+              )}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {filteredTransactions.length > 0 ? (
               filteredTransactions.map((transaction) => (
                 <TransactionRow
                   key={transaction.id}
                   transaction={transaction}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
+                  onEdit={onEditTransaction}
+                  onDelete={onDeleteTransaction}
                   isUserActive={isUserActive}
-                  viewMode={viewMode}
+                  isReadOnly={isReadOnly}
                 />
               ))
             ) : (
               <EmptyTransactionRow searchTerm={searchTerm} />
             )}
-          </tbody>
-          
-          <tfoot className="bg-gray-50 dark:bg-gray-700/60 text-sm font-medium">
-            <tr>
-              <td colSpan={2} className="px-4 py-3 text-gray-500 dark:text-gray-400">
-                Resumo:
-              </td>
-              <td className="px-4 py-3 text-green-600 dark:text-green-400 text-right">
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalIncome)}
-              </td>
-              <td className="px-4 py-3 text-red-600 dark:text-red-400 text-right">
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalExpenses)}
-              </td>
-              <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-right">
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalIncome - totalExpenses)}
-              </td>
-              <td className="px-4 py-3 text-right"></td>
-            </tr>
-          </tfoot>
-        </table>
+          </TableBody>
+        </Table>
       </div>
-    </Card>
+    </div>
   );
 };
 

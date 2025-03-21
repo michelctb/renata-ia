@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { SearchInput } from './SearchInput';
 import { DateRangePicker } from '@/components/DateRangePicker';
-import { TransactionActions } from './TransactionActions';
+import { TransactionActions } from '@/components/transactions/TransactionActions';
 import { usePeriodoDateRange } from '../metas/hooks/usePeriodoDateRange';
 
 interface TransactionsHeaderProps {
@@ -30,14 +30,13 @@ export function TransactionsHeader({
       <div className="flex-1 flex flex-col space-y-4 md:flex-row md:items-center md:space-x-4 md:space-y-0">
         <SearchInput 
           value={searchTerm} 
-          onChange={(e) => onSearch(e.target.value)} 
+          onChange={(value) => onSearch(value)} 
           placeholder="Buscar transações..." 
-          className="md:w-64" 
         />
         
         <DateRangePicker 
-          dateRange={dateRange}
-          onChange={onDateRangeChange}
+          value={dateRange}
+          onValueChange={onDateRangeChange}
         />
       </div>
       

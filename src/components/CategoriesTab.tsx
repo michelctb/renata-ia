@@ -4,10 +4,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { CategoryList } from '@/components/categories/CategoryList';
 import { CategoryActions } from '@/components/categories/CategoryActions';
 import { DeleteCategoryDialog } from '@/components/categories/DeleteCategoryDialog';
-import { useCategoriesData } from '@/hooks/categories/useCategoriesData';
+import { useCategories } from '@/hooks/categories';
 import { CategoryFormManager } from '@/components/categories/CategoryFormManager';
-import { CategoryFormValues } from '@/components/categories/categoryFormSchema';
+import { z } from 'zod';
+import { categoryFormSchema } from '@/components/categories/categoryFormSchema';
 import { Category } from '@/lib/categories';
+
+type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 
 type CategoriesTabProps = {
   clientId?: string;
@@ -18,17 +21,23 @@ const CategoriesTab = ({ clientId, viewMode = 'user' }: CategoriesTabProps) => {
   const { user, isUserActive } = useAuth();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<CategoryFormValues | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<number | null>(null);
   
   // Use client ID if in consultor view mode
   const userId = viewMode === 'consultor' && clientId ? clientId : user?.id;
   
-  // Fetch categories for the user or client
+  // Get categories hook with all operations
   const { 
     categories, 
-    isLoading
-  } = useCategoriesData(userId);
+    isLoading,
+    refetchCategories,
+    handleSubmitCategory,
+    deleteDialogOpen,
+    setDeleteDialogOpen,
+    categoryToDelete,
+    setCategoryToDelete,
+    handleDeleteRequest,
+    handleConfirmDelete
+  } = useCategories(userId);
   
   // Handle adding a new category
   const handleAddNew = () => {
@@ -68,38 +77,29 @@ const CategoriesTab = ({ clientId, viewMode = 'user' }: CategoriesTabProps) => {
   
   // Handle form submission
   const handleFormSubmit = async (formData: CategoryFormValues) => {
-    // Handle form submission logic
+    const success = await handleSubmitCategory({
+      id: formData.id,
+      nome: formData.name,
+      tipo: formData.type,
+      cliente: userId || '',
+      padrao: !!formData.isDefault
+    }, {
+      hasMeta: formData.hasMeta,
+      valorMeta: formData.metaValue
+    });
     
-    // Close form
-    setIsFormOpen(false);
-    
-    // Clear editing state
-    setTimeout(() => {
-      setEditingCategory(null);
-    }, 100);
-  };
-  
-  // Handle delete request
-  const handleDeleteRequest = (id: number) => {
-    if (!isUserActive()) {
-      return;
+    if (success) {
+      // Close form
+      setIsFormOpen(false);
+      
+      // Clear editing state
+      setTimeout(() => {
+        setEditingCategory(null);
+      }, 100);
+      
+      // Refresh categories
+      refetchCategories();
     }
-    
-    if (viewMode === 'consultor') {
-      return;
-    }
-    
-    setCategoryToDelete(id);
-    setDeleteDialogOpen(true);
-  };
-  
-  // Handle confirm delete
-  const handleConfirmDelete = async () => {
-    // Handle delete logic
-    
-    // Close dialog
-    setDeleteDialogOpen(false);
-    setCategoryToDelete(null);
   };
   
   return (
