@@ -9,6 +9,7 @@ import { LembreteFormValues } from '@/components/lembretes/lembreteFormSchema';
 import { useBasicLembretes } from '@/hooks/lembretes/useBasicLembretes';
 import { useDeletion } from '@/hooks/lembretes/useDeletion';
 import { Lembrete } from '@/lib/lembretes';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 
 type LembretesTabProps = {
   clientId?: string;
@@ -110,37 +111,41 @@ const LembretesTab = ({ clientId, viewMode = 'user' }: LembretesTabProps) => {
   };
   
   return (
-    <div className="space-y-6">
-      <LembretesHeader 
-        onAddNew={handleAddNew} 
-        isUserActive={isUserActive()} 
-        viewMode={viewMode}
-      />
-      
-      <LembretesList 
-        lembretes={lembretes}
-        isLoading={isLoading}
-        onEdit={handleEdit}
-        onDelete={handleDeleteRequest}
-        isUserActive={isUserActive()}
-        viewMode={viewMode}
-      />
-      
-      <LembreteForm
-        isOpen={isFormOpen}
-        onClose={handleCloseForm}
-        onSubmit={handleSubmitForm}
-        editingLembrete={editingLembrete}
-        userId={userId || ''}
-      />
-      
-      <DeleteLembreteDialog 
-        isOpen={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        onConfirm={handleConfirmDelete}
-        lembreteId={lembreteToDelete}
-      />
-    </div>
+    <Tabs defaultValue="lembretes">
+      <TabsContent value="lembretes">
+        <div className="space-y-6">
+          <LembretesHeader 
+            onAddNew={handleAddNew} 
+            isUserActive={isUserActive()} 
+            viewMode={viewMode}
+          />
+          
+          <LembretesList 
+            lembretes={lembretes}
+            isLoading={isLoading}
+            onEdit={handleEdit}
+            onDelete={handleDeleteRequest}
+            isUserActive={isUserActive()}
+            viewMode={viewMode}
+          />
+          
+          <LembreteForm
+            isOpen={isFormOpen}
+            onClose={handleCloseForm}
+            onSubmit={handleSubmitForm}
+            editingLembrete={editingLembrete}
+            userId={userId || ''}
+          />
+          
+          <DeleteLembreteDialog 
+            isOpen={deleteDialogOpen}
+            onOpenChange={setDeleteDialogOpen}
+            onConfirm={handleConfirmDelete}
+            lembreteId={lembreteToDelete}
+          />
+        </div>
+      </TabsContent>
+    </Tabs>
   );
 };
 

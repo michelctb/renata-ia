@@ -9,6 +9,7 @@ import { CategoryFormManager } from '@/components/categories/CategoryFormManager
 import { z } from 'zod';
 import { categoryFormSchema } from '@/components/categories/categoryFormSchema';
 import { Category } from '@/lib/categories';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 
 type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 
@@ -103,39 +104,43 @@ const CategoriesTab = ({ clientId, viewMode = 'user' }: CategoriesTabProps) => {
   };
   
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Categorias</h2>
-        <CategoryActions 
-          onAddNew={handleAddNew} 
-          isActive={isUserActive()}
-          viewMode={viewMode}
-        />
-      </div>
-      
-      <CategoryList 
-        categories={categories} 
-        isLoading={isLoading}
-        onEdit={handleEdit}
-        onDelete={handleDeleteRequest}
-        isUserActive={isUserActive()}
-        viewMode={viewMode}
-      />
-      
-      <CategoryFormManager
-        isOpen={isFormOpen}
-        onClose={handleFormClose}
-        onSubmit={handleFormSubmit}
-        editingCategory={editingCategory}
-      />
-      
-      <DeleteCategoryDialog
-        isOpen={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        onConfirm={handleConfirmDelete}
-        categoryId={categoryToDelete}
-      />
-    </div>
+    <Tabs defaultValue="categories">
+      <TabsContent value="categories">
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Categorias</h2>
+            <CategoryActions 
+              onAddNew={handleAddNew} 
+              isActive={isUserActive()}
+              viewMode={viewMode}
+            />
+          </div>
+          
+          <CategoryList 
+            categories={categories} 
+            isLoading={isLoading}
+            onEdit={handleEdit}
+            onDelete={handleDeleteRequest}
+            isUserActive={isUserActive()}
+            viewMode={viewMode}
+          />
+          
+          <CategoryFormManager
+            isOpen={isFormOpen}
+            onClose={handleFormClose}
+            onSubmit={handleFormSubmit}
+            editingCategory={editingCategory}
+          />
+          
+          <DeleteCategoryDialog
+            isOpen={deleteDialogOpen}
+            onOpenChange={setDeleteDialogOpen}
+            onConfirm={handleConfirmDelete}
+            categoryId={categoryToDelete}
+          />
+        </div>
+      </TabsContent>
+    </Tabs>
   );
 };
 
