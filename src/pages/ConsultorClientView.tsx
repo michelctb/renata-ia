@@ -13,14 +13,21 @@ import CategoriesTab from '@/components/CategoriesTab';
 import DashboardCharts from '@/components/DashboardCharts';
 import LembretesTab from '@/components/LembretesTab';
 import { Cliente } from '@/lib/clientes';
+import { DateRange } from 'react-day-picker';
 
 const ConsultorClientView = () => {
-  const { clientId } = useParams();
+  const { clientId } = useParams<{ clientId: string }>();
   const { user, isConsultor } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('resumo');
   const [clientData, setClientData] = useState<Cliente | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [dateRange, setDateRange] = useState<DateRange | null>(() => {
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    return { from: startOfMonth, to: endOfMonth };
+  });
 
   useEffect(() => {
     // Verificar se o usuário está logado e tem permissões adequadas
@@ -104,19 +111,34 @@ const ConsultorClientView = () => {
             </TabsList>
             
             <TabsContent value="resumo" className="space-y-4 animate-fade-up">
-              <DashboardCharts clientId={clientId!} viewMode="consultor" />
+              <DashboardCharts 
+                dateRange={dateRange}
+                clientId={clientId}
+                viewMode="consultor"
+              />
             </TabsContent>
             
             <TabsContent value="transacoes" className="space-y-4 animate-fade-up">
-              <TransactionsTab clientId={clientId!} viewMode="consultor" />
+              <TransactionsTab 
+                dateRange={dateRange}
+                setDateRange={setDateRange}
+                clientId={clientId}
+                viewMode="consultor"
+              />
             </TabsContent>
             
             <TabsContent value="categorias" className="space-y-4 animate-fade-up">
-              <CategoriesTab clientId={clientId!} viewMode="consultor" />
+              <CategoriesTab 
+                clientId={clientId}
+                viewMode="consultor"
+              />
             </TabsContent>
             
             <TabsContent value="lembretes" className="space-y-4 animate-fade-up">
-              <LembretesTab clientId={clientId!} viewMode="consultor" />
+              <LembretesTab 
+                clientId={clientId}
+                viewMode="consultor"
+              />
             </TabsContent>
           </Tabs>
         ) : (

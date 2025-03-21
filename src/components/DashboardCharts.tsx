@@ -1,5 +1,5 @@
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Transaction } from '@/lib/supabase';
 import { DateRange } from 'react-day-picker';
 import { format, parseISO, isWithinInterval } from 'date-fns';
@@ -12,29 +12,65 @@ import { MetaProgressBar } from './metas/MetaProgressBar';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { fetchMetasPeriodo, MetaCategoria, LIMITE_BAIXO, LIMITE_MEDIO, LIMITE_ALTO } from '@/lib/metas';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEffect } from 'react';
+import { fetchTransactionsByClientId } from '@/lib/supabase/transactions';
 
 type DashboardChartsProps = {
-  transactions: Transaction[];
-  dateRange: DateRange | null;
+  transactions?: Transaction[];
+  dateRange?: DateRange | null;
+  clientId?: string;
+  viewMode?: 'user' | 'admin' | 'consultor';
 };
 
-export default function DashboardCharts({ transactions, dateRange }: DashboardChartsProps) {
+export default function DashboardCharts({ 
+  transactions: propTransactions, 
+  dateRange, 
+  clientId,
+  viewMode = 'user'
+}: DashboardChartsProps) {
   const { user } = useAuth();
   const [transactionType, setTransactionType] = useState<'saída' | 'entrada'>('saída');
   const [metas, setMetas] = useState<MetaCategoria[]>([]);
+  const [clientTransactions, setClientTransactions] = useState<Transaction[]>([]);
+  
+  // Load client transactions if in consultor viewMode
+  useEffect(() => {
+    const loadClientTransactions = async () => {
+      if (!clientId || viewMode !== 'consultor') return;
+      
+      try {
+        const transactions = await fetchTransactionsByClientId(clientId);
+        setClientTransactions(transactions);
+      } catch (error) {
+        console.error('Error loading client transactions for charts:', error);
+      }
+    };
+    
+    loadClientTransactions();
+  }, [clientId, viewMode]);
+  
+  // Determine which transactions to use - props or fetched client transactions
+  const transactions = useMemo(() => {
+    if (viewMode === 'consultor' && clientId) {
+      return clientTransactions;
+    }
+    return propTransactions || [];
+  }, [propTransactions, clientTransactions, viewMode, clientId]);
   
   // Buscar metas para o período atual
   useEffect(() => {
     const loadMetas = async () => {
-      if (!user || !dateRange?.from) return;
+      if (!dateRange?.from) return;
       
       try {
+        const userId = viewMode === 'consultor' && clientId ? clientId : user?.id;
+        
+        if (!userId) return;
+        
         const mesReferencia = dateRange.from.getMonth() + 1;
         const anoReferencia = dateRange.from.getFullYear();
         
         const metasPeriodo = await fetchMetasPeriodo(
-          user.id, 
+          userId, 
           'mensal', 
           mesReferencia, 
           anoReferencia
@@ -53,7 +89,7 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
     };
     
     loadMetas();
-  }, [user, dateRange]);
+  }, [user, dateRange, clientId, viewMode]);
   
   // Filter transactions by date range
   const filteredTransactions = useMemo(() => {
