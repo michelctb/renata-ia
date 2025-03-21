@@ -1,9 +1,27 @@
+
 import * as React from "react"
 import * as TabsPrimitive from "@radix-ui/react-tabs"
 
 import { cn } from "@/lib/utils"
 
-const Tabs = TabsPrimitive.Root
+// Create a context for the Tabs component
+const TabsContext = React.createContext<{ value: string | undefined; onValueChange: ((value: string) => void) | undefined }>({
+  value: undefined,
+  onValueChange: undefined
+})
+
+// Custom Tabs component that provides the context
+const Tabs = React.forwardRef<
+  React.ElementRef<typeof TabsPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root>
+>(({ children, ...props }, ref) => (
+  <TabsContext.Provider value={{ value: props.value, onValueChange: props.onValueChange }}>
+    <TabsPrimitive.Root ref={ref} {...props}>
+      {children}
+    </TabsPrimitive.Root>
+  </TabsContext.Provider>
+))
+Tabs.displayName = TabsPrimitive.Root.displayName
 
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
@@ -38,16 +56,25 @@ TabsTrigger.displayName = TabsPrimitive.Trigger.displayName
 const TabsContent = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Content
-    ref={ref}
-    className={cn(
-      "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-      className
-    )}
-    {...props}
-  />
-))
+>(({ className, ...props }, ref) => {
+  // Use the context to ensure TabsContent is used within Tabs
+  const context = React.useContext(TabsContext)
+  
+  if (context.value === undefined) {
+    throw new Error("`TabsContent` must be used within `Tabs`")
+  }
+  
+  return (
+    <TabsPrimitive.Content
+      ref={ref}
+      className={cn(
+        "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        className
+      )}
+      {...props}
+    />
+  )
+})
 TabsContent.displayName = TabsPrimitive.Content.displayName
 
 export { Tabs, TabsList, TabsTrigger, TabsContent }
