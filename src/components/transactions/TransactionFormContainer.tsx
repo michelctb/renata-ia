@@ -12,6 +12,7 @@ interface TransactionFormContainerProps {
 
 /**
  * Container component for the transaction form dialog
+ * Used across user, consultant, and client views
  */
 export function TransactionFormContainer({
   isOpen,

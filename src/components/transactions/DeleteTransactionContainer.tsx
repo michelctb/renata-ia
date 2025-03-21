@@ -11,6 +11,7 @@ interface DeleteTransactionContainerProps {
 
 /**
  * Container component for the transaction deletion dialog
+ * Used across user, consultant, and client views
  */
 export function DeleteTransactionContainer({
   open,

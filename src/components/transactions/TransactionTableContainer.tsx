@@ -20,6 +20,7 @@ interface TransactionTableContainerProps {
 
 /**
  * Container component for the transaction table
+ * Used across user, consultant, and client views
  */
 export function TransactionTableContainer({
   transactions,

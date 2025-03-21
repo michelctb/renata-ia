@@ -14,6 +14,7 @@ interface TransactionsHeaderContainerProps {
 
 /**
  * Container component for the transactions header
+ * Used across user, consultant, and client views
  */
 export function TransactionsHeaderContainer({
   onSearch,

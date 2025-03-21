@@ -12,7 +12,12 @@ import LembretesTab from '@/components/LembretesTab';
 import { toast } from 'sonner';
 import { startOfMonth, endOfMonth } from 'date-fns';
 
-const Dashboard = () => {
+interface DashboardProps {
+  clientId?: string;
+  viewMode?: 'user' | 'admin' | 'consultor';
+}
+
+const Dashboard = ({ clientId, viewMode = 'user' }: DashboardProps) => {
   const { user, isLoading: isAuthLoading } = useAuth();
   const navigate = useNavigate();
   
@@ -42,12 +47,15 @@ const Dashboard = () => {
   
   useEffect(() => {
     const loadTransactions = async () => {
-      if (!user) return;
+      // For consultant view, client ID should be provided
+      const userId = (viewMode === 'consultor' && clientId) ? clientId : user?.id;
+      
+      if (!userId) return;
       
       setIsLoading(true);
       try {
-        const data = await fetchTransactions(user.id);
-        console.log(`Loaded ${data.length} transactions for user ${user.id}`);
+        const data = await fetchTransactions(userId);
+        console.log(`Loaded ${data.length} transactions for ${viewMode === 'consultor' ? 'client' : 'user'} ${userId}`);
         
         const normalizedData = data.map(transaction => {
           let operationType = transaction.operação;
@@ -81,7 +89,7 @@ const Dashboard = () => {
     };
     
     loadTransactions();
-  }, [user]);
+  }, [user, clientId, viewMode]);
 
   if (isLoading && !user) {
     return (
@@ -109,6 +117,8 @@ const Dashboard = () => {
               setTransactions={setTransactions}
               dateRange={dateRange}
               setDateRange={setDateRange}
+              clientId={clientId}
+              viewMode={viewMode}
             />
           </TabsContent>
           
