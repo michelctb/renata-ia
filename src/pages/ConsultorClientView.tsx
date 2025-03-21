@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TransactionsTab from '@/components/TransactionsTab';
 import LembretesTab from '@/components/LembretesTab';
 import CategoriesTab from '@/components/CategoriesTab';
+import { DateFilterButtons } from '@/components/DateFilterButtons';
 
 export default function ConsultorClientView() {
   const { clientId } = useParams<{ clientId: string }>();
@@ -22,6 +23,7 @@ export default function ConsultorClientView() {
   const [client, setClient] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [activeTab, setActiveTab] = useState("transactions");
   
   // Define o mês atual como período padrão
   const today = new Date();
@@ -115,19 +117,28 @@ export default function ConsultorClientView() {
           </button>
         </div>
         
-        <Tabs defaultValue="transactions" className="animate-fade-in">
-          <TabsList className="mb-6 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm shadow-sm">
-            <TabsTrigger value="transactions" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              Transações
-            </TabsTrigger>
-            <TabsTrigger value="categories" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              Categorias
-            </TabsTrigger>
-            <TabsTrigger value="lembretes" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              Lembretes
-            </TabsTrigger>
-          </TabsList>
+        <div className="flex flex-col sm:flex-row sm:items-center mb-6 justify-between">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="animate-fade-in">
+            <TabsList className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm shadow-sm">
+              <TabsTrigger value="transactions" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                Transações
+              </TabsTrigger>
+              <TabsTrigger value="categories" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                Categorias
+              </TabsTrigger>
+              <TabsTrigger value="lembretes" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                Lembretes
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
           
+          <DateFilterButtons
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
+          />
+        </div>
+        
+        <div className="animate-fade-in">
           <TabsContent value="transactions" className="animate-fade-up">
             <TransactionsTab 
               transactions={transactions}
@@ -152,7 +163,7 @@ export default function ConsultorClientView() {
               viewMode="consultor"
             />
           </TabsContent>
-        </Tabs>
+        </div>
       </div>
     </div>
   );

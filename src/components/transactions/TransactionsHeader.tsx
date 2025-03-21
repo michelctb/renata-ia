@@ -2,14 +2,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
-import { DateRange } from "react-day-picker";
-import DateRangePicker from "@/components/DateRangePicker";
 
 interface TransactionsHeaderProps {
   onSearch: (value: string) => void;
   searchTerm: string;
-  dateRange: DateRange | undefined;
-  onDateRangeChange: (value: DateRange | undefined) => void;
   onAddNew: () => void;
   isUserActive: boolean;
   viewMode?: 'user' | 'admin' | 'consultor';
@@ -18,8 +14,6 @@ interface TransactionsHeaderProps {
 export function TransactionsHeader({
   onSearch,
   searchTerm,
-  dateRange,
-  onDateRangeChange,
   onAddNew,
   isUserActive,
   viewMode = 'user'
@@ -38,12 +32,7 @@ export function TransactionsHeader({
         />
       </div>
       
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-        <DateRangePicker
-          dateRange={dateRange}
-          onDateRangeChange={onDateRangeChange}
-        />
-        
+      <div>
         {!isReadOnly && (
           <Button 
             onClick={onAddNew} 
