@@ -14,6 +14,8 @@ import TransactionsTab from '@/components/TransactionsTab';
 import LembretesTab from '@/components/LembretesTab';
 import CategoriesTab from '@/components/CategoriesTab';
 import { DateFilterButtons } from '@/components/DateFilterButtons';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 export default function ConsultorClientView() {
   const { clientId } = useParams<{ clientId: string }>();
@@ -104,6 +106,17 @@ export default function ConsultorClientView() {
       <div className="container px-4 py-8 max-w-7xl">
         <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-1 hover:bg-blue-100 dark:hover:bg-gray-700"
+                onClick={() => navigate('/dashboard')}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Voltar ao Dashboard
+              </Button>
+            </div>
             <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
               Visualização de Cliente
             </h1>
