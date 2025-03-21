@@ -1,5 +1,4 @@
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/utils';
@@ -41,14 +40,15 @@ export function TransactionRow({
       
       <td className="py-3 px-4">
         <div className="text-sm font-medium text-gray-900 dark:text-gray-200">{description}</div>
-        {transaction.categoria && (
-          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            {transaction.categoria}
-          </div>
-        )}
       </td>
       
       <td className="py-3 px-4">
+        <div className="text-sm text-gray-700 dark:text-gray-300">
+          {transaction.categoria}
+        </div>
+      </td>
+      
+      <td className="py-3 px-4 text-right">
         <div className={cn(
           "text-sm font-medium",
           isIncome && "text-green-600 dark:text-green-400",
@@ -60,44 +60,46 @@ export function TransactionRow({
       
       {!isReadOnly && (
         <td className="py-3 px-4 text-right">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onEdit}
-            className="h-8 w-8 p-0 mr-1"
-            disabled={!isUserActive || isReadOnly}
-            title={
-              !isUserActive 
-                ? "Sua assinatura está inativa. Você não pode editar transações."
-                : isReadOnly
-                  ? "Modo de visualização. Edição não permitida."
-                  : "Editar transação"
-            }
-          >
-            <PencilIcon className="h-4 w-4" />
-            <span className="sr-only">Editar</span>
-          </Button>
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onDelete}
-            className={cn(
-              "h-8 w-8 p-0",
-              !isUserActive || isReadOnly ? "text-gray-400" : "text-red-500 hover:text-red-700 dark:text-red-400"
-            )}
-            disabled={!isUserActive || isReadOnly}
-            title={
-              !isUserActive 
-                ? "Sua assinatura está inativa. Você não pode excluir transações."
-                : isReadOnly
-                  ? "Modo de visualização. Exclusão não permitida."
-                  : "Excluir transação"
-            }
-          >
-            <Trash2Icon className="h-4 w-4" />
-            <span className="sr-only">Excluir</span>
-          </Button>
+          <div className="flex justify-end space-x-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onEdit}
+              className="h-8 w-8 p-0"
+              disabled={!isUserActive || isReadOnly}
+              title={
+                !isUserActive 
+                  ? "Sua assinatura está inativa. Você não pode editar transações."
+                  : isReadOnly
+                    ? "Modo de visualização. Edição não permitida."
+                    : "Editar transação"
+              }
+            >
+              <PencilIcon className="h-4 w-4" />
+              <span className="sr-only">Editar</span>
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onDelete}
+              className={cn(
+                "h-8 w-8 p-0",
+                !isUserActive || isReadOnly ? "text-gray-400" : "text-red-500 hover:text-red-700 dark:text-red-400"
+              )}
+              disabled={!isUserActive || isReadOnly}
+              title={
+                !isUserActive 
+                  ? "Sua assinatura está inativa. Você não pode excluir transações."
+                  : isReadOnly
+                    ? "Modo de visualização. Exclusão não permitida."
+                    : "Excluir transação"
+              }
+            >
+              <Trash2Icon className="h-4 w-4" />
+              <span className="sr-only">Excluir</span>
+            </Button>
+          </div>
         </td>
       )}
     </tr>
