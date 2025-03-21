@@ -1,10 +1,11 @@
 
 import { useState, useRef } from 'react';
-import { Transaction, deleteTransaction } from '@/lib/supabase';
+import { Transaction } from '@/lib/supabase/types';
+import { deleteTransaction } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 
-type UseTransactionDeleteProps = {
+export type UseTransactionDeleteProps = {
   setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
   onSuccess?: () => void;
 };
@@ -23,7 +24,6 @@ export function useTransactionDelete({
   onSuccess
 }: UseTransactionDeleteProps) {
   const { user } = useAuth();
-  const [transactionToDelete, setTransactionToDelete] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   
   // Ref to track if callbacks have been executed

@@ -1,7 +1,8 @@
 
-import { Transaction } from '@/lib/supabase';
+import { Transaction } from '@/lib/supabase/types';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { useState } from 'react';
 import { useTransactionSubmit } from './hooks/useTransactionSubmit';
 import { useTransactionDelete } from './hooks/useTransactionDelete';
 import { useTransactionReload } from './hooks/useTransactionReload';
@@ -25,30 +26,38 @@ export function useTransactionActions({
   onCloseForm 
 }: TransactionActionsProps) {
   const { user } = useAuth();
-  const { deleteSuccessOpen, setDeleteSuccessOpen, handleReloadAfterDelete } = useTransactionReload();
+  const [deleteSuccessOpen, setDeleteSuccessOpen] = useState(false);
   
-  const { 
-    deleteConfirmOpen, 
-    setDeleteConfirmOpen,
-    transactionToDelete,
-    handleDeleteRequest,
-    confirmDelete
-  } = useTransactionDelete({ 
-    setDeleteSuccessOpen 
+  const { reloadTransactions, isReloading } = useTransactionReload({
+    userId: user?.id || '',
+    setTransactions
   });
   
-  const { handleSubmitTransaction } = useTransactionSubmit({ 
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
+  
+  const { handleDeleteTransaction, isDeleting } = useTransactionDelete({
+    setTransactions,
+    onSuccess: () => {
+      setDeleteSuccessOpen(true);
+    }
+  });
+  
+  const handleReloadAfterDelete = () => {
+    setDeleteSuccessOpen(false);
+    reloadTransactions();
+  };
+  
+  const { handleSubmitTransaction, isSubmitting } = useTransactionSubmit({ 
+    userId: user?.id || '',
     setTransactions, 
-    onCloseForm 
+    onSuccess: onCloseForm
   });
   
   /**
-   * Wrapper function for delete request that checks active status.
-   * Verifies that the user is logged in before proceeding.
-   * 
-   * @param {number} id - The ID of the transaction to delete
+   * Request to delete a transaction by ID
    */
-  const handleDeleteWrapper = (id: number) => {
+  const handleDeleteRequest = (id: number) => {
     if (!user) {
       toast({
         title: "Authentication Error",
@@ -58,7 +67,20 @@ export function useTransactionActions({
       return;
     }
     
-    handleDeleteRequest(id);
+    const transaction = transactionToDelete;
+    if (transaction && transaction.id === id) {
+      setTransactionToDelete(transaction);
+      setDeleteConfirmOpen(true);
+    }
+  };
+  
+  /**
+   * Confirm deletion of the transaction
+   */
+  const confirmDelete = async () => {
+    if (transactionToDelete) {
+      await handleDeleteTransaction(transactionToDelete.id as number);
+    }
   };
 
   return {
@@ -68,8 +90,11 @@ export function useTransactionActions({
     setDeleteSuccessOpen,
     transactionToDelete,
     handleSubmitTransaction,
-    handleDeleteRequest: handleDeleteWrapper,
+    handleDeleteRequest,
     confirmDelete,
-    handleReloadAfterDelete
+    handleReloadAfterDelete,
+    isDeleting,
+    isSubmitting,
+    isReloading
   };
 }

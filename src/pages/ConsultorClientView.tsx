@@ -4,8 +4,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { DateRange } from 'react-day-picker';
 import { startOfMonth, endOfMonth } from 'date-fns';
 import { toast } from 'sonner';
-import { fetchClientById } from '@/lib/supabase';
-import { fetchTransactionsByClientId, Transaction } from '@/lib/supabase';
+import { fetchClienteById } from '@/lib/supabase';
+import { Transaction } from '@/lib/supabase/types';
+import { fetchTransactions } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardHeader from '@/components/DashboardHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -67,11 +68,11 @@ export default function ConsultorClientView() {
     setIsLoading(true);
     try {
       // Buscar dados do cliente
-      const clientData = await fetchClientById(clientId);
+      const clientData = await fetchClienteById(clientId);
       setClient(clientData);
       
       // Buscar transações do cliente
-      const transactionData = await fetchTransactionsByClientId(clientId);
+      const transactionData = await fetchTransactions(clientId);
       setTransactions(transactionData);
     } catch (error) {
       console.error('Erro ao carregar dados do cliente:', error);

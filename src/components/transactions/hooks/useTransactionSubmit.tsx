@@ -5,7 +5,7 @@ import { addTransaction, updateTransaction } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 
-type UseTransactionSubmitProps = {
+export type UseTransactionSubmitProps = {
   userId: string;
   setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
   onSuccess?: () => void;

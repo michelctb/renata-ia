@@ -1,9 +1,9 @@
 
 import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Transaction } from '@/lib/supabase/types';
 import { TransactionRow } from './transactions/TransactionRow';
 import { EmptyTransactionRow } from './transactions/EmptyTransactionRow';
-import { Transaction } from '@/lib/supabase/types';
 import { formatCurrency } from '@/lib/utils';
 
 interface TransactionTableProps {
@@ -81,8 +81,8 @@ const TransactionTable = ({
                 <TransactionRow
                   key={transaction.id}
                   transaction={transaction}
-                  onEdit={onEditTransaction}
-                  onDelete={onDeleteTransaction}
+                  onEdit={() => onEditTransaction(transaction)}
+                  onDelete={() => onDeleteTransaction(transaction.id as number)}
                   isUserActive={isUserActive}
                   isReadOnly={isReadOnly}
                 />
