@@ -58,7 +58,7 @@ export function useCategoriesWithMetas(userId: string | undefined) {
       setCategoriesWithMetas(result);
     } catch (error) {
       console.error('Error loading categories with metas:', error);
-      toast.error('Erro ao carregar categorias e metas');
+      toast.error('Error loading categories and goals');
     } finally {
       setIsLoading(false);
     }

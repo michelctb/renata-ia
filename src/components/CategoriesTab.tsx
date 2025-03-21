@@ -8,7 +8,7 @@ import { CategoryList } from './categories/CategoryList';
 import { DeleteCategoryDialog } from './categories/DeleteCategoryDialog';
 import { CategoryFormManager } from './categories/CategoryFormManager';
 import { CategoryActions } from './categories/CategoryActions';
-import { useCategories } from '@/hooks/useCategories';
+import { useCategories } from '@/hooks/categories';
 
 const CategoriesTab = () => {
   const { isUserActive } = useAuth();

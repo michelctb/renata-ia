@@ -25,17 +25,11 @@ export function CategoryFormManager({
     return null;
   }
 
-  // Create a wrapper function to handle the return type mismatch
-  const handleSubmit = async (category: Category, metaData?: { hasMeta: boolean, valorMeta?: number }) => {
-    await onSubmit(category, metaData);
-    // No return value needed, which matches the Promise<void> type
-  };
-
   return (
     <CategoryForm
       isOpen={isOpen}
       onClose={onClose}
-      onSubmit={handleSubmit}
+      onSubmit={onSubmit}
       editingCategory={editingCategory}
       meta={editingMeta}
       userId={user.id}
