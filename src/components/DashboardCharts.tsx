@@ -1,18 +1,14 @@
 
-import { useMemo, useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Transaction } from '@/lib/supabase';
 import { DateRange } from 'react-day-picker';
-import { format, parseISO, isWithinInterval } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { MonthlyChart } from './charts/MonthlyChart';
-import { ExpensesPieChart } from './charts/ExpensesPieChart';
-import { ExpensesRanking } from './charts/ExpensesRanking';
-import { MetaProgressBar } from './metas/MetaProgressBar';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { fetchMetasPeriodo, MetaCategoria, LIMITE_BAIXO, LIMITE_MEDIO, LIMITE_ALTO } from '@/lib/metas';
-import { useAuth } from '@/contexts/AuthContext';
-import { fetchTransactionsByClientId } from '@/lib/supabase/transactions';
+import { useClientTransactions } from './charts/hooks/useClientTransactions';
+import { useFilteredTransactions, useMonthlyChartData, useCategoryChartData } from './charts/hooks/useChartData';
+import { useMetasData } from './charts/hooks/useMetasData';
+import { useMetasProgress } from './charts/hooks/useMetaProgress';
+import { MonthlyChartCard } from './charts/MonthlyChartCard';
+import { CategoryChartsContainer } from './charts/CategoryChartsContainer';
+import { MetaProgressDisplay } from './charts/MetaProgressDisplay';
 
 type DashboardChartsProps = {
   transactions?: Transaction[];
@@ -27,26 +23,11 @@ export default function DashboardCharts({
   clientId,
   viewMode = 'user'
 }: DashboardChartsProps) {
-  const { user } = useAuth();
+  // State for transaction type toggle
   const [transactionType, setTransactionType] = useState<'saída' | 'entrada'>('saída');
-  const [metas, setMetas] = useState<MetaCategoria[]>([]);
-  const [clientTransactions, setClientTransactions] = useState<Transaction[]>([]);
   
   // Load client transactions if in consultor viewMode
-  useEffect(() => {
-    const loadClientTransactions = async () => {
-      if (!clientId || viewMode !== 'consultor') return;
-      
-      try {
-        const transactions = await fetchTransactionsByClientId(clientId);
-        setClientTransactions(transactions);
-      } catch (error) {
-        console.error('Error loading client transactions for charts:', error);
-      }
-    };
-    
-    loadClientTransactions();
-  }, [clientId, viewMode]);
+  const clientTransactions = useClientTransactions(clientId, viewMode);
   
   // Determine which transactions to use - props or fetched client transactions
   const transactions = useMemo(() => {
@@ -56,273 +37,35 @@ export default function DashboardCharts({
     return propTransactions || [];
   }, [propTransactions, clientTransactions, viewMode, clientId]);
   
-  // Buscar metas para o período atual
-  useEffect(() => {
-    const loadMetas = async () => {
-      if (!dateRange?.from) return;
-      
-      try {
-        const userId = viewMode === 'consultor' && clientId ? clientId : user?.id;
-        
-        if (!userId) return;
-        
-        const mesReferencia = dateRange.from.getMonth() + 1;
-        const anoReferencia = dateRange.from.getFullYear();
-        
-        const metasPeriodo = await fetchMetasPeriodo(
-          userId, 
-          'mensal', 
-          mesReferencia, 
-          anoReferencia
-        );
-        
-        // Converter explicitamente para o tipo correto
-        const metasProcessadas: MetaCategoria[] = metasPeriodo.map(meta => ({
-          ...meta,
-          periodo: meta.periodo as 'mensal' | 'trimestral' | 'anual' | string
-        }));
-        
-        setMetas(metasProcessadas);
-      } catch (error) {
-        console.error('Erro ao carregar metas para dashboard:', error);
-      }
-    };
-    
-    loadMetas();
-  }, [user, dateRange, clientId, viewMode]);
+  // Load metas data
+  const metas = useMetasData(dateRange, clientId, viewMode);
   
   // Filter transactions by date range
-  const filteredTransactions = useMemo(() => {
-    if (!dateRange || !dateRange.from) return transactions;
-    
-    console.log(`Filtering chart data with date range: ${dateRange.from.toISOString()} to ${dateRange.to?.toISOString() || 'none'}`);
-    
-    return transactions.filter(transaction => {
-      try {
-        // Parse the date directly from ISO string
-        const transactionDateStr = transaction.data;
-        const transactionDate = parseISO(transactionDateStr);
-        
-        if (dateRange.from && dateRange.to) {
-          return isWithinInterval(transactionDate, { 
-            start: dateRange.from, 
-            end: dateRange.to 
-          });
-        }
-        
-        if (dateRange.from) {
-          return transactionDate >= dateRange.from;
-        }
-        
-        return true;
-      } catch (error) {
-        console.error('Error parsing date for charts:', transaction.data, error);
-        return false;
-      }
-    });
-  }, [transactions, dateRange]);
-
+  const filteredTransactions = useFilteredTransactions(transactions, dateRange);
+  
   // Prepare data for monthly income/expense bar chart
-  const monthlyData = useMemo(() => {
-    const months = new Map();
-    
-    filteredTransactions.forEach(transaction => {
-      try {
-        // Parse the date directly
-        const dateStr = transaction.data;
-        const date = parseISO(dateStr);
-        
-        const monthKey = format(date, 'yyyy-MM');
-        const monthLabel = format(date, 'MMM yyyy', { locale: ptBR });
-        const operationType = transaction.operação?.toLowerCase() || '';
-        
-        if (!months.has(monthKey)) {
-          months.set(monthKey, { 
-            name: monthLabel, 
-            entrada: 0, 
-            saída: 0 
-          });
-        }
-        
-        const monthData = months.get(monthKey);
-        
-        if (operationType === 'entrada') {
-          monthData.entrada += Number(transaction.valor);
-        } else if (operationType === 'saída' || operationType === 'saida') {
-          monthData.saída += Number(transaction.valor);
-        }
-      } catch (error) {
-        console.error('Error processing date for monthly chart:', transaction.data, error);
-      }
-    });
-    
-    return Array.from(months.values())
-      .sort((a, b) => {
-        // Fix the Month type error by correctly parsing the month names to dates
-        const getMonthNumber = (monthName: string) => {
-          const months = {
-            'jan': 0, 'fev': 1, 'mar': 2, 'abr': 3, 'mai': 4, 'jun': 5,
-            'jul': 6, 'ago': 7, 'set': 8, 'out': 9, 'nov': 10, 'dez': 11
-          };
-          return months[monthName.toLowerCase().substring(0, 3)] || 0;
-        };
-        
-        const [monthA, yearA] = a.name.split(' ');
-        const [monthB, yearB] = b.name.split(' ');
-        
-        const yearDiff = parseInt(yearA) - parseInt(yearB);
-        if (yearDiff !== 0) return yearDiff;
-        
-        return getMonthNumber(monthA) - getMonthNumber(monthB);
-      });
-  }, [filteredTransactions]);
-
+  const monthlyData = useMonthlyChartData(filteredTransactions);
+  
   // Prepare data for expenses or income by category pie chart
-  const categoryData = useMemo(() => {
-    const categories = new Map();
-    
-    // Process transactions based on selected transaction type with case-insensitive check
-    filteredTransactions
-      .filter(t => {
-        const opType = t.operação?.toLowerCase() || '';
-        return opType === transactionType || opType === transactionType.replace('í', 'i');
-      })
-      .forEach(transaction => {
-        // Handle empty or undefined category
-        const category = transaction.categoria?.trim() || 'Sem categoria';
-        
-        if (!categories.has(category)) {
-          categories.set(category, { 
-            name: category, 
-            value: 0 
-          });
-        }
-        
-        const categoryData = categories.get(category);
-        categoryData.value += Number(transaction.valor || 0);
-      });
-    
-    // Convert the Map to Array and sort by value (highest first)
-    return Array.from(categories.values())
-      .sort((a, b) => b.value - a.value);
-  }, [filteredTransactions, transactionType]);
-
-  // Calcular progresso das metas
-  const metasComProgresso = useMemo(() => {
-    if (!metas.length || !filteredTransactions.length) return [];
-    
-    return metas.map(meta => {
-      // Filtrar transações apenas de saída e da categoria específica
-      const gastosPorCategoria = filteredTransactions
-        .filter(t => 
-          t.operação?.toLowerCase() === 'saída' && 
-          t.categoria === meta.categoria
-        )
-        .reduce((total, t) => total + (t.valor || 0), 0);
-      
-      // Calcular porcentagem
-      const porcentagem = meta.valor_meta > 0 ? gastosPorCategoria / meta.valor_meta : 0;
-      
-      // Determinar status baseado na porcentagem
-      let status: 'baixo' | 'médio' | 'alto' | 'excedido' = 'baixo';
-      if (porcentagem > LIMITE_ALTO) {
-        status = 'excedido';
-      } else if (porcentagem > LIMITE_MEDIO) {
-        status = 'alto';
-      } else if (porcentagem > LIMITE_BAIXO) {
-        status = 'médio';
-      }
-      
-      return {
-        meta,
-        valor_atual: gastosPorCategoria,
-        porcentagem,
-        status
-      };
-    })
-    .sort((a, b) => b.porcentagem - a.porcentagem)
-    .slice(0, 5); // Mostrar apenas as 5 metas com maior progresso
-  }, [metas, filteredTransactions]);
-
-  const chartTitle = transactionType === 'saída' ? 'Saídas por Categoria' : 'Entradas por Categoria';
-  const rankingTitle = transactionType === 'saída' ? 'Ranking de Categorias (Saídas)' : 'Ranking de Categorias (Entradas)';
-  const chartDescription = transactionType === 'saída' 
-    ? 'Distribuição de gastos por categoria no período' 
-    : 'Distribuição de receitas por categoria no período';
-  const rankingDescription = transactionType === 'saída' 
-    ? 'Maiores gastos por categoria no período' 
-    : 'Maiores receitas por categoria no período';
+  const categoryData = useCategoryChartData(filteredTransactions, transactionType);
+  
+  // Calculate meta progress
+  const metasComProgresso = useMetasProgress(metas, filteredTransactions);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-      <Card className="border-none shadow-md animate-fade-up col-span-1 lg:col-span-3" style={{ animationDelay: '0.1s' }}>
-        <CardHeader className="pb-2">
-          <CardTitle>Entradas e Saídas por Mês</CardTitle>
-          <CardDescription>Visualização mensal de valores recebidos e pagos</CardDescription>
-        </CardHeader>
-        <CardContent className="h-[350px]">
-          <MonthlyChart data={monthlyData} />
-        </CardContent>
-      </Card>
-
-      <Card className="border-none shadow-md animate-fade-up col-span-1 lg:col-span-2" style={{ animationDelay: '0.2s' }}>
-        <CardHeader className="pb-2 flex flex-row justify-between items-center">
-          <div>
-            <CardTitle>{chartTitle}</CardTitle>
-            <CardDescription>{chartDescription}</CardDescription>
-          </div>
-          <ToggleGroup type="single" value={transactionType} onValueChange={(value) => value && setTransactionType(value as 'saída' | 'entrada')}>
-            <ToggleGroupItem value="saída" aria-label="Mostrar saídas" className={transactionType === 'saída' ? 'bg-expense text-white hover:text-white' : ''}>
-              Saídas
-            </ToggleGroupItem>
-            <ToggleGroupItem value="entrada" aria-label="Mostrar entradas" className={transactionType === 'entrada' ? 'bg-income text-white hover:text-white' : ''}>
-              Entradas
-            </ToggleGroupItem>
-          </ToggleGroup>
-        </CardHeader>
-        <CardContent className="h-[350px]">
-          <ExpensesPieChart data={categoryData} transactionType={transactionType} />
-        </CardContent>
-      </Card>
-
-      <Card className="border-none shadow-md animate-fade-up" style={{ animationDelay: '0.3s' }}>
-        <CardHeader className="pb-2">
-          <CardTitle>{rankingTitle}</CardTitle>
-          <CardDescription>{rankingDescription}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ExpensesRanking data={categoryData} transactionType={transactionType} />
-        </CardContent>
-      </Card>
+      {/* Monthly Chart Card */}
+      <MonthlyChartCard data={monthlyData} />
       
-      {metasComProgresso.length > 0 && (
-        <Card className="border-none shadow-md animate-fade-up col-span-1 lg:col-span-3" style={{ animationDelay: '0.4s' }}>
-          <CardHeader className="pb-2">
-            <CardTitle>Progresso das Metas</CardTitle>
-            <CardDescription>Acompanhamento das metas de gastos por categoria</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {metasComProgresso.map((item, index) => (
-                <div key={index} className="space-y-1">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">{item.meta.categoria}</span>
-                    <span className="text-sm text-muted-foreground">
-                      Meta: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.meta.valor_meta)}
-                    </span>
-                  </div>
-                  <MetaProgressBar 
-                    valor_atual={item.valor_atual}
-                    valor_meta={item.meta.valor_meta}
-                    porcentagem={item.porcentagem}
-                    status={item.status}
-                  />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Category Charts (Pie Chart and Ranking) */}
+      <CategoryChartsContainer 
+        categoryData={categoryData}
+        transactionType={transactionType}
+        setTransactionType={setTransactionType}
+      />
+      
+      {/* Meta Progress Display */}
+      <MetaProgressDisplay metasComProgresso={metasComProgresso} />
     </div>
   );
-};
+}
