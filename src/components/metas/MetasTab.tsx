@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -40,7 +39,6 @@ export default function MetasTab({ transactions, dateRange, setDateRange }: Meta
   const [isLoading, setIsLoading] = useState(true);
   const [periodoFiltro, setPeriodoFiltro] = useState<string>('mensal');
   
-  // Carregar metas do usuário
   useEffect(() => {
     const loadMetas = async () => {
       if (!user) return;
@@ -50,7 +48,6 @@ export default function MetasTab({ transactions, dateRange, setDateRange }: Meta
         const data = await fetchMetasCategorias(user.id);
         console.log('Metas carregadas:', data);
         
-        // Converter explicitamente para o tipo correto
         const metasProcessadas: MetaCategoria[] = data.map(meta => ({
           ...meta,
           periodo: meta.periodo as 'mensal' | 'trimestral' | 'anual' | string
@@ -68,14 +65,12 @@ export default function MetasTab({ transactions, dateRange, setDateRange }: Meta
     loadMetas();
   }, [user]);
   
-  // Calcular progresso das metas baseado nas transações
   useEffect(() => {
     if (!metas.length || !transactions.length) {
       setMetasProgresso([]);
       return;
     }
     
-    // Filtrar transações pelo intervalo de datas selecionado
     const filteredTransactions = dateRange?.from 
       ? transactions.filter(transaction => {
           try {
@@ -94,27 +89,22 @@ export default function MetasTab({ transactions, dateRange, setDateRange }: Meta
         })
       : transactions;
     
-    // Obter mês e ano atual ou do período selecionado
     const dataReferencia = dateRange?.from || new Date();
     const mesReferencia = dataReferencia.getMonth() + 1;
     const anoReferencia = dataReferencia.getFullYear();
     
-    // Filtrar metas pelo período selecionado
     const metasFiltradas = metas.filter(meta => {
       if (meta.periodo === 'mensal') {
         return meta.mes_referencia === mesReferencia && meta.ano_referencia === anoReferencia;
       } else if (meta.periodo === 'anual') {
         return meta.ano_referencia === anoReferencia;
       } else if (meta.periodo === 'trimestral') {
-        // Para trimestral, implementaremos uma lógica mais simples por enquanto
         return meta.ano_referencia === anoReferencia;
       }
       return false;
     });
     
-    // Calcular progresso para cada meta
     const progresso = metasFiltradas.map(meta => {
-      // Filtrar transações apenas de saída e da categoria específica
       const gastosPorCategoria = filteredTransactions
         .filter(t => 
           t.operação?.toLowerCase() === 'saída' && 
@@ -122,10 +112,8 @@ export default function MetasTab({ transactions, dateRange, setDateRange }: Meta
         )
         .reduce((total, t) => total + (t.valor || 0), 0);
       
-      // Calcular porcentagem
       const porcentagem = meta.valor_meta > 0 ? gastosPorCategoria / meta.valor_meta : 0;
       
-      // Determinar status baseado na porcentagem
       let status: 'baixo' | 'médio' | 'alto' | 'excedido' = 'baixo';
       if (porcentagem > LIMITE_ALTO) {
         status = 'excedido';
@@ -146,40 +134,33 @@ export default function MetasTab({ transactions, dateRange, setDateRange }: Meta
     setMetasProgresso(progresso);
   }, [metas, transactions, dateRange]);
   
-  // Manipuladores de eventos para as metas
   const handleSaveMeta = async (meta: MetaCategoria) => {
     if (!user) return;
     
     try {
-      // Garantir que a meta tem o id_cliente
       const metaToSave = {
         ...meta,
         id_cliente: user.id
       };
       
-      // Se já tem ID, atualizar, senão adicionar nova
       if (meta.id) {
         const updatedMeta = await updateMetaCategoria(metaToSave);
         
-        // Converter explicitamente para o tipo correto
         const metaProcessada: MetaCategoria = {
           ...updatedMeta,
           periodo: updatedMeta.periodo as 'mensal' | 'trimestral' | 'anual' | string
         };
         
-        // Atualizar o estado com a meta atualizada
         setMetas(prevMetas => prevMetas.map(m => m.id === meta.id ? metaProcessada : m));
         toast.success('Meta atualizada com sucesso');
       } else {
         const newMeta = await addMetaCategoria(metaToSave);
         
-        // Converter explicitamente para o tipo correto
         const metaProcessada: MetaCategoria = {
           ...newMeta,
           periodo: newMeta.periodo as 'mensal' | 'trimestral' | 'anual' | string
         };
         
-        // Adicionar nova meta ao estado
         setMetas(prevMetas => [...prevMetas, metaProcessada]);
         toast.success('Meta adicionada com sucesso');
       }
@@ -192,7 +173,6 @@ export default function MetasTab({ transactions, dateRange, setDateRange }: Meta
   const handleDeleteMeta = async (id: number) => {
     try {
       await deleteMetaCategoria(id);
-      // Remover a meta excluída do estado
       setMetas(prevMetas => prevMetas.filter(m => m.id !== id));
       toast.success('Meta excluída com sucesso');
     } catch (error) {
@@ -201,7 +181,6 @@ export default function MetasTab({ transactions, dateRange, setDateRange }: Meta
     }
   };
   
-  // Ajustar intervalo de datas com base no período selecionado
   const handleChangePeriodo = (periodo: string) => {
     setPeriodoFiltro(periodo);
     
@@ -236,10 +215,9 @@ export default function MetasTab({ transactions, dateRange, setDateRange }: Meta
     }
     return format(new Date(), 'MMMM yyyy');
   })();
-
+  
   return (
     <div className="space-y-6">
-      {/* Cabeçalho e filtros */}
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Metas de Gastos</h2>
@@ -261,13 +239,12 @@ export default function MetasTab({ transactions, dateRange, setDateRange }: Meta
           </Select>
           
           <DateRangePicker 
-            value={dateRange} 
-            onChange={setDateRange} 
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
           />
         </div>
       </div>
       
-      {/* Card principal */}
       <Card className="bg-white/90 dark:bg-gray-800/90 border-none shadow-md">
         <CardHeader className="pb-2">
           <CardTitle>Metas para {periodoAtual}</CardTitle>

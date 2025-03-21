@@ -5,7 +5,7 @@ export type MetaCategoria = {
   id_cliente: string;
   categoria: string;
   valor_meta: number;
-  periodo: 'mensal' | 'trimestral' | 'anual' | string;
+  periodo: 'mensal' | 'trimestral' | 'anual' | string; // Allow string here for backward compatibility, but prefer the union type
   mes_referencia?: number;
   ano_referencia?: number;
   created_at?: string;

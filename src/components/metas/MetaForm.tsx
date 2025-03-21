@@ -78,13 +78,13 @@ export function MetaForm({ userId, metaAtual, onSubmit, onCancel }: MetaFormProp
     };
   });
 
-  // Inicializar form
+  // Inicializar form with properly typed default values
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       categoria: metaAtual?.categoria || '',
       valor_meta: metaAtual?.valor_meta || 0,
-      periodo: metaAtual?.periodo || 'mensal',
+      periodo: (metaAtual?.periodo as 'mensal' | 'trimestral' | 'anual') || 'mensal',
       mes_referencia: metaAtual?.mes_referencia || getMonth(new Date()) + 1,
       ano_referencia: metaAtual?.ano_referencia || getYear(new Date()),
     },
