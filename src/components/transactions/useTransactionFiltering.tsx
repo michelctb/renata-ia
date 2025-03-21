@@ -4,6 +4,18 @@ import { Transaction } from '@/lib/supabase';
 import { DateRange } from 'react-day-picker';
 import { parseISO } from 'date-fns';
 
+/**
+ * Custom hook for filtering and sorting transactions.
+ * Provides functionality to filter transactions by date range and search term.
+ * 
+ * @param {Transaction[]} transactions - The list of transactions to filter
+ * @param {DateRange | null} dateRange - The selected date range for filtering
+ * @returns {Object} An object containing filtered transactions and search state
+ * @property {string} searchTerm - Current search term
+ * @property {Function} setSearchTerm - Function to update the search term
+ * @property {Transaction[]} filteredTransactions - The filtered and sorted transactions
+ * @property {boolean} hasFilters - Whether any filters are currently applied
+ */
 export function useTransactionFiltering(transactions: Transaction[], dateRange: DateRange | null) {
   const [searchTerm, setSearchTerm] = useState('');
   

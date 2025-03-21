@@ -10,6 +10,16 @@ type UseTransactionSubmitProps = {
   onCloseForm: () => void;
 };
 
+/**
+ * Custom hook for submitting (adding or updating) transactions.
+ * Handles the form submission process, validation, and state updates.
+ * 
+ * @param {Object} props - The hook's properties
+ * @param {Function} props.setTransactions - Function to update the transactions list
+ * @param {Function} props.onCloseForm - Function to close the transaction form
+ * @returns {Object} Object containing the submission handler
+ * @property {Function} handleSubmitTransaction - Function to handle transaction submission
+ */
 export function useTransactionSubmit({ 
   setTransactions, 
   onCloseForm 
@@ -19,7 +29,12 @@ export function useTransactionSubmit({
   // Ref to track if callbacks have been executed
   const callbackExecuted = useRef(false);
 
-  // Handle adding or updating a transaction
+  /**
+   * Handles adding or updating a transaction.
+   * Validates input, submits to API, and updates local state.
+   * 
+   * @param {Transaction} transaction - The transaction to add or update
+   */
   const handleSubmitTransaction = async (transaction: Transaction) => {
     if (!user) {
       toast.error('Você precisa estar logado para realizar esta operação.');
@@ -33,7 +48,7 @@ export function useTransactionSubmit({
       // Reset callback executed flag
       callbackExecuted.current = false;
       
-      // Garantir que todos os campos obrigatórios estejam presentes
+      // Ensure all required fields are present
       if (!transaction.data || !transaction.descrição || !transaction.operação || !transaction.categoria) {
         console.error('Dados de transação incompletos:', transaction);
         toast.error('Por favor, preencha todos os campos obrigatórios.');

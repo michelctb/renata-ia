@@ -8,6 +8,20 @@ interface UseLembretesProps {
   isUserActive: boolean;
 }
 
+/**
+ * Custom hook for managing lembretes (reminders).
+ * Handles fetching, adding, updating, and deleting lembretes.
+ * 
+ * @param {Object} props - The hook's properties
+ * @param {string | undefined} props.userId - The ID of the current user
+ * @param {boolean} props.isUserActive - Whether the user's subscription is active
+ * @returns {Object} Object containing lembretes data and handler functions
+ * @property {Lembrete[]} lembretes - The list of lembretes for the current user
+ * @property {boolean} isLoading - Whether the lembretes are currently being loaded
+ * @property {boolean} isProcessing - Whether an operation is in progress
+ * @property {Function} handleFormSubmit - Function to handle form submission (add/update)
+ * @property {Function} handleDelete - Function to handle lembrete deletion
+ */
 export function useLembretes({ userId, isUserActive }: UseLembretesProps) {
   const [lembretes, setLembretes] = useState<Lembrete[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,7 +41,10 @@ export function useLembretes({ userId, isUserActive }: UseLembretesProps) {
     });
   }, [lembretes, isLoading, isProcessing, deleteRequestId, deleteRequestPending]);
 
-  // Use useCallback for loadLembretes to prevent unnecessary recreation
+  /**
+   * Loads lembretes from the database.
+   * Used for initial loading and refreshing after operations.
+   */
   const loadLembretes = useCallback(async () => {
     if (!userId) {
       console.log('No userId, skipping loadLembretes');
@@ -114,6 +131,12 @@ export function useLembretes({ userId, isUserActive }: UseLembretesProps) {
     processDelete();
   }, [deleteRequestId, userId, isProcessing, loadLembretes, deleteRequestPending]);
 
+  /**
+   * Handles form submission for adding or updating a lembrete.
+   * Updates local state optimistically, then triggers a reload.
+   * 
+   * @param {Lembrete} data - The lembrete data to submit
+   */
   const handleFormSubmit = async (data: Lembrete) => {
     if (isProcessing) {
       console.log('Already processing a submission, ignoring');
@@ -155,6 +178,12 @@ export function useLembretes({ userId, isUserActive }: UseLembretesProps) {
     }
   };
 
+  /**
+   * Handles deleting a lembrete.
+   * Updates local state optimistically, then triggers the deletion process.
+   * 
+   * @param {number} id - The ID of the lembrete to delete
+   */
   const handleDelete = useCallback(async (id: number) => {
     // Block inactive users from deleting lembretes
     if (!isUserActive) {

@@ -27,6 +27,22 @@ const formSchema = z.object({
 
 export type TransactionFormValues = z.infer<typeof formSchema>;
 
+/**
+ * Custom hook for managing the transaction form.
+ * Handles form state, validation, category loading, and submission.
+ * 
+ * @param {string} userId - The ID of the current user
+ * @param {Transaction | null} editingTransaction - The transaction being edited, or null if creating a new one
+ * @param {Function} onSubmit - Function to handle form submission
+ * @param {Function} onClose - Function to close the form
+ * @returns {Object} Object containing form controls and helper functions
+ * @property {UseFormReturn} form - React Hook Form's form object with validation
+ * @property {Category[]} categories - List of available transaction categories
+ * @property {Category[]} filteredCategories - Categories filtered by operation type
+ * @property {boolean} isLoadingCategories - Whether categories are still loading
+ * @property {Function} handleSubmit - Function to handle form submission
+ * @property {Function} onClose - Function to close the form
+ */
 export function useTransactionForm(
   userId: string,
   editingTransaction: Transaction | null,
@@ -48,7 +64,7 @@ export function useTransactionForm(
     },
   });
 
-  // Carregar categorias
+  // Load categories
   useEffect(() => {
     const loadCategories = async () => {
       if (!userId) return;
@@ -103,19 +119,24 @@ export function useTransactionForm(
     }
   }, [editingTransaction, form]);
 
-  // Handle form submission
+  /**
+   * Handles form submission.
+   * Formats data and calls the provided onSubmit function.
+   * 
+   * @param {TransactionFormValues} values - The form values to submit
+   */
   const handleSubmit = async (values: TransactionFormValues) => {
     try {
       console.log('Transaction form submitted with values:', values);
       console.log('Current userId:', userId);
       
-      // Garantir que a data seja formatada corretamente
-      const formattedDate = values.data.toISOString().split('T')[0]; // formato yyyy-MM-dd
+      // Format the date correctly
+      const formattedDate = values.data.toISOString().split('T')[0]; // format yyyy-MM-dd
       
       const transaction: Transaction = {
         id: values.id,
-        cliente: userId, // Mantido para compatibilidade
-        id_cliente: userId, // Usando userId como id_cliente
+        cliente: userId, // Kept for compatibility
+        id_cliente: userId, // Using userId as id_cliente
         data: formattedDate,
         operação: values.operação,
         descrição: values.descrição,
@@ -130,11 +151,11 @@ export function useTransactionForm(
     } catch (error) {
       console.error('Error submitting transaction:', error);
       toast.error('Erro ao salvar a transação. Tente novamente.');
-      throw error; // Propagar o erro para que o componente pai possa tratá-lo
+      throw error; // Propagate the error so the parent component can handle it
     }
   };
 
-  // Filtrar categorias baseado no tipo de operação selecionado
+  // Filter categories based on selected operation type
   const filteredCategories = categories.filter(
     cat => {
       const formOperation = form.watch('operação');

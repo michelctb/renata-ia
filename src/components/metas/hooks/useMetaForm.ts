@@ -20,11 +20,24 @@ const formSchema = z.object({
 
 export type MetaFormValues = z.infer<typeof formSchema>;
 
+/**
+ * Custom hook for managing the meta (spending goal) form.
+ * Handles form state, validation, category loading, and data preparation.
+ * 
+ * @param {string} userId - The ID of the current user
+ * @param {MetaCategoria | null} metaAtual - The current meta being edited, or null if creating a new one
+ * @returns {Object} An object containing form controls and helper functions
+ * @property {UseFormReturn} form - React Hook Form's form object with validation
+ * @property {string[]} categorias - List of available spending categories
+ * @property {boolean} isLoading - Whether categories are still loading
+ * @property {string} periodoSelecionado - Currently selected period type
+ * @property {Function} prepareMetaForSubmit - Function to prepare form values for submission
+ */
 export const useMetaForm = (userId: string, metaAtual: MetaCategoria | null) => {
   const [categorias, setCategorias] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   
-  // Carregar categorias de gastos do usuário
+  // Load spending categories for the user
   useEffect(() => {
     const loadCategorias = async () => {
       if (!userId) return;
@@ -32,7 +45,7 @@ export const useMetaForm = (userId: string, metaAtual: MetaCategoria | null) => 
       setIsLoading(true);
       try {
         const cats = await fetchCategories(userId);
-        // Filtrar apenas categorias de saída (gastos)
+        // Filter to only include expense categories
         const gastosCategorias = cats
           .filter(cat => cat.tipo === 'saída' || cat.tipo === 'ambos')
           .map(cat => cat.nome);
@@ -48,7 +61,7 @@ export const useMetaForm = (userId: string, metaAtual: MetaCategoria | null) => 
     loadCategorias();
   }, [userId]);
 
-  // Inicializar form with properly typed default values
+  // Initialize form with properly typed default values
   const form = useForm<MetaFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -60,9 +73,16 @@ export const useMetaForm = (userId: string, metaAtual: MetaCategoria | null) => 
     },
   });
   
-  // Monitorar mudanças no período para mostrar/esconder campos relevantes
+  // Monitor changes to period type to show/hide relevant fields
   const periodoSelecionado = form.watch('periodo');
   
+  /**
+   * Prepares the form values for submission to the API.
+   * Adds necessary fields based on the selected period type.
+   * 
+   * @param {MetaFormValues} values - The form values to prepare
+   * @returns {MetaCategoria} The prepared meta object ready for API submission
+   */
   const prepareMetaForSubmit = (values: MetaFormValues): MetaCategoria => {
     const meta: MetaCategoria = {
       id_cliente: userId,
@@ -71,21 +91,21 @@ export const useMetaForm = (userId: string, metaAtual: MetaCategoria | null) => 
       periodo: values.periodo
     };
     
-    // Adicionar ID se estiver editando
+    // Add ID if editing an existing meta
     if (metaAtual?.id) {
       meta.id = metaAtual.id;
     }
     
-    // Adicionar mês e ano para metas mensais
+    // Add month and year for monthly metas
     if (values.periodo === 'mensal') {
       meta.mes_referencia = values.mes_referencia;
       meta.ano_referencia = values.ano_referencia;
     } 
-    // Adicionar apenas ano para metas anuais
+    // Add only year for annual metas
     else if (values.periodo === 'anual') {
       meta.ano_referencia = values.ano_referencia;
     }
-    // Para trimestral, podemos implementar lógica específica aqui
+    // For quarterly metas, specific logic can be implemented here
     
     return meta;
   };

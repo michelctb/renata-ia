@@ -1,5 +1,12 @@
+
 import * as React from "react"
 
+/**
+ * Custom hook to detect if the current device is a mobile device.
+ * Uses a media query to check if the screen width is below the mobile breakpoint.
+ * 
+ * @returns {boolean} True if the current device is a mobile device, false otherwise.
+ */
 const MOBILE_BREAKPOINT = 768
 
 export function useIsMobile() {

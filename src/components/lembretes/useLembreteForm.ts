@@ -14,19 +14,38 @@ interface UseLembreteFormProps {
   userId: string;
 }
 
+/**
+ * Custom hook for managing the lembrete (reminder) form.
+ * Handles form state, validation, and submission.
+ * 
+ * @param {Object} props - The hook's properties
+ * @param {Function} props.onSubmit - Function to handle form submission
+ * @param {Function} props.onClose - Function to close the form
+ * @param {Lembrete | null} props.editingLembrete - The lembrete being edited, or null if creating a new one
+ * @param {string} props.userId - The ID of the current user
+ * @returns {Object} Object containing form controls and handler functions
+ * @property {UseFormReturn} form - React Hook Form's form object with validation
+ * @property {Function} handleSubmit - Function to handle form submission
+ * @property {Function} handleClose - Function to close the form
+ */
 export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: UseLembreteFormProps) {
   console.log('useLembreteForm initialized with editingLembrete:', editingLembrete);
   
-  // Garantir que as datas sejam convertidas corretamente para objetos Date, compensando o fuso horário
+  /**
+   * Handles date conversion from string to Date object, adjusting for timezone.
+   * Creates a date object that preserves the intended day regardless of timezone.
+   * 
+   * @returns {Date} The properly formatted Date object
+   */
   const getInitialVencimento = () => {
     if (editingLembrete?.vencimento) {
       console.log('Initial vencimento from edit data:', editingLembrete.vencimento);
       
-      // Extrair ano, mês e dia da string de data
+      // Extract year, month, and day from the date string
       const [year, month, day] = editingLembrete.vencimento.split('-').map(Number);
       
-      // Criar uma data, garantindo que o dia seja o correto independente do fuso horário
-      // Usando meio-dia (12:00) para evitar problemas com horário de verão
+      // Create a date object, ensuring the correct day regardless of timezone
+      // Using noon (12:00) to avoid issues with daylight saving time
       const dateObject = new Date(year, month - 1, day, 12, 0, 0);
       
       console.log('Created date object with correct date:', dateObject.toISOString());
@@ -45,13 +64,13 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
     },
   });
 
-  // Use useEffect para atualizar o formulário quando editingLembrete mudar
+  // Update form when editingLembrete changes
   useEffect(() => {
     if (editingLembrete) {
       console.log('Setting form values from editingLembrete:', editingLembrete);
       console.log('Tipo do lembrete:', editingLembrete.tipo);
       
-      // Resetar o formulário com os valores corretos
+      // Reset form with correct values
       form.reset({
         lembrete: editingLembrete.lembrete,
         tipo: editingLembrete.tipo || "fixo",
@@ -59,7 +78,7 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
         vencimento: getInitialVencimento(),
       });
 
-      // Verificar se os valores foram definidos corretamente
+      // Verify values were set correctly
       setTimeout(() => {
         console.log('Form values after reset:', form.getValues());
       }, 0);
@@ -73,15 +92,21 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
     }
   }, [editingLembrete, form]);
 
+  /**
+   * Handles form submission.
+   * Formats data, retrieves client information, and calls the provided onSubmit function.
+   * 
+   * @param {LembreteFormValues} values - The form values to submit
+   */
   const handleSubmit = async (values: LembreteFormValues) => {
     try {
       console.log('Form submitted with values:', values);
       console.log('Editing mode:', editingLembrete ? true : false);
       
-      // Corrigir o problema de fuso horário criando uma nova data com UTC
+      // Fix timezone issue by creating a new date with UTC
       const vencimentoDate = new Date(values.vencimento);
       
-      // Usar o ano, mês e dia diretamente para criar a string de data no formato YYYY-MM-DD
+      // Use year, month, and day directly to create the date string in YYYY-MM-DD format
       const formattedDate = `${vencimentoDate.getFullYear()}-${
         String(vencimentoDate.getMonth() + 1).padStart(2, '0')
       }-${
@@ -155,6 +180,9 @@ export function useLembreteForm({ onSubmit, onClose, editingLembrete, userId }: 
     }
   };
 
+  /**
+   * Closes the form and resets its state.
+   */
   const handleClose = () => {
     console.log('Closing form and resetting');
     form.reset();

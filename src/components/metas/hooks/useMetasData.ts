@@ -9,6 +9,17 @@ import {
   deleteMetaCategoria 
 } from '@/lib/metas';
 
+/**
+ * Custom hook for managing metas data operations.
+ * Handles fetching, creating, updating, and deleting metas.
+ * 
+ * @param {string | undefined} userId - The ID of the current user.
+ * @returns {Object} Object containing metas data, loading state, and CRUD handlers.
+ * @property {MetaCategoria[]} metas - The list of metas for the current user.
+ * @property {boolean} isLoading - Whether the metas are currently being loaded.
+ * @property {Function} handleSaveMeta - Function to save (create or update) a meta.
+ * @property {Function} handleDeleteMeta - Function to delete a meta.
+ */
 export const useMetasData = (userId: string | undefined) => {
   const [metas, setMetas] = useState<MetaCategoria[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,7 +51,12 @@ export const useMetasData = (userId: string | undefined) => {
     loadMetas();
   }, [userId]);
   
-  // Handle saving a meta
+  /**
+   * Handles saving a meta (creates a new one or updates an existing one).
+   * 
+   * @param {MetaCategoria} meta - The meta to save.
+   * @returns {Promise<void>}
+   */
   const handleSaveMeta = async (meta: MetaCategoria) => {
     if (!userId) return;
     
@@ -77,7 +93,12 @@ export const useMetasData = (userId: string | undefined) => {
     }
   };
   
-  // Handle deleting a meta
+  /**
+   * Handles deleting a meta.
+   * 
+   * @param {number} id - The ID of the meta to delete.
+   * @returns {Promise<void>}
+   */
   const handleDeleteMeta = async (id: number) => {
     try {
       await deleteMetaCategoria(id);

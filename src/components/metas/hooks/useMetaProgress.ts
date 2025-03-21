@@ -11,6 +11,15 @@ import {
   LIMITE_ALTO 
 } from '@/lib/metas';
 
+/**
+ * Custom hook to calculate progress for each spending goal (meta).
+ * Compares actual spending against defined goals for the selected period.
+ * 
+ * @param {MetaCategoria[]} metas - List of spending goals
+ * @param {Transaction[]} transactions - List of financial transactions
+ * @param {DateRange | null} dateRange - Selected date range for filtering
+ * @returns {MetaProgresso[]} Array of spending goals with calculated progress information
+ */
 export const useMetaProgress = (
   metas: MetaCategoria[],
   transactions: Transaction[],
@@ -24,6 +33,7 @@ export const useMetaProgress = (
       return;
     }
     
+    // Filter transactions based on date range
     const filteredTransactions = dateRange?.from 
       ? transactions.filter(transaction => {
           try {
@@ -42,6 +52,7 @@ export const useMetaProgress = (
         })
       : transactions;
     
+    // Filter metas based on date reference
     const dataReferencia = dateRange?.from || new Date();
     const mesReferencia = dataReferencia.getMonth() + 1;
     const anoReferencia = dataReferencia.getFullYear();
@@ -57,7 +68,9 @@ export const useMetaProgress = (
       return false;
     });
     
+    // Calculate progress for each meta
     const progresso = metasFiltradas.map(meta => {
+      // Sum expenses for this category
       const gastosPorCategoria = filteredTransactions
         .filter(t => 
           t.operação?.toLowerCase() === 'saída' && 
@@ -65,8 +78,10 @@ export const useMetaProgress = (
         )
         .reduce((total, t) => total + (t.valor || 0), 0);
       
+      // Calculate percentage of goal reached
       const porcentagem = meta.valor_meta > 0 ? gastosPorCategoria / meta.valor_meta : 0;
       
+      // Determine status based on percentage thresholds
       let status: 'baixo' | 'médio' | 'alto' | 'excedido' = 'baixo';
       if (porcentagem > LIMITE_ALTO) {
         status = 'excedido';
