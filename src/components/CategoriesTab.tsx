@@ -141,14 +141,14 @@ const CategoriesTab = () => {
     try {
       let savedCategory;
       
-      // Para categorias padrão, apenas atualizamos a meta, não a categoria em si
-      if (category.id && category.padrao) {
+      // Para categorias padrão, apenas gerenciamos a meta, não a categoria em si
+      if (category.padrao) {
+        console.log('Categoria padrão, mantendo dados existentes e atualizando apenas meta');
         // Para categorias padrão, usamos os dados existentes
-        const existingCategory = categories.find(c => c.id === category.id);
-        if (!existingCategory) {
-          throw new Error('Categoria não encontrada');
+        savedCategory = categories.find(c => c.id === category.id);
+        if (!savedCategory) {
+          throw new Error('Categoria padrão não encontrada');
         }
-        savedCategory = existingCategory;
       } else {
         // Para categorias não padrão, salvamos ou atualizamos normalmente
         if (category.id) {
