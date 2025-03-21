@@ -102,12 +102,12 @@ export function CategoryList({
                   size="sm"
                   onClick={() => onEdit(category, meta || null)}
                   className="h-8 w-8 p-0 mr-1"
-                  disabled={category.padrao || !isUserActive}
+                  disabled={!isUserActive}
                   title={
-                    category.padrao 
-                      ? "Categorias padrão não podem ser editadas" 
-                      : !isUserActive 
-                        ? "Assinatura inativa. Não é possível editar categorias."
+                    !isUserActive 
+                      ? "Assinatura inativa. Não é possível editar categorias."
+                      : category.padrao
+                        ? "Você pode definir metas para categorias padrão"
                         : "Editar categoria"
                   }
                 >

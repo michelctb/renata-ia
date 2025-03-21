@@ -76,10 +76,6 @@ const CategoriesTab = () => {
       return;
     }
     
-    if (category.padrao) {
-      toast.error('Categorias padrão não podem ser editadas.');
-      return;
-    }
     setEditingCategory(category);
     setEditingMeta(meta);
     setIsCategoryFormOpen(true);
@@ -145,26 +141,31 @@ const CategoriesTab = () => {
     try {
       let savedCategory;
       
-      // Salvar ou atualizar a categoria
-      if (category.id) {
+      // Para categorias padrão, apenas atualizamos a meta, não a categoria em si
+      if (category.id && category.padrao) {
+        // Para categorias padrão, usamos os dados existentes
         const existingCategory = categories.find(c => c.id === category.id);
-        if (existingCategory?.padrao) {
-          throw new Error('Categorias padrão não podem ser editadas');
+        if (!existingCategory) {
+          throw new Error('Categoria não encontrada');
         }
-
-        savedCategory = await updateCategory(category);
-        setCategories(prev => 
-          prev.map(c => (c.id === category.id ? savedCategory : c))
-        );
+        savedCategory = existingCategory;
       } else {
-        const categoryToAdd: Category = {
-          ...category,
-          cliente: user.id,
-          padrao: false
-        };
-        
-        savedCategory = await addCategory(categoryToAdd);
-        setCategories(prev => [...prev, savedCategory]);
+        // Para categorias não padrão, salvamos ou atualizamos normalmente
+        if (category.id) {
+          savedCategory = await updateCategory(category);
+          setCategories(prev => 
+            prev.map(c => (c.id === category.id ? savedCategory : c))
+          );
+        } else {
+          const categoryToAdd: Category = {
+            ...category,
+            cliente: user.id,
+            padrao: false
+          };
+          
+          savedCategory = await addCategory(categoryToAdd);
+          setCategories(prev => [...prev, savedCategory]);
+        }
       }
       
       // Gerenciar meta

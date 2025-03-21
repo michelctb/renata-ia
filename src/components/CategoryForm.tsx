@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { MetaCategoria } from '@/lib/metas';
+import { InfoIcon } from 'lucide-react';
 
 // Schema para validação do formulário
 const formSchema = z.object({
@@ -87,6 +88,9 @@ export function CategoryForm({
     });
   }, [editingCategory, meta, form]);
 
+  // Verificar se é categoria padrão
+  const isPadraoCategory = editingCategory?.padrao || false;
+
   // Gerenciar envio do formulário
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
@@ -136,7 +140,9 @@ export function CategoryForm({
           <DialogTitle>{editingCategory ? 'Editar Categoria' : 'Nova Categoria'}</DialogTitle>
           <DialogDescription>
             {editingCategory 
-              ? 'Edite os dados da categoria selecionada.'
+              ? isPadraoCategory 
+                ? 'Esta é uma categoria padrão. Você só pode definir uma meta para ela.'
+                : 'Edite os dados da categoria selecionada.'
               : 'Preencha os dados para criar uma nova categoria.'}
           </DialogDescription>
         </DialogHeader>
@@ -150,8 +156,19 @@ export function CategoryForm({
                 <FormItem>
                   <FormLabel>Nome</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nome da categoria" {...field} />
+                    <Input 
+                      placeholder="Nome da categoria" 
+                      {...field} 
+                      disabled={isPadraoCategory}
+                      className={isPadraoCategory ? "bg-muted" : ""}
+                    />
                   </FormControl>
+                  {isPadraoCategory && (
+                    <FormDescription className="flex items-center text-amber-600">
+                      <InfoIcon className="h-4 w-4 mr-1" />
+                      O nome não pode ser alterado em categorias padrão
+                    </FormDescription>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
@@ -167,9 +184,10 @@ export function CategoryForm({
                     onValueChange={field.onChange} 
                     defaultValue={field.value}
                     value={field.value}
+                    disabled={isPadraoCategory}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className={isPadraoCategory ? "bg-muted" : ""}>
                         <SelectValue placeholder="Selecione o tipo" />
                       </SelectTrigger>
                     </FormControl>
@@ -179,6 +197,12 @@ export function CategoryForm({
                       <SelectItem value="ambos">Ambos</SelectItem>
                     </SelectContent>
                   </Select>
+                  {isPadraoCategory && (
+                    <FormDescription className="flex items-center text-amber-600">
+                      <InfoIcon className="h-4 w-4 mr-1" />
+                      O tipo não pode ser alterado em categorias padrão
+                    </FormDescription>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
