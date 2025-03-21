@@ -1,93 +1,70 @@
 
 import { useState } from 'react';
-import { MetaFormDialog } from './MetaFormDialog';
-import { DeleteMetaDialog } from './DeleteMetaDialog';
-import { MetaCategoria, MetaProgresso } from '@/lib/metas';
-import { MetasActionsButton } from './components/MetasActionsButton';
-import { MetasEmptyState } from './components/MetasEmptyState';
+import { MetaCategoria } from '@/lib/metas/types';
 import { MetaItem } from './components/MetaItem';
+import { DeleteMetaDialog } from './DeleteMetaDialog';
+import { CategoryWithMeta } from '@/hooks/useCategoriesWithMetas';
 
 interface MetasListProps {
-  userId: string;
-  metas: MetaProgresso[];
-  onSaveMeta: (meta: MetaCategoria) => Promise<void>;
-  onDeleteMeta: (id: number) => Promise<void>;
+  metas: MetaCategoria[];
+  onEditClick: (meta: MetaCategoria) => void;
+  onDeleteClick: (id: number) => Promise<void>;
+  categoriesWithMetas: CategoryWithMeta[];
 }
 
-export function MetasList({ userId, metas, onSaveMeta, onDeleteMeta }: MetasListProps) {
-  const [metaFormOpen, setMetaFormOpen] = useState(false);
-  const [metaAtual, setMetaAtual] = useState<MetaCategoria | null>(null);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [metaToDelete, setMetaToDelete] = useState<number | null>(null);
-  const [categoriaToDelete, setCategoriaToDelete] = useState<string>('');
-  
-  // Ordenar metas por porcentagem (crescente)
-  const metasOrdenadas = [...metas].sort((a, b) => b.porcentagem - a.porcentagem);
-  
-  // Solicitar adição de uma nova meta
-  const handleAddMeta = () => {
-    setMetaAtual(null);
-    setMetaFormOpen(true);
-  };
-  
-  // Solicitar edição de uma meta existente
-  const handleEditMeta = (meta: MetaCategoria) => {
-    setMetaAtual(meta);
-    setMetaFormOpen(true);
-  };
-  
-  // Abrir diálogo de confirmação para excluir meta
-  const handleDeleteRequest = (id: number, categoria: string) => {
-    setMetaToDelete(id);
-    setCategoriaToDelete(categoria);
-    setDeleteConfirmOpen(true);
-  };
-  
-  // Confirmar exclusão de meta
-  const confirmDelete = async () => {
-    if (metaToDelete !== null) {
-      await onDeleteMeta(metaToDelete);
-      setMetaToDelete(null);
-      setCategoriaToDelete('');
-      setDeleteConfirmOpen(false);
-    }
+export function MetasList({ metas, onEditClick, onDeleteClick, categoriesWithMetas }: MetasListProps) {
+  const [metaToDelete, setMetaToDelete] = useState<MetaCategoria | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  const handleDelete = (meta: MetaCategoria) => {
+    setMetaToDelete(meta);
+    setShowDeleteDialog(true);
   };
 
+  const confirmDelete = async () => {
+    if (metaToDelete?.id) {
+      await onDeleteClick(metaToDelete.id);
+      setShowDeleteDialog(false);
+      setMetaToDelete(null);
+    }
+  };
+  
+  // Get categories that don't have metas yet
+  const categoriesWithoutMetas = categoriesWithMetas
+    .filter(item => !item.hasMeta)
+    .map(item => item.category.nome);
+
   return (
-    <div className="space-y-6">
-      {/* Botão para adicionar nova meta */}
-      <MetasActionsButton onAddMeta={handleAddMeta} />
+    <div className="space-y-4">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        {metas.map((meta) => (
+          <MetaItem 
+            key={meta.id} 
+            meta={meta} 
+            onEditClick={() => onEditClick(meta)}
+            onDeleteClick={() => handleDelete(meta)}
+          />
+        ))}
+      </div>
       
-      {/* Lista de metas */}
-      {metasOrdenadas.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4">
-          {metasOrdenadas.map((metaProgresso) => (
-            <MetaItem 
-              key={metaProgresso.meta.id}
-              metaProgresso={metaProgresso}
-              onEdit={handleEditMeta}
-              onDelete={handleDeleteRequest}
-            />
-          ))}
+      {categoriesWithoutMetas.length > 0 && (
+        <div className="mt-8 p-4 bg-muted rounded-lg">
+          <h3 className="font-medium mb-2">Categorias sem metas</h3>
+          <div className="flex flex-wrap gap-2">
+            {categoriesWithoutMetas.map(category => (
+              <span key={category} className="px-2 py-1 bg-background rounded-md text-sm">
+                {category}
+              </span>
+            ))}
+          </div>
         </div>
-      ) : (
-        <MetasEmptyState onAddMeta={handleAddMeta} />
       )}
-      
-      {/* Diálogos */}
-      <MetaFormDialog 
-        userId={userId}
-        isOpen={metaFormOpen} 
-        metaAtual={metaAtual}
-        onOpenChange={setMetaFormOpen} 
-        onSave={onSaveMeta} 
-      />
-      
-      <DeleteMetaDialog 
-        open={deleteConfirmOpen}
-        onOpenChange={setDeleteConfirmOpen}
+
+      <DeleteMetaDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
         onConfirm={confirmDelete}
-        categoria={categoriaToDelete}
+        metaName={metaToDelete?.categoria || ''}
       />
     </div>
   );

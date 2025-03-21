@@ -4,9 +4,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { getMonth, getYear } from 'date-fns';
-import { fetchCategories } from '@/lib/categories';
 import { toast } from 'sonner';
 import { MetaCategoria } from '@/lib/metas/types';
+import { CategoryWithMeta } from '@/hooks/useCategoriesWithMetas';
 
 // Schema for form validation
 const formSchema = z.object({
@@ -26,41 +26,17 @@ export type MetaFormValues = z.infer<typeof formSchema>;
  * 
  * @param {string} userId - The ID of the current user
  * @param {MetaCategoria | null} metaAtual - The current meta being edited, or null if creating a new one
+ * @param {CategoryWithMeta[]} availableCategories - List of available categories with meta information
  * @returns {Object} An object containing form controls and helper functions
  * @property {UseFormReturn} form - React Hook Form's form object with validation
- * @property {string[]} categorias - List of available spending categories
- * @property {boolean} isLoading - Whether categories are still loading
  * @property {string} periodoSelecionado - Currently selected period type
  * @property {Function} prepareMetaForSubmit - Function to prepare form values for submission
  */
-export const useMetaForm = (userId: string, metaAtual: MetaCategoria | null) => {
-  const [categorias, setCategorias] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  
-  // Load spending categories for the user
-  useEffect(() => {
-    const loadCategorias = async () => {
-      if (!userId) return;
-      
-      setIsLoading(true);
-      try {
-        const cats = await fetchCategories(userId);
-        // Filter to only include expense categories
-        const gastosCategorias = cats
-          .filter(cat => cat.tipo === 'saída' || cat.tipo === 'ambos')
-          .map(cat => cat.nome);
-        setCategorias(gastosCategorias);
-      } catch (error) {
-        console.error('Erro ao carregar categorias:', error);
-        toast.error('Erro ao carregar categorias de gastos');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadCategorias();
-  }, [userId]);
-
+export const useMetaForm = (
+  userId: string, 
+  metaAtual: MetaCategoria | null,
+  availableCategories: CategoryWithMeta[] = []
+) => {
   // Initialize form with properly typed default values
   const form = useForm<MetaFormValues>({
     resolver: zodResolver(formSchema),
@@ -112,8 +88,6 @@ export const useMetaForm = (userId: string, metaAtual: MetaCategoria | null) => 
 
   return {
     form,
-    categorias,
-    isLoading,
     periodoSelecionado,
     prepareMetaForSubmit
   };

@@ -1,75 +1,100 @@
 
-import { useAuth } from '@/contexts/AuthContext';
-import { format } from 'date-fns';
-import { Transaction } from '@/lib/supabase';
-import { DateRange } from 'react-day-picker';
+import { useState } from 'react';
+import { MetaForm } from './MetaForm';
+import { MetasList } from './MetasList';
+import { MetaCategoria } from '@/lib/metas/types';
 import { useMetasData } from './hooks/useMetasData';
-import { useMetaProgress } from './hooks/useMetaProgress';
-import { usePeriodoDateRange } from './hooks/usePeriodoDateRange';
+import { useCategoriesWithMetas } from '@/hooks/useCategoriesWithMetas';
+import { Button } from '@/components/ui/button';
+import { PlusCircle } from 'lucide-react';
 import { MetasHeader } from './components/MetasHeader';
-import { MetasCard } from './components/MetasCard';
+import { MetasEmptyState } from './components/MetasEmptyState';
 
 interface MetasTabProps {
-  transactions: Transaction[];
-  dateRange: DateRange | null;
-  setDateRange: (dateRange: DateRange | null) => void;
+  userId: string | undefined;
 }
 
-export default function MetasTab({ transactions, dateRange: externalDateRange, setDateRange: setExternalDateRange }: MetasTabProps) {
-  const { user } = useAuth();
-  const { metas, isLoading, handleSaveMeta, handleDeleteMeta } = useMetasData(user?.id);
-  const { 
-    periodoFiltro, 
-    dateRange: internalDateRange, 
-    setDateRange: setInternalDateRange, 
-    handleChangePeriodo 
-  } = usePeriodoDateRange();
+export function MetasTab({ userId }: MetasTabProps) {
+  const { metas, isLoading, handleSaveMeta, handleDeleteMeta } = useMetasData(userId);
+  const { categoriesWithMetas, isLoading: isCategoriesLoading, refreshData } = useCategoriesWithMetas(userId);
   
-  // Use the external date range if provided, otherwise use internal
-  const effectiveDateRange = externalDateRange || internalDateRange;
-  const setEffectiveDateRange = (range: DateRange | null) => {
-    setInternalDateRange(range);
-    setExternalDateRange(range);
+  const [showForm, setShowForm] = useState(false);
+  const [metaAtual, setMetaAtual] = useState<MetaCategoria | null>(null);
+
+  const handleAddClick = () => {
+    setMetaAtual(null);
+    setShowForm(true);
   };
-  
-  // Calculate meta progress
-  const metasProgresso = useMetaProgress(metas, transactions, effectiveDateRange);
-  
-  if (isLoading) {
+
+  const handleEditClick = (meta: MetaCategoria) => {
+    setMetaAtual(meta);
+    setShowForm(true);
+  };
+
+  const handleFormSubmit = async (meta: MetaCategoria) => {
+    await handleSaveMeta(meta);
+    setShowForm(false);
+    setMetaAtual(null);
+    refreshData(); // Refresh categories with metas
+  };
+
+  const handleFormCancel = () => {
+    setShowForm(false);
+    setMetaAtual(null);
+  };
+
+  // Loading state
+  if (isLoading || isCategoriesLoading) {
     return (
-      <div className="container px-4 py-8 max-w-7xl">
-        <div className="animate-pulse text-lg text-center">Carregando metas...</div>
+      <div className="py-10">
+        <div className="container">
+          <div className="flex items-center justify-center h-[400px]">
+            <p className="text-muted-foreground">Carregando metas...</p>
+          </div>
+        </div>
       </div>
     );
   }
-  
-  const periodoAtual = (() => {
-    if (effectiveDateRange?.from) {
-      if (periodoFiltro === 'mensal') {
-        return format(effectiveDateRange.from, 'MMMM yyyy');
-      } else if (periodoFiltro === 'anual') {
-        return `Ano ${effectiveDateRange.from.getFullYear()}`;
-      }
-    }
-    return format(new Date(), 'MMMM yyyy');
-  })();
-  
+
+  // Show form or list based on state
   return (
-    <div className="space-y-6">
-      <MetasHeader 
-        periodoFiltro={periodoFiltro}
-        dateRange={effectiveDateRange}
-        onChangePeriodo={handleChangePeriodo}
-        onDateRangeChange={setEffectiveDateRange}
-      />
-      
-      <MetasCard 
-        userId={user?.id || ''}
-        metasProgresso={metasProgresso}
-        periodoAtual={periodoAtual}
-        onSaveMeta={handleSaveMeta}
-        onDeleteMeta={handleDeleteMeta}
-      />
+    <div className="py-10">
+      <div className="container max-w-[1000px]">
+        <MetasHeader />
+
+        {/* Show form if requested */}
+        {showForm ? (
+          <MetaForm
+            userId={userId || ''}
+            metaAtual={metaAtual}
+            onSubmit={handleFormSubmit}
+            onCancel={handleFormCancel}
+            availableCategories={categoriesWithMetas}
+          />
+        ) : (
+          <>
+            {/* Add button */}
+            <div className="mb-6">
+              <Button onClick={handleAddClick} className="w-full sm:w-auto">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Adicionar Meta
+              </Button>
+            </div>
+
+            {/* Show list or empty state */}
+            {metas.length > 0 ? (
+              <MetasList
+                metas={metas}
+                onEditClick={handleEditClick}
+                onDeleteClick={handleDeleteMeta}
+                categoriesWithMetas={categoriesWithMetas}
+              />
+            ) : (
+              <MetasEmptyState onAddClick={handleAddClick} />
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

@@ -7,21 +7,22 @@ import { useMetaForm } from './hooks/useMetaForm';
 import { MetaBasicFields } from './components/MetaBasicFields';
 import { PeriodSelectors } from './components/PeriodSelectors';
 import { MetaFormFooter } from './components/MetaFormFooter';
+import { CategoryWithMeta } from '@/hooks/useCategoriesWithMetas';
 
 interface MetaFormProps {
   userId: string;
   metaAtual: MetaCategoria | null;
   onSubmit: (meta: MetaCategoria) => Promise<void>;
   onCancel: () => void;
+  availableCategories: CategoryWithMeta[];
 }
 
-export function MetaForm({ userId, metaAtual, onSubmit, onCancel }: MetaFormProps) {
+export function MetaForm({ userId, metaAtual, onSubmit, onCancel, availableCategories }: MetaFormProps) {
   const {
     form,
-    categorias,
     periodoSelecionado,
     prepareMetaForSubmit
-  } = useMetaForm(userId, metaAtual);
+  } = useMetaForm(userId, metaAtual, availableCategories);
   
   const handleSubmit = async (values: any) => {
     try {
@@ -37,7 +38,10 @@ export function MetaForm({ userId, metaAtual, onSubmit, onCancel }: MetaFormProp
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
-        <MetaBasicFields form={form} categorias={categorias} />
+        <MetaBasicFields 
+          form={form} 
+          availableCategories={availableCategories} 
+        />
         
         <PeriodSelectors 
           form={form} 
