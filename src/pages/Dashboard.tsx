@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -129,7 +128,6 @@ const Dashboard = ({ clientId, viewMode = 'user' }: DashboardProps) => {
         </div>
           
         <div className="animate-fade-in">
-          {/* Wrap each TabsContent in its own Tabs component */}
           <Tabs value={activeTab}>
             <TabsContent value="transactions" className="animate-fade-up">
               <TransactionsTab 
@@ -143,15 +141,11 @@ const Dashboard = ({ clientId, viewMode = 'user' }: DashboardProps) => {
                 setIsFormOpen={setIsFormOpen}
               />
             </TabsContent>
-          </Tabs>
-          
-          <Tabs value={activeTab}>
+            
             <TabsContent value="categories" className="animate-fade-up">
               <CategoriesTab clientId={clientId} viewMode={viewMode} />
             </TabsContent>
-          </Tabs>
-          
-          <Tabs value={activeTab}>
+            
             <TabsContent value="lembretes" className="animate-fade-up">
               <LembretesTab clientId={clientId} viewMode={viewMode} />
             </TabsContent>

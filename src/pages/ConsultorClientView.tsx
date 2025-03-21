@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DateRange } from 'react-day-picker';
@@ -160,7 +159,6 @@ export default function ConsultorClientView() {
         </div>
         
         <div className="animate-fade-in">
-          {/* Wrap each TabsContent in its own Tabs component */}
           <Tabs value={activeTab}>
             <TabsContent value="transactions" className="animate-fade-up">
               <TransactionsTab 
@@ -174,18 +172,14 @@ export default function ConsultorClientView() {
                 setIsFormOpen={setIsFormOpen}
               />
             </TabsContent>
-          </Tabs>
-          
-          <Tabs value={activeTab}>
+            
             <TabsContent value="categories" className="animate-fade-up">
               <CategoriesTab 
                 clientId={clientId}
                 viewMode="consultor"
               />
             </TabsContent>
-          </Tabs>
-          
-          <Tabs value={activeTab}>
+            
             <TabsContent value="lembretes" className="animate-fade-up">
               <LembretesTab 
                 clientId={clientId}
