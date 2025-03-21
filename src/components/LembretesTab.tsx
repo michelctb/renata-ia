@@ -2,13 +2,13 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { LembretesHeader } from '@/components/lembretes/LembretesHeader';
-import { LembretesList } from '@/components/lembretes/LembretesList';
-import { LembreteFormManager } from '@/components/lembretes/LembreteFormManager';
+import LembretesList from '@/components/lembretes/LembretesList';
+import { LembreteForm } from '@/components/lembretes/LembreteForm';
 import { DeleteLembreteDialog } from '@/components/lembretes/DeleteLembreteDialog';
-import { LembreteSchema } from '@/components/lembretes/lembreteFormSchema';
+import { LembreteFormValues } from '@/components/lembretes/lembreteFormSchema';
 import { useBasicLembretes } from '@/hooks/lembretes/useBasicLembretes';
 import { useDeletion } from '@/hooks/lembretes/useDeletion';
-import { useFormOperations } from '@/hooks/lembretes/useFormOperations';
+import { Lembrete } from '@/lib/lembretes';
 
 type LembretesTabProps = {
   clientId?: string;
@@ -18,7 +18,9 @@ type LembretesTabProps = {
 const LembretesTab = ({ clientId, viewMode = 'user' }: LembretesTabProps) => {
   const { user, isUserActive } = useAuth();
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingLembrete, setEditingLembrete] = useState<LembreteSchema | null>(null);
+  const [editingLembrete, setEditingLembrete] = useState<Lembrete | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [lembreteToDelete, setLembreteToDelete] = useState<number | null>(null);
   
   // Use client ID if in consultor view mode
   const userId = viewMode === 'consultor' && clientId ? clientId : user?.id;
@@ -26,40 +28,93 @@ const LembretesTab = ({ clientId, viewMode = 'user' }: LembretesTabProps) => {
   // Load lembretes data
   const { 
     lembretes, 
-    isLoading, 
-    refetchLembretes
+    isLoading,
+    loadLembretes
   } = useBasicLembretes(userId);
   
   // Deletion handling
-  const {
-    lembreteToDelete,
-    deleteDialogOpen,
-    setDeleteDialogOpen,
-    handleDeleteRequest,
-    handleConfirmDelete
-  } = useDeletion({ onSuccess: refetchLembretes });
+  const { handleDelete } = useDeletion();
   
-  // Form operations
-  const {
-    handleAddNew,
-    handleEdit,
-    handleCloseForm,
-    handleSubmitForm,
-    isProcessing
-  } = useFormOperations({
-    setIsFormOpen,
-    setEditingLembrete,
-    refetchLembretes,
-    isUserActive: isUserActive(),
-    viewMode
-  });
+  // Handle adding a new lembrete
+  const handleAddNew = () => {
+    if (!isUserActive()) {
+      return;
+    }
+    
+    if (viewMode === 'consultor') {
+      return;
+    }
+    
+    setEditingLembrete(null);
+    setIsFormOpen(true);
+  };
+  
+  // Handle editing a lembrete
+  const handleEdit = (lembrete: Lembrete) => {
+    if (!isUserActive()) {
+      return;
+    }
+    
+    if (viewMode === 'consultor') {
+      return;
+    }
+    
+    setEditingLembrete(lembrete);
+    setIsFormOpen(true);
+  };
+  
+  // Handle closing the form
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setTimeout(() => {
+      setEditingLembrete(null);
+    }, 100);
+  };
+  
+  // Handle form submission
+  const handleSubmitForm = async (formData: Lembrete) => {
+    // Handle form submission logic
+    loadLembretes();
+    
+    // Close form
+    setIsFormOpen(false);
+    
+    // Clear editing state
+    setTimeout(() => {
+      setEditingLembrete(null);
+    }, 100);
+  };
+  
+  // Handle delete request
+  const handleDeleteRequest = (id: number) => {
+    if (!isUserActive()) {
+      return;
+    }
+    
+    if (viewMode === 'consultor') {
+      return;
+    }
+    
+    setLembreteToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+  
+  // Handle confirm delete
+  const handleConfirmDelete = async () => {
+    if (lembreteToDelete) {
+      await handleDelete(lembreteToDelete);
+      loadLembretes();
+      setDeleteDialogOpen(false);
+      setLembreteToDelete(null);
+    }
+  };
   
   return (
     <div className="space-y-6">
       <LembretesHeader 
         onAddNew={handleAddNew} 
         isUserActive={isUserActive()} 
-        isProcessing={isProcessing}
+        viewMode={viewMode}
       />
       
       <LembretesList 
@@ -71,16 +126,16 @@ const LembretesTab = ({ clientId, viewMode = 'user' }: LembretesTabProps) => {
         viewMode={viewMode}
       />
       
-      <LembreteFormManager
+      <LembreteForm
         isOpen={isFormOpen}
         onClose={handleCloseForm}
         onSubmit={handleSubmitForm}
         editingLembrete={editingLembrete}
-        userId={userId}
+        userId={userId || ''}
       />
       
       <DeleteLembreteDialog 
-        open={deleteDialogOpen}
+        isOpen={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
         lembreteId={lembreteToDelete}

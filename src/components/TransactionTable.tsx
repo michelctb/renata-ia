@@ -30,11 +30,11 @@ const TransactionTable = ({
   viewMode = 'user'
 }: TransactionTableProps) => {
   const { 
-    searchQuery, 
-    setSearchQuery,
-    visibleTransactions,
-    totalReceived,
-    totalSpent
+    searchTerm,
+    setSearchTerm,
+    filteredTransactions,
+    totalIncome,
+    totalExpenses
   } = useTransactionFiltering(transactions, dateRange);
   
   const isReadOnly = viewMode === 'consultor';
@@ -43,8 +43,8 @@ const TransactionTable = ({
     <Card className="overflow-hidden border-none shadow-md">
       <div className="p-4 bg-white dark:bg-gray-800">
         <SearchInput 
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Buscar transações..."
         />
       </div>
@@ -54,19 +54,19 @@ const TransactionTable = ({
           <TransactionTableHeader />
           
           <tbody className="bg-white dark:bg-gray-800">
-            {visibleTransactions.length > 0 ? (
-              visibleTransactions.map((transaction) => (
+            {filteredTransactions.length > 0 ? (
+              filteredTransactions.map((transaction) => (
                 <TransactionRow
                   key={transaction.id}
                   transaction={transaction}
                   onEdit={onEdit}
                   onDelete={onDelete}
                   isUserActive={isUserActive}
-                  isReadOnly={isReadOnly}
+                  viewMode={viewMode}
                 />
               ))
             ) : (
-              <EmptyTransactionRow searchQuery={searchQuery} />
+              <EmptyTransactionRow searchTerm={searchTerm} />
             )}
           </tbody>
           
@@ -76,13 +76,13 @@ const TransactionTable = ({
                 Resumo:
               </td>
               <td className="px-4 py-3 text-green-600 dark:text-green-400 text-right">
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalReceived)}
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalIncome)}
               </td>
               <td className="px-4 py-3 text-red-600 dark:text-red-400 text-right">
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalSpent)}
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalExpenses)}
               </td>
               <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-right">
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalReceived - totalSpent)}
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalIncome - totalExpenses)}
               </td>
               <td className="px-4 py-3 text-right"></td>
             </tr>

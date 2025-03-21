@@ -1,10 +1,11 @@
+
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { CategoryFormSchema } from '@/components/categories/categoryFormSchema';
+import { CategoryFormValues } from '@/components/categories/categoryFormSchema';
 
 interface CategoryOperationsProps {
   setIsFormOpen: (open: boolean) => void;
-  setEditingCategory: (category: CategoryFormSchema | null) => void;
+  setEditingCategory: (category: CategoryFormValues | null) => void;
   refetchCategories: () => void;
   isUserActive: boolean;
   viewMode?: 'user' | 'admin' | 'consultor';
@@ -36,7 +37,7 @@ export const useCategoryOperations = ({
   };
   
   // Handler for opening the form to edit an existing category
-  const handleEdit = (category: CategoryFormSchema) => {
+  const handleEdit = (category: CategoryFormValues) => {
     if (!isUserActive) {
       toast.error('Sua assinatura está inativa. Você não pode editar categorias.');
       return;
@@ -61,7 +62,7 @@ export const useCategoryOperations = ({
   };
   
   // Handler for submitting the form
-  const handleFormSubmit = async (formData: CategoryFormSchema) => {
+  const handleFormSubmit = async (formData: CategoryFormValues) => {
     setIsProcessing(true);
     
     try {

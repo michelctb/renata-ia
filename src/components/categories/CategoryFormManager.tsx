@@ -1,38 +1,56 @@
 
-import { useAuth } from '@/contexts/AuthContext';
 import { Category } from '@/lib/categories';
 import { MetaCategoria } from '@/lib/metas';
-import CategoryForm from '../CategoryForm';
+import CategoryForm from '@/components/CategoryForm';
+import { useAuth } from '@/contexts/AuthContext';
+import { CategoryFormValues } from './categoryFormSchema';
 
-interface CategoryFormManagerProps {
-  editingCategory: Category | null;
-  editingMeta: MetaCategoria | null;
+export interface CategoryFormManagerProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (category: Category, metaData?: { hasMeta: boolean, valorMeta?: number }) => Promise<void>;
+  onSubmit: (formData: CategoryFormValues) => Promise<void>;
+  editingCategory: CategoryFormValues | null;
 }
 
 export function CategoryFormManager({
-  editingCategory,
-  editingMeta,
   isOpen,
   onClose,
-  onSubmit
+  onSubmit,
+  editingCategory,
 }: CategoryFormManagerProps) {
   const { user } = useAuth();
+  const userId = user?.id || '';
 
-  if (!user) {
-    return null;
-  }
+  const handleSubmit = async (
+    category: Category, 
+    metaData?: { hasMeta: boolean, valorMeta?: number }
+  ) => {
+    // Convert the category to the expected form data
+    const formData: CategoryFormValues = {
+      id: category.id,
+      nome: category.nome,
+      tipo: category.tipo as 'entrada' | 'saída' | 'ambos',
+      hasMeta: metaData?.hasMeta || false,
+      valorMeta: metaData?.valorMeta
+    };
+    
+    // Call the provided onSubmit function
+    await onSubmit(formData);
+  };
 
   return (
     <CategoryForm
       isOpen={isOpen}
       onClose={onClose}
-      onSubmit={onSubmit}
-      editingCategory={editingCategory}
-      meta={editingMeta}
-      userId={user.id}
+      onSubmit={handleSubmit}
+      editingCategory={editingCategory ? {
+        id: editingCategory.id,
+        nome: editingCategory.nome,
+        tipo: editingCategory.tipo,
+        cliente: userId,
+        padrao: false
+      } as Category : null}
+      userId={userId}
     />
   );
 }

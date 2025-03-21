@@ -2,7 +2,7 @@
 import { DateRange } from 'react-day-picker';
 import { Button } from '@/components/ui/button';
 import { PlusIcon } from 'lucide-react';
-import DateRangePicker from '@/components/DateRangePicker';
+import { DateRangePicker } from '@/components/DateRangePicker';
 
 export interface TransactionsHeaderProps {
   dateRange: DateRange | null;

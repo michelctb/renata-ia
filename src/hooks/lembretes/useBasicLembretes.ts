@@ -9,10 +9,6 @@ import { toast } from 'sonner';
  * 
  * @param {string | undefined} userId - The ID of the current user
  * @returns {Object} Object containing lembretes data and loading state
- * @property {Lembrete[]} lembretes - The list of lembretes for the current user
- * @property {boolean} isLoading - Whether the lembretes are currently being loaded
- * @property {Function} loadLembretes - Function to reload lembretes data
- * @property {Function} setLembretes - Function to update the lembretes state
  */
 export function useBasicLembretes(userId: string | undefined) {
   const [lembretes, setLembretes] = useState<Lembrete[]>([]);
@@ -25,6 +21,7 @@ export function useBasicLembretes(userId: string | undefined) {
   const loadLembretes = useCallback(async () => {
     if (!userId) {
       console.log('No userId, skipping loadLembretes');
+      setIsLoading(false);
       return;
     }
     
@@ -57,6 +54,7 @@ export function useBasicLembretes(userId: string | undefined) {
     lembretes,
     setLembretes,
     isLoading,
-    loadLembretes
+    loadLembretes,
+    refetchLembretes: loadLembretes
   };
 }

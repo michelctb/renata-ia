@@ -1,99 +1,95 @@
 
-import React from 'react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { TableCell, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Transaction } from '@/lib/supabase';
-import { formatCurrency } from '@/lib/utils';
-import { ArrowUp, ArrowDown, MoreHorizontal, Pencil, Trash, Lock } from 'lucide-react';
+import { 
+  PencilIcon, 
+  TrashIcon,
+  ArrowUpIcon,
+  ArrowDownIcon
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-interface TransactionRowProps {
+export interface TransactionRowProps {
   transaction: Transaction;
   onEdit: (transaction: Transaction) => void;
   onDelete: (id: number) => void;
   isUserActive: boolean;
+  viewMode?: 'user' | 'admin' | 'consultor';
 }
 
-export function TransactionRow({ transaction, onEdit, onDelete, isUserActive }: TransactionRowProps) {
-  // Function to format the date correctly without timezone issues
-  const formatTransactionDate = (dateString: string) => {
-    try {
-      // Parse the ISO date string
-      const date = parseISO(dateString);
-      
-      // Format the date in the desired format
-      return format(date, 'dd/MM/yyyy', { locale: ptBR });
-    } catch (error) {
-      console.error(`Error formatting date: ${dateString}`, error);
-      return dateString; // Return the original string if parsing fails
-    }
-  };
-
+export function TransactionRow({ 
+  transaction, 
+  onEdit, 
+  onDelete,
+  isUserActive,
+  viewMode = 'user'
+}: TransactionRowProps) {
+  const isReadOnly = viewMode === 'consultor';
+  const formattedDate = format(parseISO(transaction.data), 'dd/MM/yyyy', { locale: ptBR });
+  
+  const valueClass = transaction.tipo === 'entrada' 
+    ? 'text-green-600 dark:text-green-400' 
+    : 'text-red-600 dark:text-red-400';
+  
+  const formattedValue = new Intl.NumberFormat('pt-BR', { 
+    style: 'currency', 
+    currency: 'BRL' 
+  }).format(transaction.valor as number);
+  
   return (
-    <TableRow className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200">
-      <TableCell className="font-medium whitespace-nowrap">
-        {formatTransactionDate(transaction.data)}
-      </TableCell>
-      <TableCell className="truncate max-w-[280px]">
-        <div className="truncate" title={transaction.descrição}>
-          {transaction.descrição}
+    <tr className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+      <td className="px-4 py-3 text-sm">
+        {formattedDate}
+      </td>
+      <td className="px-4 py-3">
+        <div className="font-medium text-gray-900 dark:text-white">{transaction.descricao}</div>
+        <div className="text-xs text-gray-500 dark:text-gray-400">{transaction.categoria}</div>
+      </td>
+      <td className="px-4 py-3 text-right">
+        {transaction.tipo === 'entrada' && (
+          <span className="text-green-600 dark:text-green-400">{formattedValue}</span>
+        )}
+      </td>
+      <td className="px-4 py-3 text-right">
+        {transaction.tipo === 'saída' && (
+          <span className="text-red-600 dark:text-red-400">{formattedValue}</span>
+        )}
+      </td>
+      <td className="px-4 py-3 text-right">
+        <div className="flex items-center gap-1 justify-end">
+          {transaction.tipo === 'entrada' ? (
+            <ArrowUpIcon className="h-4 w-4 text-green-500" />
+          ) : (
+            <ArrowDownIcon className="h-4 w-4 text-red-500" />
+          )}
+          <span className={valueClass}>{transaction.forma_pagamento}</span>
         </div>
-      </TableCell>
-      <TableCell>
-        <div className="flex items-center">
-          {transaction.operação?.toLowerCase() === 'entrada' 
-            ? <ArrowUp className="mr-1 h-4 w-4 text-green-500 flex-shrink-0" /> 
-            : <ArrowDown className="mr-1 h-4 w-4 text-red-500 flex-shrink-0" />}
-          <span className="truncate" title={transaction.categoria}>
-            {transaction.categoria}
-          </span>
+      </td>
+      <td className="px-4 py-3 text-right">
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onEdit(transaction)}
+            disabled={!isUserActive || isReadOnly}
+            className="h-8 w-8"
+          >
+            <PencilIcon className="h-4 w-4" />
+            <span className="sr-only">Edit</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onDelete(transaction.id as number)}
+            disabled={!isUserActive || isReadOnly}
+            className="h-8 w-8 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+          >
+            <TrashIcon className="h-4 w-4" />
+            <span className="sr-only">Delete</span>
+          </Button>
         </div>
-      </TableCell>
-      <TableCell className={`text-right font-medium whitespace-nowrap ${
-        transaction.operação?.toLowerCase() === 'entrada' 
-          ? 'text-green-600 dark:text-green-400' 
-          : 'text-red-600 dark:text-red-400'
-      }`}>
-        {formatCurrency(transaction.valor)}
-      </TableCell>
-      <TableCell className="text-right p-0 pr-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[160px]">
-            {isUserActive ? (
-              <>
-                <DropdownMenuItem onClick={() => onEdit(transaction)} className="cursor-pointer">
-                  <Pencil className="mr-2 h-4 w-4" />
-                  Editar
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => onDelete(transaction.id as number)}
-                  className="text-red-600 focus:text-red-600 cursor-pointer"
-                >
-                  <Trash className="mr-2 h-4 w-4" />
-                  Excluir
-                </DropdownMenuItem>
-              </>
-            ) : (
-              <DropdownMenuItem disabled className="text-muted-foreground">
-                <Lock className="mr-2 h-4 w-4" />
-                Acesso somente leitura
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </TableCell>
-    </TableRow>
+      </td>
+    </tr>
   );
 }
