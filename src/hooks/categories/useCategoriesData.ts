@@ -5,6 +5,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Category, fetchCategories } from '@/lib/categories';
 import { MetaCategoria, fetchMetasCategorias } from '@/lib/metas';
 
+interface UseCategoriesDataProps {
+  userId?: string;
+}
+
 /**
  * Hook to manage categories and metas data loading
  */

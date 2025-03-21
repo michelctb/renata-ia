@@ -9,19 +9,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Lembrete } from "@/lib/lembretes";
 
-interface DeleteLembreteDialogProps {
+export interface DeleteLembreteDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
   lembreteId: number | null;
+  lembrete?: Lembrete;
 }
 
 export function DeleteLembreteDialog({
   isOpen,
   onOpenChange,
   onConfirm,
-  lembreteId
+  lembreteId,
+  lembrete
 }: DeleteLembreteDialogProps) {
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
@@ -30,6 +33,14 @@ export function DeleteLembreteDialog({
           <AlertDialogTitle>Excluir Lembrete</AlertDialogTitle>
           <AlertDialogDescription>
             Tem certeza que deseja excluir este lembrete? Esta ação não pode ser desfeita.
+            {lembrete && (
+              <div className="mt-2 p-2 bg-muted rounded-md">
+                <p className="font-medium">{lembrete.lembrete}</p>
+                {lembrete.valor && (
+                  <p className="text-sm">Valor: R$ {lembrete.valor.toFixed(2)}</p>
+                )}
+              </div>
+            )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

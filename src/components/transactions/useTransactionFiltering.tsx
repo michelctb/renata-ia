@@ -1,68 +1,59 @@
 
 import { useState, useMemo } from 'react';
-import { parseISO, isWithinInterval } from 'date-fns';
-import { DateRange } from 'react-day-picker';
-import { Transaction } from '@/lib/supabase';
+import { Transaction } from './TransactionRow';
 
-/**
- * Hook to manage transaction filtering and search functionality
- */
-export function useTransactionFiltering(
-  transactions: Transaction[],
-  dateRange: DateRange | null
-) {
+export function useTransactionFiltering(transactions: Transaction[]) {
   const [searchTerm, setSearchTerm] = useState('');
-
-  // Filter transactions by date range and search term
+  
   const filteredTransactions = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return transactions;
+    }
+
+    const normalizedSearchTerm = searchTerm.toLowerCase().trim();
+    
     return transactions.filter(transaction => {
-      // Apply date filter if date range exists
-      const withinDateRange = dateRange
-        ? (() => {
-            const transactionDate = parseISO(transaction.data);
-            return isWithinInterval(transactionDate, {
-              start: dateRange.from,
-              end: dateRange.to || dateRange.from
-            });
-          })()
-        : true;
-
-      // Apply search filter if search term exists
-      const matchesSearch = searchTerm
-        ? (
-            transaction.descricao?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            transaction.valor?.toString().includes(searchTerm) ||
-            transaction.categoria?.toLowerCase().includes(searchTerm.toLowerCase())
-          )
-        : true;
-
-      return withinDateRange && matchesSearch;
+      // Support both legacy and new field names
+      const description = (transaction.description || transaction.descricao || '').toLowerCase();
+      const category = (transaction.category || '').toLowerCase();
+      const paymentMethod = (transaction.payment_method || transaction.forma_pagamento || '').toLowerCase();
+      
+      // Check if any field contains the search term
+      return (
+        description.includes(normalizedSearchTerm) ||
+        category.includes(normalizedSearchTerm) ||
+        paymentMethod.includes(normalizedSearchTerm)
+      );
     });
-  }, [transactions, dateRange, searchTerm]);
+  }, [transactions, searchTerm]);
 
-  // Calculate totals
-  const totalIncome = useMemo(() => 
-    filteredTransactions
-      .filter(t => t.tipo === 'entrada')
-      .reduce((sum, t) => sum + (parseFloat(t.valor.toString()) || 0), 0),
-    [filteredTransactions]
-  );
+  // Check if any filters are applied
+  const hasFilters = searchTerm.trim().length > 0;
 
-  const totalExpenses = useMemo(() => 
-    filteredTransactions
-      .filter(t => t.tipo === 'saída')
-      .reduce((sum, t) => sum + (parseFloat(t.valor.toString()) || 0), 0),
-    [filteredTransactions]
-  );
-
-  const hasFilters = !!searchTerm || !!dateRange;
+  // Calculate totals for income and expense transactions
+  const { totalReceived, totalSpent } = useMemo(() => {
+    return filteredTransactions.reduce(
+      (acc, transaction) => {
+        const type = transaction.type || (transaction.tipo === 'entrada' ? 'income' : 'expense');
+        
+        if (type === 'income' || transaction.tipo === 'entrada') {
+          acc.totalReceived += transaction.value;
+        } else if (type === 'expense' || transaction.tipo === 'saída') {
+          acc.totalSpent += transaction.value;
+        }
+        
+        return acc;
+      },
+      { totalReceived: 0, totalSpent: 0 }
+    );
+  }, [filteredTransactions]);
 
   return {
     searchTerm,
     setSearchTerm,
     filteredTransactions,
-    totalIncome,
-    totalExpenses,
-    hasFilters
+    hasFilters,
+    totalReceived,
+    totalSpent
   };
 }

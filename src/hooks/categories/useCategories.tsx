@@ -9,20 +9,21 @@ import { useCategoryDelete } from './useCategoryDelete';
 /**
  * Main hook for category management, combining data loading, CRUD operations
  */
-export function useCategories() {
+export function useCategories(userId?: string) {
   const { 
     user, 
     categories, 
     setCategories, 
     metas, 
     setMetas, 
-    isLoading 
-  } = useCategoriesData();
+    isLoading,
+    refetchCategories
+  } = useCategoriesData(userId);
   
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [editingMeta, setEditingMeta] = useState<MetaCategoria | null>(null);
   
-  const { handleSubmitCategory } = useCategoryOperations({ 
+  const { handleSubmitCategory, isProcessing } = useCategoryOperations({ 
     user,
     categories, 
     setCategories, 
@@ -32,8 +33,12 @@ export function useCategories() {
   
   const { 
     categoryToDelete, 
-    setCategoryToDelete, 
-    deleteSelectedCategory 
+    setCategoryToDelete,
+    deleteDialogOpen,
+    setDeleteDialogOpen,
+    handleDeleteRequest,
+    handleConfirmDelete,
+    deleteSelectedCategory
   } = useCategoryDelete({ 
     categories, 
     setCategories, 
@@ -42,16 +47,29 @@ export function useCategories() {
   });
 
   return {
+    // Data
     user,
     categories,
     metas,
     isLoading,
+    refetchCategories,
+    
+    // Editing state
     editingCategory,
     setEditingCategory,
     editingMeta,
     setEditingMeta,
+    isProcessing,
+    
+    // Delete state and handlers
     categoryToDelete,
     setCategoryToDelete,
+    deleteDialogOpen,
+    setDeleteDialogOpen,
+    handleDeleteRequest,
+    handleConfirmDelete,
+    
+    // Main operations
     handleSubmitCategory,
     deleteSelectedCategory
   };

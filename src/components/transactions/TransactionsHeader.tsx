@@ -1,41 +1,51 @@
 
+import { useState } from 'react';
 import { DateRange } from 'react-day-picker';
-import { Button } from '@/components/ui/button';
-import { PlusIcon } from 'lucide-react';
+import { SearchInput } from './SearchInput';
 import { DateRangePicker } from '@/components/DateRangePicker';
+import { TransactionActions } from './TransactionActions';
+import { usePeriodoDateRange } from '../metas/hooks/usePeriodoDateRange';
 
-export interface TransactionsHeaderProps {
-  dateRange: DateRange | null;
-  setDateRange: React.Dispatch<React.SetStateAction<DateRange | null>>;
+interface TransactionsHeaderProps {
+  onSearch: (term: string) => void;
+  searchTerm: string;
+  dateRange: DateRange | undefined;
+  onDateRangeChange: (range: DateRange | undefined) => void;
   onAddNew: () => void;
   isUserActive: boolean;
   viewMode?: 'user' | 'admin' | 'consultor';
 }
 
-export function TransactionsHeader({ 
-  dateRange, 
-  setDateRange, 
-  onAddNew, 
+export function TransactionsHeader({
+  onSearch,
+  searchTerm,
+  dateRange,
+  onDateRangeChange,
+  onAddNew,
   isUserActive,
   viewMode = 'user'
 }: TransactionsHeaderProps) {
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Transações</h2>
-      <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4">
-        <DateRangePicker 
-          dateRange={dateRange} 
-          setDateRange={setDateRange} 
+    <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0 mb-6">
+      <div className="flex-1 flex flex-col space-y-4 md:flex-row md:items-center md:space-x-4 md:space-y-0">
+        <SearchInput 
+          value={searchTerm} 
+          onChange={(e) => onSearch(e.target.value)} 
+          placeholder="Buscar transações..." 
+          className="md:w-64" 
         />
-        <Button 
-          onClick={onAddNew} 
-          disabled={!isUserActive || viewMode === 'consultor'}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
-        >
-          <PlusIcon className="h-4 w-4 mr-1" />
-          {viewMode === 'consultor' ? 'Modo Visualização' : 'Nova Transação'}
-        </Button>
+        
+        <DateRangePicker 
+          dateRange={dateRange}
+          onChange={onDateRangeChange}
+        />
       </div>
+      
+      <TransactionActions 
+        onAddNew={onAddNew} 
+        isActive={isUserActive}
+        viewMode={viewMode}
+      />
     </div>
   );
 }

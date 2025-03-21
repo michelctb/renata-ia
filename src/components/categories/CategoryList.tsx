@@ -17,20 +17,22 @@ import { Badge } from "@/components/ui/badge";
 
 interface CategoryListProps {
   categories: Category[];
-  metas: Record<string, MetaCategoria>;
+  metas?: Record<string, MetaCategoria>;
   onEdit: (category: Category, meta?: MetaCategoria | null) => void;
   onDelete: (id: number, isPadrao: boolean) => void;
   isLoading: boolean;
   isUserActive?: boolean;
+  viewMode?: 'user' | 'admin' | 'consultor';
 }
 
 export function CategoryList({ 
   categories, 
-  metas, 
+  metas = {}, 
   onEdit, 
   onDelete, 
   isLoading, 
-  isUserActive = true 
+  isUserActive = true,
+  viewMode = 'user'
 }: CategoryListProps) {
   if (isLoading) {
     return (
@@ -54,6 +56,9 @@ export function CategoryList({
       currency: 'BRL'
     }).format(value);
   };
+
+  // Determine if interactions are allowed
+  const isInteractive = isUserActive && viewMode !== 'consultor';
 
   return (
     <div className="rounded-md border border-border dark:border-gray-700 overflow-hidden">
@@ -112,13 +117,15 @@ export function CategoryList({
                     size="sm"
                     onClick={() => onEdit(category, meta || null)}
                     className="h-8 w-8 p-0 mr-1 dark:hover:bg-gray-700"
-                    disabled={!isUserActive}
+                    disabled={!isInteractive}
                     title={
                       !isUserActive 
                         ? "Assinatura inativa. Não é possível editar categorias."
-                        : category.padrao
-                          ? "Você pode definir metas para categorias padrão"
-                          : "Editar categoria"
+                        : viewMode === 'consultor'
+                          ? "Modo de visualização. Edição não permitida."
+                          : category.padrao
+                            ? "Você pode definir metas para categorias padrão"
+                            : "Editar categoria"
                     }
                   >
                     <PencilIcon className="h-4 w-4 dark:text-gray-300" />
@@ -129,17 +136,19 @@ export function CategoryList({
                     size="sm"
                     onClick={() => onDelete(category.id!, category.padrao || false)}
                     className={`h-8 w-8 p-0 dark:hover:bg-gray-700 ${
-                      category.padrao || !isUserActive 
+                      category.padrao || !isInteractive
                         ? "text-muted-foreground" 
                         : "text-destructive hover:text-destructive dark:text-red-400"
                     }`}
-                    disabled={category.padrao || !isUserActive}
+                    disabled={category.padrao || !isInteractive}
                     title={
                       category.padrao 
                         ? "Categorias padrão não podem ser excluídas" 
                         : !isUserActive 
                           ? "Assinatura inativa. Não é possível excluir categorias."
-                          : "Excluir categoria"
+                          : viewMode === 'consultor'
+                            ? "Modo de visualização. Exclusão não permitida."
+                            : "Excluir categoria"
                     }
                   >
                     <TrashIcon className="h-4 w-4" />
