@@ -61,8 +61,8 @@ export function useMonthlyChartData(transactions: Transaction[]) {
           acc[monthKey] = {
             month: month + 1,
             year,
-            income: 0,
-            expenses: 0,
+            entrada: 0,
+            saída: 0,
             name: new Date(year, month).toLocaleDateString('pt-BR', { month: 'short' })
           };
         }
@@ -72,9 +72,9 @@ export function useMonthlyChartData(transactions: Transaction[]) {
         const operationType = (transaction.operação || '').toLowerCase();
         
         if (operationType === 'entrada') {
-          acc[monthKey].income += amount;
+          acc[monthKey].entrada += amount;
         } else if (operationType === 'saída') {
-          acc[monthKey].expenses += amount;
+          acc[monthKey].saída += amount;
         }
         
         return acc;
@@ -82,7 +82,7 @@ export function useMonthlyChartData(transactions: Transaction[]) {
         console.error('Error processing transaction for monthly chart:', error);
         return acc;
       }
-    }, {} as Record<string, { month: number; year: number; income: number; expenses: number; name: string }>);
+    }, {} as Record<string, { month: number; year: number; entrada: number; saída: number; name: string }>);
     
     // Convert the object to an array sorted by year and month
     return Object.values(monthlyData).sort((a, b) => {

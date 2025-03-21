@@ -35,14 +35,12 @@ export function CategoryChartsContainer({
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <CardTitle>{chartTitle}</CardTitle>
-          <div className="flex gap-2">
-            <ChartSelector
-              transactionType={transactionType}
-              setTransactionType={setTransactionType}
-              selectedView={selectedView}
-              setSelectedView={setSelectedView}
-            />
-          </div>
+          <ChartSelector
+            transactionType={transactionType}
+            setTransactionType={setTransactionType}
+            selectedView={selectedView}
+            setSelectedView={setSelectedView}
+          />
         </div>
       </CardHeader>
       <CardContent className="p-2">
