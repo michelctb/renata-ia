@@ -39,6 +39,11 @@ const Dashboard = ({ clientId, viewMode = 'user' }: DashboardProps) => {
   });
   
   const [activeTab, setActiveTab] = useState("transactions");
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  
+  const handleAddNew = () => {
+    setIsFormOpen(true);
+  };
   
   useEffect(() => {
     if (!isAuthLoading && !user) {
@@ -117,6 +122,9 @@ const Dashboard = ({ clientId, viewMode = 'user' }: DashboardProps) => {
           <DateFilterButtons
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
+            onAddNew={activeTab === "transactions" ? handleAddNew : undefined}
+            isUserActive={!!user}
+            viewMode={viewMode}
           />
         </div>
           
@@ -131,6 +139,8 @@ const Dashboard = ({ clientId, viewMode = 'user' }: DashboardProps) => {
                 setDateRange={setDateRange}
                 clientId={clientId}
                 viewMode={viewMode}
+                isFormOpen={isFormOpen}
+                setIsFormOpen={setIsFormOpen}
               />
             </TabsContent>
           </Tabs>

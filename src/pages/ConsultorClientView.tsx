@@ -24,6 +24,11 @@ export default function ConsultorClientView() {
   const [isLoading, setIsLoading] = useState(true);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [activeTab, setActiveTab] = useState("transactions");
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  
+  const handleAddNew = () => {
+    setIsFormOpen(true);
+  };
   
   // Define o mês atual como período padrão
   const today = new Date();
@@ -135,6 +140,9 @@ export default function ConsultorClientView() {
           <DateFilterButtons
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
+            onAddNew={activeTab === "transactions" ? handleAddNew : undefined}
+            isUserActive={!!user}
+            viewMode="consultor"
           />
         </div>
         
@@ -149,6 +157,8 @@ export default function ConsultorClientView() {
                 setDateRange={setDateRange}
                 clientId={clientId}
                 viewMode="consultor"
+                isFormOpen={isFormOpen}
+                setIsFormOpen={setIsFormOpen}
               />
             </TabsContent>
           </Tabs>

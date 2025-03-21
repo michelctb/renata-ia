@@ -18,6 +18,8 @@ type TransactionsTabProps = {
   setDateRange?: React.Dispatch<React.SetStateAction<DateRange | undefined>>;
   clientId?: string;
   viewMode?: 'user' | 'admin' | 'consultor';
+  isFormOpen?: boolean;
+  setIsFormOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 /**
@@ -29,7 +31,9 @@ const TransactionsTab = ({
   dateRange: propDateRange, 
   setDateRange: propSetDateRange,
   clientId,
-  viewMode = 'user'
+  viewMode = 'user',
+  isFormOpen: propIsFormOpen,
+  setIsFormOpen: propSetIsFormOpen
 }: TransactionsTabProps) => {
   // Initialize local state if props weren't provided
   const [localTransactions, setLocalTransactions] = useState<Transaction[]>([]);
@@ -39,17 +43,19 @@ const TransactionsTab = ({
     const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
     return { from: startOfMonth, to: endOfMonth };
   });
+  const [localIsFormOpen, setLocalIsFormOpen] = useState(false);
   
   // Use provided props or local state
   const transactions = propTransactions !== undefined ? propTransactions : localTransactions;
   const setTransactions = propSetTransactions || setLocalTransactions;
   const dateRange = propDateRange !== undefined ? propDateRange : localDateRange;
   const setDateRange = propSetDateRange || setLocalDateRange;
+  const isFormOpen = propIsFormOpen !== undefined ? propIsFormOpen : localIsFormOpen;
+  const setIsFormOpen = propSetIsFormOpen || setLocalIsFormOpen;
   
   // Use the custom hook for state and logic
   const {
     userId,
-    isFormOpen,
     deleteDialogOpen,
     editingTransaction,
     transactionToDelete,
@@ -74,7 +80,9 @@ const TransactionsTab = ({
     dateRange,
     setDateRange,
     clientId,
-    viewMode
+    viewMode,
+    isFormOpen,
+    setIsFormOpen
   });
   
   return (

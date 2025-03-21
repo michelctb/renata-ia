@@ -1,7 +1,5 @@
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus } from "lucide-react";
 
 interface TransactionsHeaderProps {
   onSearch: (value: string) => void;
@@ -18,8 +16,6 @@ export function TransactionsHeader({
   isUserActive,
   viewMode = 'user'
 }: TransactionsHeaderProps) {
-  const isReadOnly = viewMode === 'consultor';
-  
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex w-full max-w-sm items-center space-x-2">
@@ -30,19 +26,6 @@ export function TransactionsHeader({
           value={searchTerm}
           onChange={(e) => onSearch(e.target.value)}
         />
-      </div>
-      
-      <div>
-        {!isReadOnly && (
-          <Button 
-            onClick={onAddNew} 
-            disabled={!isUserActive}
-            className="whitespace-nowrap"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Nova Transação
-          </Button>
-        )}
       </div>
     </div>
   );

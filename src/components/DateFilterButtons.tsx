@@ -4,13 +4,25 @@ import { ptBR } from 'date-fns/locale';
 import { DateRange } from 'react-day-picker';
 import { Button } from '@/components/ui/button';
 import DateRangePicker from '@/components/DateRangePicker';
+import { Plus } from 'lucide-react';
 
 interface DateFilterButtonsProps {
   dateRange: DateRange | undefined;
   onDateRangeChange: (range: DateRange | undefined) => void;
+  onAddNew?: () => void;
+  isUserActive?: boolean;
+  viewMode?: 'user' | 'admin' | 'consultor';
 }
 
-export function DateFilterButtons({ dateRange, onDateRangeChange }: DateFilterButtonsProps) {
+export function DateFilterButtons({ 
+  dateRange, 
+  onDateRangeChange,
+  onAddNew,
+  isUserActive = true,
+  viewMode = 'user'
+}: DateFilterButtonsProps) {
+  const isReadOnly = viewMode === 'consultor';
+  
   const handleTodayClick = () => {
     const today = new Date();
     onDateRangeChange({
@@ -45,8 +57,8 @@ export function DateFilterButtons({ dateRange, onDateRangeChange }: DateFilterBu
   };
 
   return (
-    <div className="flex items-center space-x-2 ml-auto">
-      <div className="flex space-x-1">
+    <div className="flex flex-wrap items-center gap-2 ml-auto">
+      <div className="flex flex-wrap gap-1">
         <Button 
           variant="outline"
           size="sm"
@@ -80,10 +92,22 @@ export function DateFilterButtons({ dateRange, onDateRangeChange }: DateFilterBu
           Mês Passado
         </Button>
       </div>
+      
       <DateRangePicker 
         dateRange={dateRange}
         onDateRangeChange={onDateRangeChange}
       />
+      
+      {onAddNew && !isReadOnly && (
+        <Button 
+          onClick={onAddNew} 
+          disabled={!isUserActive}
+          className="whitespace-nowrap ml-2"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Nova Transação
+        </Button>
+      )}
     </div>
   );
 }
