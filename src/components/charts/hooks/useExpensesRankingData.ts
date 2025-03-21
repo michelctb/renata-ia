@@ -13,6 +13,7 @@ export const RANKING_COLORS = [
 export interface CategoryData {
   name: string;
   value: number;
+  goalValue?: number;
 }
 
 interface ProcessedRankingData {

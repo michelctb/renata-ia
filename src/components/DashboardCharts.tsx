@@ -15,13 +15,17 @@ type DashboardChartsProps = {
   dateRange?: DateRange | null;
   clientId?: string;
   viewMode?: 'user' | 'admin' | 'consultor';
+  onCategorySelect?: (category: string | null) => void;
+  selectedCategory?: string | null;
 };
 
 export default function DashboardCharts({ 
   transactions: propTransactions, 
   dateRange, 
   clientId,
-  viewMode = 'user'
+  viewMode = 'user',
+  onCategorySelect,
+  selectedCategory
 }: DashboardChartsProps) {
   // State for transaction type toggle
   const [transactionType, setTransactionType] = useState<'saída' | 'entrada'>('saída');
@@ -46,11 +50,32 @@ export default function DashboardCharts({
   // Prepare data for monthly income/expense bar chart
   const monthlyData = useMonthlyChartData(filteredTransactions);
   
+  // Create a map of goals per category
+  const goalsByCategory = useMemo(() => {
+    const map: Record<string, number> = {};
+    metas.forEach(meta => {
+      map[meta.categoria] = meta.valor_meta;
+    });
+    return map;
+  }, [metas]);
+  
   // Prepare data for expenses or income by category pie chart
-  const categoryData = useCategoryChartData(filteredTransactions, transactionType);
+  const categoryData = useCategoryChartData(filteredTransactions, transactionType, goalsByCategory);
   
   // Calculate meta progress
   const metasComProgresso = useMetasProgress(metas, filteredTransactions);
+
+  // Handle category click
+  const handleCategoryClick = (category: string) => {
+    if (onCategorySelect) {
+      // If the same category is clicked again, clear the filter
+      if (selectedCategory === category) {
+        onCategorySelect(null);
+      } else {
+        onCategorySelect(category);
+      }
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
@@ -62,6 +87,7 @@ export default function DashboardCharts({
         categoryData={categoryData}
         transactionType={transactionType}
         setTransactionType={setTransactionType}
+        onCategoryClick={handleCategoryClick}
       />
       
       {/* Meta Progress Display */}
