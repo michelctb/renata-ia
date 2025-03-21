@@ -69,7 +69,6 @@ export function useCategoryOperations({
         if (metaData.hasMeta && metaData.valorMeta) {
           // Create or update meta
           const metaToSave: MetaCategoria = {
-            id: existingMeta?.id,
             id_cliente: user.id,
             categoria: savedCategory.nome,
             valor_meta: metaData.valorMeta,
@@ -77,6 +76,11 @@ export function useCategoryOperations({
             mes_referencia: getMonth(new Date()) + 1,
             ano_referencia: getYear(new Date())
           };
+          
+          // Only add id if it's an update operation and we have an existing meta
+          if (existingMeta?.id) {
+            metaToSave.id = existingMeta.id;
+          }
           
           let savedMeta;
           if (existingMeta?.id) {

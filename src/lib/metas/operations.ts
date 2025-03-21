@@ -58,9 +58,15 @@ export async function addMetaCategoria(meta: MetaCategoria) {
     throw new Error('Dados de meta incompletos');
   }
   
+  // Create a clean object for insertion, removing the id if it's undefined
+  const metaToInsert = { ...meta };
+  if (metaToInsert.id === undefined) {
+    delete metaToInsert.id; // Remove the id property completely if it's undefined
+  }
+  
   const { data, error } = await supabase
     .from(METAS_TABLE)
-    .insert([meta])
+    .insert([metaToInsert])
     .select();
 
   if (error) {
