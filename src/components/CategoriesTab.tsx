@@ -77,7 +77,7 @@ const CategoriesTab = () => {
   };
 
   return (
-    <div className="p-4 dark:bg-transparent">
+    <div className="p-4 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-lg shadow-sm">
       <CategoryActions 
         onAddNew={handleAddNew}
         isUserActive={isUserActive()}

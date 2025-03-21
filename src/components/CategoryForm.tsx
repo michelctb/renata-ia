@@ -29,10 +29,12 @@ export function CategoryForm({
 }: CategoryFormProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] dark:bg-gray-800 dark:border-gray-700">
         <DialogHeader>
-          <DialogTitle>{editingCategory ? 'Editar Categoria' : 'Nova Categoria'}</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="dark:text-gray-100">
+            {editingCategory ? 'Editar Categoria' : 'Nova Categoria'}
+          </DialogTitle>
+          <DialogDescription className="dark:text-gray-300">
             {editingCategory 
               ? editingCategory.padrao 
                 ? 'Esta é uma categoria padrão. Você só pode definir uma meta para ela.'

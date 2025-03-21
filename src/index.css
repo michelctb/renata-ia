@@ -88,7 +88,7 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
+  from { opacity:.0; }
   to { opacity: 1; }
 }
 
@@ -124,7 +124,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Melhorias para o modo escuro */
+/* Dark mode improvements */
 .dark .bg-white {
   background-color: rgba(17, 24, 39, 0.8);
 }
@@ -146,7 +146,7 @@
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
-/* Ajustes para o ToggleGroup no dark mode */
+/* Dark mode adjustments for components */
 .dark [data-state="on"].toggle-group-item {
   background-color: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
@@ -163,4 +163,52 @@
 
 .dark .rdp-day_outside {
   opacity: 0.5;
+}
+
+/* Dialog dark mode improvements */
+.dark [role="dialog"] {
+  --tw-bg-opacity: 0.95;
+  background-color: rgba(31, 41, 55, var(--tw-bg-opacity));
+}
+
+.dark [role="dialog"] h2 {
+  color: rgba(243, 244, 246, 1);
+}
+
+.dark [role="dialog"] p {
+  color: rgba(209, 213, 219, 1);
+}
+
+/* Form fields dark mode improvements */
+.dark .form-field {
+  background-color: rgba(30, 41, 59, 0.5);
+  border-color: rgba(71, 85, 105, 0.5);
+  color: rgba(226, 232, 240, 1);
+}
+
+.dark .form-field::placeholder {
+  color: rgba(148, 163, 184, 0.7);
+}
+
+.dark .form-field:focus {
+  border-color: rgba(100, 116, 139, 0.8);
+  box-shadow: 0 0 0 2px rgba(51, 65, 85, 0.5);
+}
+
+/* Category list specific dark mode styles */
+.dark .category-list-row {
+  border-color: rgba(55, 65, 81, 0.5);
+}
+
+.dark .category-list-row:hover {
+  background-color: rgba(55, 65, 81, 0.3);
+}
+
+.dark .category-actions-btn {
+  background-color: rgba(31, 41, 55, 0.7);
+  color: rgba(209, 213, 219, 1);
+}
+
+.dark .category-actions-btn:hover {
+  background-color: rgba(55, 65, 81, 0.8);
 }
