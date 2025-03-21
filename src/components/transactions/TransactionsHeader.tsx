@@ -1,16 +1,15 @@
 
-import { useState } from 'react';
-import { DateRange } from 'react-day-picker';
-import { SearchInput } from './SearchInput';
-import { DateRangePicker } from '@/components/DateRangePicker';
-import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Plus } from "lucide-react";
+import { DateRange } from "react-day-picker";
+import DateRangePicker from "@/components/DateRangePicker";
 
 interface TransactionsHeaderProps {
-  onSearch: (term: string) => void;
+  onSearch: (value: string) => void;
   searchTerm: string;
   dateRange: DateRange | undefined;
-  onDateRangeChange: (range: DateRange | undefined) => void;
+  onDateRangeChange: (value: DateRange | undefined) => void;
   onAddNew: () => void;
   isUserActive: boolean;
   viewMode?: 'user' | 'admin' | 'consultor';
@@ -25,30 +24,36 @@ export function TransactionsHeader({
   isUserActive,
   viewMode = 'user'
 }: TransactionsHeaderProps) {
+  const isReadOnly = viewMode === 'consultor';
+  
   return (
-    <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0 mb-6">
-      <div className="flex-1 flex flex-col space-y-4 md:flex-row md:items-center md:space-x-4 md:space-y-0">
-        <SearchInput 
-          value={searchTerm} 
-          onChange={(value) => onSearch(value)} 
-          placeholder="Buscar transações..." 
-        />
-        
-        <DateRangePicker 
-          dateRange={dateRange}
-          onChange={onDateRangeChange}
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex w-full max-w-sm items-center space-x-2">
+        <Input
+          type="search"
+          placeholder="Buscar transações..."
+          className="w-full"
+          value={searchTerm}
+          onChange={(e) => onSearch(e.target.value)}
         />
       </div>
       
-      <div>
-        <Button
-          onClick={onAddNew}
-          disabled={!isUserActive || viewMode === 'consultor'}
-          className="w-full md:w-auto"
-        >
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Nova Transação
-        </Button>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+        <DateRangePicker
+          dateRange={dateRange}
+          onDateRangeChange={onDateRangeChange}
+        />
+        
+        {!isReadOnly && (
+          <Button 
+            onClick={onAddNew} 
+            disabled={!isUserActive}
+            className="whitespace-nowrap"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Nova Transação
+          </Button>
+        )}
       </div>
     </div>
   );

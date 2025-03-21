@@ -1,45 +1,79 @@
 
 import { useState, useMemo } from 'react';
-import { Transaction } from './TransactionRow';
+import { Transaction } from '@/lib/supabase/types';
+import { DateRange } from 'react-day-picker';
 
-export function useTransactionFiltering(transactions: Transaction[]) {
+/**
+ * Custom hook for filtering transactions based on search term and date range
+ * 
+ * @param {Transaction[]} transactions - The list of transactions to filter
+ * @param {DateRange | undefined} dateRange - The optional date range to filter by
+ * @returns {Object} Object containing filtered transactions and filtering state
+ */
+export function useTransactionFiltering(
+  transactions: Transaction[],
+  dateRange?: DateRange | undefined
+) {
   const [searchTerm, setSearchTerm] = useState('');
   
   const filteredTransactions = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return transactions;
-    }
-
-    const normalizedSearchTerm = searchTerm.toLowerCase().trim();
+    let filtered = transactions;
     
-    return transactions.filter(transaction => {
-      // Support both legacy and new field names
-      const description = (transaction.description || transaction.descricao || '').toLowerCase();
-      const category = (transaction.category || '').toLowerCase();
-      const paymentMethod = (transaction.payment_method || transaction.forma_pagamento || '').toLowerCase();
+    // Filter by date range if provided
+    if (dateRange?.from || dateRange?.to) {
+      filtered = filtered.filter(transaction => {
+        const transactionDate = new Date(transaction.data);
+        
+        // Filter by start date if provided
+        if (dateRange.from && transactionDate < dateRange.from) {
+          return false;
+        }
+        
+        // Filter by end date if provided
+        if (dateRange.to) {
+          const endDate = new Date(dateRange.to);
+          endDate.setHours(23, 59, 59, 999); // End of day
+          if (transactionDate > endDate) {
+            return false;
+          }
+        }
+        
+        return true;
+      });
+    }
+    
+    // Filter by search term if provided
+    if (searchTerm.trim()) {
+      const normalizedSearchTerm = searchTerm.toLowerCase().trim();
       
-      // Check if any field contains the search term
-      return (
-        description.includes(normalizedSearchTerm) ||
-        category.includes(normalizedSearchTerm) ||
-        paymentMethod.includes(normalizedSearchTerm)
-      );
-    });
-  }, [transactions, searchTerm]);
+      filtered = filtered.filter(transaction => {
+        const description = transaction.descrição.toLowerCase();
+        const category = transaction.categoria.toLowerCase();
+        
+        // Check if any field contains the search term
+        return (
+          description.includes(normalizedSearchTerm) ||
+          category.includes(normalizedSearchTerm)
+        );
+      });
+    }
+    
+    return filtered;
+  }, [transactions, searchTerm, dateRange]);
 
   // Check if any filters are applied
-  const hasFilters = searchTerm.trim().length > 0;
+  const hasFilters = searchTerm.trim().length > 0 || (dateRange?.from !== undefined || dateRange?.to !== undefined);
 
   // Calculate totals for income and expense transactions
   const { totalReceived, totalSpent } = useMemo(() => {
     return filteredTransactions.reduce(
       (acc, transaction) => {
-        const type = transaction.type || (transaction.tipo === 'entrada' ? 'income' : 'expense');
+        const operationType = transaction.operação?.toLowerCase();
         
-        if (type === 'income' || transaction.tipo === 'entrada') {
-          acc.totalReceived += transaction.value;
-        } else if (type === 'expense' || transaction.tipo === 'saída') {
-          acc.totalSpent += transaction.value;
+        if (operationType === 'entrada') {
+          acc.totalReceived += transaction.valor;
+        } else if (operationType === 'saída') {
+          acc.totalSpent += transaction.valor;
         }
         
         return acc;

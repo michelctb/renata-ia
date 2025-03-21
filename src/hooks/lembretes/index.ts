@@ -1,96 +1,94 @@
 
-import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
-import { Lembrete } from '@/lib/lembretes';
-import { useBasicLembretes } from './useBasicLembretes';
-import { useFormOperations } from './useFormOperations';
-import { useDeletion } from './useDeletion';
-import { lembreteSchema } from '@/components/lembretes/lembreteFormSchema';
-import { z } from 'zod';
+import { Lembrete, fetchLembretes, addLembrete, updateLembrete, deleteLembrete } from '@/lib/lembretes';
+import { useAuth } from '@/contexts/AuthContext';
 
-type LembreteSchema = z.infer<typeof lembreteSchema>;
-
-export function useLembretes(clientId?: string) {
+export function useLembretes() {
   const { user } = useAuth();
-  const userId = clientId || user?.id;
+  const [lembretes, setLembretes] = useState<Lembrete[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // State for form management
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingLembrete, setEditingLembrete] = useState<Lembrete | null>(null);
+  const loadLembretes = useCallback(async () => {
+    if (!user?.id) return;
+    
+    setIsLoading(true);
+    try {
+      const data = await fetchLembretes(user.id);
+      setLembretes(data || []);
+    } catch (error) {
+      console.error('Error loading lembretes:', error);
+      toast.error('Erro ao carregar lembretes');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user?.id]);
   
-  // Get basic lembretes data
-  const { 
-    lembretes, 
-    setLembretes, 
-    isLoading, 
-    loadLembretes 
-  } = useBasicLembretes(userId);
-  
-  // Get form operations
-  const { 
-    isProcessing: isFormProcessing, 
-    handleSubmitForm 
-  } = useFormOperations({ 
-    userId: userId || '',
-    onSuccess: loadLembretes
-  });
-  
-  // Get deletion operations
-  const { 
-    isProcessing: isDeleteProcessing, 
-    handleDelete 
-  } = useDeletion({ 
-    setLembretes, 
-    onSuccess: loadLembretes 
-  });
-  
-  // Open form for new lembrete
-  const handleAddNew = () => {
-    setEditingLembrete(null);
-    setIsFormOpen(true);
+  const handleAddLembrete = async (lembrete: Lembrete) => {
+    if (!user?.id) return null;
+    
+    setIsSubmitting(true);
+    try {
+      lembrete.id_cliente = user.id;
+      const newLembrete = await addLembrete(lembrete);
+      setLembretes(prev => [newLembrete, ...prev]);
+      toast.success('Lembrete adicionado com sucesso!');
+      return newLembrete;
+    } catch (error) {
+      console.error('Error adding lembrete:', error);
+      toast.error('Erro ao adicionar lembrete');
+      return null;
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
-  // Open form to edit lembrete
-  const handleEdit = (lembrete: Lembrete) => {
-    setEditingLembrete({...lembrete});
-    setIsFormOpen(true);
+  const handleUpdateLembrete = async (lembrete: Lembrete) => {
+    if (!user?.id) return null;
+    
+    setIsSubmitting(true);
+    try {
+      const updatedLembrete = await updateLembrete(lembrete);
+      setLembretes(prev => 
+        prev.map(item => item.id === lembrete.id ? updatedLembrete : item)
+      );
+      toast.success('Lembrete atualizado com sucesso!');
+      return updatedLembrete;
+    } catch (error) {
+      console.error('Error updating lembrete:', error);
+      toast.error('Erro ao atualizar lembrete');
+      return null;
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
-  // Close form
-  const handleFormClose = () => {
-    setIsFormOpen(false);
-    setTimeout(() => {
-      setEditingLembrete(null);
-    }, 100);
+  const handleDeleteLembrete = async (id: number) => {
+    setIsDeleting(true);
+    try {
+      await deleteLembrete(id);
+      setLembretes(prev => prev.filter(item => item.id !== id));
+      toast.success('Lembrete excluído com sucesso!');
+      return true;
+    } catch (error) {
+      console.error('Error deleting lembrete:', error);
+      toast.error('Erro ao excluir lembrete');
+      return false;
+    } finally {
+      setIsDeleting(false);
+    }
   };
   
   return {
-    // Basic data
     lembretes,
-    setLembretes,
     isLoading,
+    isDeleting,
+    isSubmitting,
     loadLembretes,
-    
-    // Form state
-    isFormOpen,
-    editingLembrete,
-    handleAddNew,
-    handleEdit,
-    handleFormClose,
-    handleFormSubmit: handleSubmitForm,
-    isFormProcessing,
-    
-    // Delete operations
-    handleDelete,
-    isDeleteProcessing,
-    
-    // Added fields for LembretesTab.tsx
-    lembreteToDelete: null,
-    deleteDialogOpen: false,
-    setDeleteDialogOpen: () => {},
-    handleDeleteRequest: handleDelete,
-    handleConfirmDelete: handleDelete,
-    refetchLembretes: loadLembretes
+    handleAddLembrete,
+    handleUpdateLembrete,
+    handleDeleteLembrete
   };
 }

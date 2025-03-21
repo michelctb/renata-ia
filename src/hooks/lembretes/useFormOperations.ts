@@ -46,6 +46,7 @@ export function useFormOperations({ userId, onSuccess }: UseFormOperationsProps)
   
   return {
     isProcessing,
-    handleSubmitForm
+    handleSubmitForm,
+    formSubmissionCount
   };
 }

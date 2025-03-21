@@ -1,13 +1,14 @@
 
-import { useRef } from 'react';
-import { Transaction } from '@/lib/supabase';
+import { useState, useRef } from 'react';
+import { Transaction } from '@/lib/supabase/types';
 import { addTransaction, updateTransaction } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 
 type UseTransactionSubmitProps = {
+  userId: string;
   setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
-  onCloseForm: () => void;
+  onSuccess?: () => void;
 };
 
 /**
@@ -15,16 +16,18 @@ type UseTransactionSubmitProps = {
  * Handles the form submission process, validation, and state updates.
  * 
  * @param {Object} props - The hook's properties
+ * @param {string} props.userId - The ID of the current user
  * @param {Function} props.setTransactions - Function to update the transactions list
- * @param {Function} props.onCloseForm - Function to close the transaction form
- * @returns {Object} Object containing the submission handler
- * @property {Function} handleSubmitTransaction - Function to handle transaction submission
+ * @param {Function} props.onSuccess - Function called on successful submission
+ * @returns {Object} Object containing the submission handler and loading state
  */
 export function useTransactionSubmit({ 
+  userId,
   setTransactions, 
-  onCloseForm 
+  onSuccess 
 }: UseTransactionSubmitProps) {
   const { user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Ref to track if callbacks have been executed
   const callbackExecuted = useRef(false);
@@ -41,9 +44,11 @@ export function useTransactionSubmit({
       return;
     }
     
+    setIsSubmitting(true);
+    
     try {
       console.log('Processing transaction:', transaction);
-      console.log('Processing transaction with user ID:', user.id);
+      console.log('Processing transaction with user ID:', userId);
       
       // Reset callback executed flag
       callbackExecuted.current = false;
@@ -63,7 +68,7 @@ export function useTransactionSubmit({
         // Create a new transaction object with the normalized operation
         const transactionWithClient = {
           ...transaction,
-          id_cliente: user.id, // Make sure id_cliente is properly set
+          id_cliente: userId, // Make sure id_cliente is properly set
           operação: operationType as 'entrada' | 'saída'
         };
         
@@ -78,24 +83,23 @@ export function useTransactionSubmit({
           if (updated) {
             console.log('Setting updated transaction in state');
             
-            // Close form first to prevent UI issues
-            if (!callbackExecuted.current) {
+            // Then update the state
+            setTransactions(prev => {
+              // Create a new array with the updated transaction
+              const newTransactions = prev.map(t => 
+                t.id === transaction.id ? updated : t
+              );
+              console.log('New transactions array after update:', newTransactions.length);
+              return newTransactions;
+            });
+            
+            // Call onSuccess callback if provided
+            if (onSuccess && !callbackExecuted.current) {
               callbackExecuted.current = true;
-              onCloseForm();
+              onSuccess();
             }
             
-            // Then update the state
-            setTimeout(() => {
-              setTransactions(prev => {
-                // Create a new array with the updated transaction
-                const newTransactions = prev.map(t => 
-                  t.id === transaction.id ? updated : t
-                );
-                console.log('New transactions array after update:', newTransactions.length);
-                return newTransactions;
-              });
-              toast.success('Transação atualizada com sucesso!');
-            }, 50);
+            toast.success('Transação atualizada com sucesso!');
           } else {
             console.error('No updated transaction returned from the API');
             toast.error('Erro ao atualizar a transação. Tente novamente.');
@@ -111,22 +115,21 @@ export function useTransactionSubmit({
           if (added) {
             console.log('Setting added transaction in state');
             
-            // Close form first to prevent UI issues
-            if (!callbackExecuted.current) {
+            // Then update the state
+            setTransactions(prev => {
+              // Create a new array with the added transaction at the beginning
+              const newTransactions = [added, ...prev];
+              console.log('New transactions array after add:', newTransactions.length);
+              return newTransactions;
+            });
+            
+            // Call onSuccess callback if provided
+            if (onSuccess && !callbackExecuted.current) {
               callbackExecuted.current = true;
-              onCloseForm();
+              onSuccess();
             }
             
-            // Then update the state
-            setTimeout(() => {
-              setTransactions(prev => {
-                // Create a new array with the added transaction at the beginning
-                const newTransactions = [added, ...prev];
-                console.log('New transactions array after add:', newTransactions.length);
-                return newTransactions;
-              });
-              toast.success('Transação adicionada com sucesso!');
-            }, 50);
+            toast.success('Transação adicionada com sucesso!');
           } else {
             console.error('No added transaction returned from the API');
             toast.error('Erro ao adicionar a transação. Tente novamente.');
@@ -140,10 +143,13 @@ export function useTransactionSubmit({
       console.error('Error with transaction:', error);
       toast.error('Erro ao salvar a transação. Tente novamente.');
       // Don't close the form on error
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return {
-    handleSubmitTransaction
+    handleSubmitTransaction,
+    isSubmitting
   };
 }
