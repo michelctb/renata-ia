@@ -6,29 +6,22 @@ import { useClientTransactions } from './charts/hooks/useClientTransactions';
 import { useFilteredTransactions, useMonthlyChartData, useCategoryChartData } from './charts/hooks/useChartData';
 import { useMetasData } from './charts/hooks/useMetasData';
 import { useMetasProgress } from './charts/hooks/useMetaProgress';
-import { useMetaVsActualData } from './charts/hooks/useMetaVsActualData';
 import { MonthlyChartCard } from './charts/MonthlyChartCard';
 import { CategoryChartsContainer } from './charts/CategoryChartsContainer';
-import { RankingChartsContainer } from './charts/RankingChartsContainer';
 import { MetaProgressDisplay } from './charts/MetaProgressDisplay';
-import { MetaVsActualChart } from './charts/MetaVsActualChart';
 
 type DashboardChartsProps = {
   transactions?: Transaction[];
   dateRange?: DateRange | null;
   clientId?: string;
   viewMode?: 'user' | 'admin' | 'consultor';
-  selectedCategory?: string | null; 
-  onCategoryClick?: (category: string) => void;
 };
 
 export default function DashboardCharts({ 
   transactions: propTransactions, 
   dateRange, 
   clientId,
-  viewMode = 'user',
-  selectedCategory,
-  onCategoryClick
+  viewMode = 'user'
 }: DashboardChartsProps) {
   // State for transaction type toggle
   const [transactionType, setTransactionType] = useState<'saída' | 'entrada'>('saída');
@@ -58,42 +51,21 @@ export default function DashboardCharts({
   
   // Calculate meta progress
   const metasComProgresso = useMetasProgress(metas, filteredTransactions);
-  
-  // Calculate meta vs actual data
-  const { chartData, totalMeta, totalReal } = useMetaVsActualData(metas, filteredTransactions, dateRange, transactionType);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
       {/* Monthly Chart Card */}
       <MonthlyChartCard data={monthlyData} />
       
-      {/* Category Charts (Pie Chart) */}
+      {/* Category Charts (Pie Chart and Ranking) */}
       <CategoryChartsContainer 
         categoryData={categoryData}
         transactionType={transactionType}
         setTransactionType={setTransactionType}
-        selectedCategory={selectedCategory}
-        onCategoryClick={onCategoryClick}
-      />
-
-      {/* Ranking Charts */}
-      <RankingChartsContainer 
-        categoryData={categoryData}
-        transactionType={transactionType}
-        selectedCategory={selectedCategory}
-        onCategoryClick={onCategoryClick}
       />
       
       {/* Meta Progress Display */}
       <MetaProgressDisplay metasComProgresso={metasComProgresso} />
-      
-      {/* Meta vs Actual Chart */}
-      <MetaVsActualChart 
-        data={chartData}
-        totalMeta={totalMeta}
-        totalReal={totalReal}
-        transactionType={transactionType}
-      />
     </div>
   );
 }

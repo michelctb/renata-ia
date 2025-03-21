@@ -1,25 +1,32 @@
 
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 interface ChartSelectorProps {
   transactionType: 'saída' | 'entrada';
   setTransactionType: (value: 'saída' | 'entrada') => void;
 }
 
-export function ChartSelector({ 
-  transactionType, 
-  setTransactionType
-}: ChartSelectorProps) {
+export function ChartSelector({ transactionType, setTransactionType }: ChartSelectorProps) {
   return (
-    <Tabs 
+    <ToggleGroup 
+      type="single" 
       value={transactionType} 
-      onValueChange={(value) => setTransactionType(value as 'saída' | 'entrada')}
-      className="hidden sm:block"
+      onValueChange={(value) => value && setTransactionType(value as 'saída' | 'entrada')}
     >
-      <TabsList className="bg-background">
-        <TabsTrigger value="saída" className="text-xs">Despesas</TabsTrigger>
-        <TabsTrigger value="entrada" className="text-xs">Receitas</TabsTrigger>
-      </TabsList>
-    </Tabs>
+      <ToggleGroupItem 
+        value="saída" 
+        aria-label="Mostrar saídas" 
+        className={transactionType === 'saída' ? 'bg-expense text-white hover:text-white' : ''}
+      >
+        Saídas
+      </ToggleGroupItem>
+      <ToggleGroupItem 
+        value="entrada" 
+        aria-label="Mostrar entradas" 
+        className={transactionType === 'entrada' ? 'bg-income text-white hover:text-white' : ''}
+      >
+        Entradas
+      </ToggleGroupItem>
+    </ToggleGroup>
   );
 }

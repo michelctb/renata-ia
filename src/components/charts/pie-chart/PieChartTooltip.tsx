@@ -1,28 +1,17 @@
 
 import { formatCurrency } from '@/lib/utils';
+import { TooltipProps } from 'recharts';
 
-interface TooltipProps {
-  active?: boolean;
-  payload?: Array<{
-    name: string;
-    value: number;
-    payload: {
-      name: string;
-      value: number;
-    };
-  }>;
-}
-
-export function PieChartTooltip({ active, payload }: TooltipProps) {
-  if (!active || !payload || payload.length === 0) {
-    return null;
+export const PieChartTooltip = ({ active, payload }: TooltipProps<number, string>) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white p-2 border border-gray-200 rounded shadow-md">
+        <p className="font-medium">{payload[0].name}</p>
+        <p style={{ color: payload[0].color }}>
+          {formatCurrency(payload[0].value as number)}
+        </p>
+      </div>
+    );
   }
-
-  const data = payload[0].payload;
-  return (
-    <div className="bg-white p-2 border rounded shadow-md dark:bg-gray-800 dark:border-gray-700">
-      <p className="font-medium">{data.name}</p>
-      <p className="text-primary">{formatCurrency(data.value)}</p>
-    </div>
-  );
-}
+  return null;
+};
