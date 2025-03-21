@@ -7,6 +7,8 @@ import { TransactionsHeaderContainer } from './transactions/TransactionsHeaderCo
 import { TransactionTableContainer } from './transactions/TransactionTableContainer';
 import { TransactionFormContainer } from './transactions/TransactionFormContainer';
 import { DeleteTransactionContainer } from './transactions/DeleteTransactionContainer';
+import SummaryCards from './SummaryCards';
+import DashboardCharts from './DashboardCharts';
 
 // Types
 type TransactionsTabProps = {
@@ -77,6 +79,17 @@ const TransactionsTab = ({
   
   return (
     <div className="space-y-6">
+      {/* Summary Cards with income/expense totals */}
+      <SummaryCards transactions={transactions} dateRange={dateRange} />
+      
+      {/* Charts section */}
+      <DashboardCharts 
+        transactions={transactions} 
+        dateRange={dateRange}
+        clientId={clientId}
+        viewMode={viewMode}
+      />
+      
       <TransactionsHeaderContainer 
         onSearch={setSearchTerm}
         searchTerm={searchTerm}
