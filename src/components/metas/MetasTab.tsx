@@ -49,7 +49,14 @@ export default function MetasTab({ transactions, dateRange, setDateRange }: Meta
       try {
         const data = await fetchMetasCategorias(user.id);
         console.log('Metas carregadas:', data);
-        setMetas(data);
+        
+        // Converter explicitamente para o tipo correto
+        const metasProcessadas: MetaCategoria[] = data.map(meta => ({
+          ...meta,
+          periodo: meta.periodo as 'mensal' | 'trimestral' | 'anual' | string
+        }));
+        
+        setMetas(metasProcessadas);
       } catch (error) {
         console.error('Erro ao carregar metas:', error);
         toast.error('Erro ao carregar metas de gastos');
@@ -153,13 +160,27 @@ export default function MetasTab({ transactions, dateRange, setDateRange }: Meta
       // Se já tem ID, atualizar, senão adicionar nova
       if (meta.id) {
         const updatedMeta = await updateMetaCategoria(metaToSave);
+        
+        // Converter explicitamente para o tipo correto
+        const metaProcessada: MetaCategoria = {
+          ...updatedMeta,
+          periodo: updatedMeta.periodo as 'mensal' | 'trimestral' | 'anual' | string
+        };
+        
         // Atualizar o estado com a meta atualizada
-        setMetas(prevMetas => prevMetas.map(m => m.id === meta.id ? updatedMeta : m));
+        setMetas(prevMetas => prevMetas.map(m => m.id === meta.id ? metaProcessada : m));
         toast.success('Meta atualizada com sucesso');
       } else {
         const newMeta = await addMetaCategoria(metaToSave);
+        
+        // Converter explicitamente para o tipo correto
+        const metaProcessada: MetaCategoria = {
+          ...newMeta,
+          periodo: newMeta.periodo as 'mensal' | 'trimestral' | 'anual' | string
+        };
+        
         // Adicionar nova meta ao estado
-        setMetas(prevMetas => [...prevMetas, newMeta]);
+        setMetas(prevMetas => [...prevMetas, metaProcessada]);
         toast.success('Meta adicionada com sucesso');
       }
     } catch (error) {
@@ -240,8 +261,8 @@ export default function MetasTab({ transactions, dateRange, setDateRange }: Meta
           </Select>
           
           <DateRangePicker 
-            dateRange={dateRange} 
-            onUpdate={setDateRange} 
+            value={dateRange} 
+            onChange={setDateRange} 
           />
         </div>
       </div>

@@ -22,6 +22,7 @@ export function MetasList({ userId, metas, onSaveMeta, onDeleteMeta }: MetasList
   const [metaAtual, setMetaAtual] = useState<MetaCategoria | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [metaToDelete, setMetaToDelete] = useState<number | null>(null);
+  const [categoriaToDelete, setCategoriaToDelete] = useState<string>('');
   
   // Ordenar metas por porcentagem (crescente)
   const metasOrdenadas = [...metas].sort((a, b) => b.porcentagem - a.porcentagem);
@@ -39,8 +40,9 @@ export function MetasList({ userId, metas, onSaveMeta, onDeleteMeta }: MetasList
   };
   
   // Abrir diálogo de confirmação para excluir meta
-  const handleDeleteRequest = (id: number) => {
+  const handleDeleteRequest = (id: number, categoria: string) => {
     setMetaToDelete(id);
+    setCategoriaToDelete(categoria);
     setDeleteConfirmOpen(true);
   };
   
@@ -49,6 +51,7 @@ export function MetasList({ userId, metas, onSaveMeta, onDeleteMeta }: MetasList
     if (metaToDelete !== null) {
       await onDeleteMeta(metaToDelete);
       setMetaToDelete(null);
+      setCategoriaToDelete('');
       setDeleteConfirmOpen(false);
     }
   };
@@ -99,7 +102,7 @@ export function MetasList({ userId, metas, onSaveMeta, onDeleteMeta }: MetasList
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleDeleteRequest(metaProgresso.meta.id!)}
+                      onClick={() => handleDeleteRequest(metaProgresso.meta.id!, metaProgresso.meta.categoria)}
                       className="h-8 w-8 text-red-500 hover:text-red-600"
                     >
                       <Trash className="h-4 w-4" />
@@ -145,9 +148,10 @@ export function MetasList({ userId, metas, onSaveMeta, onDeleteMeta }: MetasList
       />
       
       <DeleteMetaDialog 
-        isOpen={deleteConfirmOpen}
+        open={deleteConfirmOpen}
         onOpenChange={setDeleteConfirmOpen}
         onConfirm={confirmDelete}
+        categoria={categoriaToDelete}
       />
     </div>
   );

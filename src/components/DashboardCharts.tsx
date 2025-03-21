@@ -40,7 +40,13 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
           anoReferencia
         );
         
-        setMetas(metasPeriodo);
+        // Converter explicitamente para o tipo correto
+        const metasProcessadas: MetaCategoria[] = metasPeriodo.map(meta => ({
+          ...meta,
+          periodo: meta.periodo as 'mensal' | 'trimestral' | 'anual' | string
+        }));
+        
+        setMetas(metasProcessadas);
       } catch (error) {
         console.error('Erro ao carregar metas para dashboard:', error);
       }
@@ -270,8 +276,10 @@ export default function DashboardCharts({ transactions, dateRange }: DashboardCh
                     </span>
                   </div>
                   <MetaProgressBar 
-                    valor={item.porcentagem} 
-                    status={item.status} 
+                    valor_atual={item.valor_atual}
+                    valor_meta={item.meta.valor_meta}
+                    porcentagem={item.porcentagem}
+                    status={item.status}
                   />
                 </div>
               ))}
