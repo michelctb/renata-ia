@@ -34,6 +34,8 @@ export function CategoryFormManager({
       valorMeta: metaData?.valorMeta
     };
     
+    console.log("Dados do formulário antes de enviar:", formData);
+    
     // Call the provided onSubmit function
     await onSubmit(formData);
   };
@@ -50,6 +52,13 @@ export function CategoryFormManager({
         cliente: userId,
         padrao: false
       } as Category : null}
+      meta={editingCategory?.hasMeta ? {
+        id: undefined,
+        categoria: editingCategory.nome,
+        valor_meta: editingCategory.valorMeta || 0,
+        id_cliente: userId,
+        periodo: 'mensal'
+      } as MetaCategoria : null}
       userId={userId}
     />
   );

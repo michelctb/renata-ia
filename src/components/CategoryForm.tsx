@@ -27,6 +27,9 @@ export function CategoryForm({
   meta,
   userId,
 }: CategoryFormProps) {
+  // Para debug
+  console.log("Meta passada para o form:", meta);
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px] dark:bg-gray-800 dark:border-gray-700">

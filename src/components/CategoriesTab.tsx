@@ -28,6 +28,7 @@ const CategoriesTab = ({ clientId, viewMode = 'user' }: CategoriesTabProps) => {
   // Get categories hook with all operations
   const { 
     categories, 
+    metas,
     isLoading,
     refetchCategories,
     handleSubmitCategory,
@@ -115,6 +116,7 @@ const CategoriesTab = ({ clientId, viewMode = 'user' }: CategoriesTabProps) => {
       
       <CategoryList 
         categories={categories} 
+        metas={metas}
         isLoading={isLoading}
         onEdit={handleEdit}
         onDelete={handleDeleteRequest}

@@ -34,6 +34,10 @@ export function CategoryList({
   isUserActive = true,
   viewMode = 'user'
 }: CategoryListProps) {
+  // Para fins de depuração
+  console.log('Metas recebidas no CategoryList:', metas);
+  console.log('Categories recebidas:', categories);
+
   if (isLoading) {
     return (
       <div className="p-4 flex justify-center">

@@ -36,6 +36,7 @@ export function useCategoriesData(userId?: string) {
       
       // Load metas
       const metasData = await fetchMetasCategorias(effectiveUserId);
+      console.log('Metas carregadas em useCategoriesData:', metasData);
       
       // Organize metas by category name
       const metasByCategory: Record<string, MetaCategoria> = {};
@@ -43,6 +44,7 @@ export function useCategoriesData(userId?: string) {
         metasByCategory[meta.categoria] = meta;
       });
       
+      console.log('Metas organizadas por categoria:', metasByCategory);
       setMetas(metasByCategory);
     } catch (error) {
       console.error('Error loading data:', error);
