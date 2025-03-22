@@ -10,11 +10,12 @@ import { pt } from 'date-fns/locale';
 
 interface MetaItemProps {
   meta: MetaCategoria;
+  progresso?: MetaProgresso;
   onEditClick: () => void;
   onDeleteClick: () => void;
 }
 
-export function MetaItem({ meta, onEditClick, onDeleteClick }: MetaItemProps) {
+export function MetaItem({ meta, progresso, onEditClick, onDeleteClick }: MetaItemProps) {
   // Renderizar período da meta em formato legível
   const renderPeriodo = (meta: MetaCategoria) => {
     if (meta.periodo === 'mensal' && meta.mes_referencia && meta.ano_referencia) {
@@ -63,10 +64,10 @@ export function MetaItem({ meta, onEditClick, onDeleteClick }: MetaItemProps) {
       
       <CardContent>
         <MetaProgressBar
-          valor_atual={0} // Default to 0 since we don't have progress data here
+          valor_atual={progresso?.valor_atual || 0}
           valor_meta={meta.valor_meta}
-          porcentagem={0} // Default to 0%
-          status="baixo" // Default status
+          porcentagem={progresso?.porcentagem || 0}
+          status={progresso?.status || "baixo"}
         />
       </CardContent>
     </Card>

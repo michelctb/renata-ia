@@ -81,15 +81,19 @@ export const useMetaProgress = (
       // Calculate percentage of goal reached
       const porcentagem = meta.valor_meta > 0 ? gastosPorCategoria / meta.valor_meta : 0;
       
-      // Determine status based on percentage thresholds
+      // Determine status based on percentage thresholds - ensure precise comparison
       let status: 'baixo' | 'médio' | 'alto' | 'excedido' = 'baixo';
-      if (porcentagem > LIMITE_ALTO) {
+      
+      // Melhorei a precisão da comparação para evitar problemas de arredondamento
+      if (porcentagem >= LIMITE_ALTO) {
         status = 'excedido';
-      } else if (porcentagem > LIMITE_MEDIO) {
+      } else if (porcentagem >= LIMITE_MEDIO) {
         status = 'alto';
-      } else if (porcentagem > LIMITE_BAIXO) {
+      } else if (porcentagem >= LIMITE_BAIXO) {
         status = 'médio';
       }
+      
+      console.log(`Meta ${meta.categoria}: ${gastosPorCategoria}/${meta.valor_meta} = ${porcentagem * 100}% (status: ${status})`);
       
       return {
         meta,

@@ -19,6 +19,11 @@ interface MetaProgressDisplayProps {
 export function MetaProgressDisplay({ metasComProgresso }: MetaProgressDisplayProps) {
   if (metasComProgresso.length === 0) return null;
   
+  // Exibe os valores para debug
+  metasComProgresso.forEach(item => {
+    console.log(`MetaProgressDisplay - ${item.meta.categoria}: ${item.valor_atual}/${item.meta.valor_meta} = ${item.porcentagem * 100}% (${item.status})`);
+  });
+  
   return (
     <Card className="border-none shadow-md animate-fade-up col-span-1 lg:col-span-3" style={{ animationDelay: '0.4s' }}>
       <CardHeader className="pb-2">

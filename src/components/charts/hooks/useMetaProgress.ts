@@ -25,13 +25,17 @@ export function useMetasProgress(
       
       // Determinar status baseado na porcentagem
       let status: 'baixo' | 'médio' | 'alto' | 'excedido' = 'baixo';
-      if (porcentagem > LIMITE_ALTO) {
+      
+      // Melhorei a precisão da comparação para evitar problemas de arredondamento
+      if (porcentagem >= LIMITE_ALTO) {
         status = 'excedido';
-      } else if (porcentagem > LIMITE_MEDIO) {
+      } else if (porcentagem >= LIMITE_MEDIO) {
         status = 'alto';
-      } else if (porcentagem > LIMITE_BAIXO) {
+      } else if (porcentagem >= LIMITE_BAIXO) {
         status = 'médio';
       }
+      
+      console.log(`Dashboard - Meta ${meta.categoria}: ${gastosPorCategoria}/${meta.valor_meta} = ${porcentagem * 100}% (status: ${status})`);
       
       return {
         meta,
