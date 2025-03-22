@@ -85,12 +85,11 @@ export function MetaProgressBar({
         indicatorClassName={getStatusClass()}
       />
       
-      {/* Corrigimos esta parte para exibir os marcadores de forma correta */}
+      {/* Simplificando para mostrar apenas 0%, 50% e 100% */}
       <div className="flex justify-between text-xs text-gray-500 mt-1">
         <span>0%</span>
-        <span className="relative" style={{ left: `${LIMITE_BAIXO * 100 - 10}%` }}>{Math.round(LIMITE_BAIXO * 100)}%</span>
-        <span className="relative" style={{ left: `${LIMITE_MEDIO * 100 - LIMITE_BAIXO * 100 - 10}%` }}>{Math.round(LIMITE_MEDIO * 100)}%</span>
-        <span>{Math.round(LIMITE_ALTO * 100)}%</span>
+        <span>50%</span>
+        <span>100%</span>
       </div>
     </div>
   );

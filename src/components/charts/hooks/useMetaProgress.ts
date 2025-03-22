@@ -26,7 +26,7 @@ export function useMetasProgress(
       // Determinar status baseado na porcentagem
       let status: 'baixo' | 'médio' | 'alto' | 'excedido' = 'baixo';
       
-      // Melhorei a precisão da comparação para evitar problemas de arredondamento
+      // Usando os limites com comparação >=
       if (porcentagem >= LIMITE_ALTO) {
         status = 'excedido';
       } else if (porcentagem >= LIMITE_MEDIO) {
