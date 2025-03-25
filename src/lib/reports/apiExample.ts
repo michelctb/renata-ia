@@ -15,6 +15,25 @@ export interface ReportRequestBody {
   includeCharts: boolean;
 }
 
+// Função mock para simular geração de imagens base64
+// Em um ambiente real, você usaria a função do seu componente ReportGenerator
+const getMockChartImages = () => {
+  // Em produção, isso viria dos gráficos reais renderizados
+  // Aqui estamos apenas simulando com uma pequena imagem transparente de exemplo
+  const mockBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+  
+  return [
+    {
+      name: "grafico_categorias.png",
+      data: mockBase64
+    },
+    {
+      name: "grafico_ranking.png",
+      data: mockBase64
+    }
+  ];
+};
+
 // Função principal que o backend chamaria
 export const generateReportApi = async (req: any, res: any) => {
   try {
@@ -23,9 +42,10 @@ export const generateReportApi = async (req: any, res: any) => {
     console.log(`Gerando relatório do tipo ${reportType} para o cliente ${clientId}`);
     
     // Aqui você executaria código no servidor para gerar o relatório
-    // Em um ambiente real, isso seria feito por um serviço no backend
+    // Em um ambiente real, isso seria feito por um serviço no backend que
+    // teria acesso aos dados do cliente e geraria as imagens dos gráficos
     
-    // Para o n8n, a resposta seria assim:
+    // Para garantir que retornamos JSON, vamos estruturar corretamente a resposta
     const reportData = {
       meta: {
         clientId,
@@ -37,19 +57,14 @@ export const generateReportApi = async (req: any, res: any) => {
         // Aqui viriam os dados extraídos do seu dashboard
         // Na implementação real, você usaria um banco de dados 
         // ou chamaria uma função que captura os dados dos gráficos
+        categorias: [
+          { nome: "Alimentação", valor: 450.75 },
+          { nome: "Transporte", valor: 300.25 },
+          { nome: "Lazer", valor: 250.00 }
+        ]
       },
-      images: [
-        // Aqui viriam as imagens base64 dos gráficos
-        // Na implementação real, isso seria gerado pela função que criamos
-        {
-          name: "grafico_categorias.png",
-          data: "data:image/png;base64,iVBORw0KG..." // Base64 da imagem
-        },
-        {
-          name: "grafico_ranking.png",
-          data: "data:image/png;base64,iVBORw0KG..." // Base64 da imagem
-        }
-      ]
+      // Garantimos que as imagens estão em formato base64 correto
+      images: includeCharts ? getMockChartImages() : []
     };
     
     return res.status(200).json(reportData);
@@ -73,4 +88,36 @@ curl -X POST https://seu-site.com/api/generate-report
     },
     "includeCharts": true
   }'
+*/
+
+// EXEMPLO DE RESPOSTA CORRETA:
+/*
+{
+  "meta": {
+    "clientId": "123456",
+    "geradoEm": "2023-10-08T15:45:23.456Z",
+    "reportType": "categorias",
+    "periodo": {
+      "from": "2023-10-01T00:00:00.000Z",
+      "to": "2023-10-07T23:59:59.999Z"
+    }
+  },
+  "dados": {
+    "categorias": [
+      { "nome": "Alimentação", "valor": 450.75 },
+      { "nome": "Transporte", "valor": 300.25 },
+      { "nome": "Lazer", "valor": 250.00 }
+    ]
+  },
+  "images": [
+    {
+      "name": "grafico_categorias.png",
+      "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhE..."
+    },
+    {
+      "name": "grafico_ranking.png",
+      "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhE..."
+    }
+  ]
+}
 */

@@ -14,7 +14,7 @@
 
 // PASSO 3: Adicione um nó HTTP Request após o Webhook
 // - Método: POST
-// - URL: https://seu-site.com/api/generate-report
+// - URL: https://seu-site.com/api/generate-report 
 // - Headers: 
 //   - Content-Type: application/json
 //   - Authorization: Bearer seu_token_de_api (se necessário)
@@ -30,11 +30,11 @@
 //   }
 
 // PASSO 4: Adicione um nó "IF" para verificar se a resposta foi bem-sucedida
-// - Condição: {{$json["images"] !== undefined}}
+// - Condição: {{$node["HTTP Request"].json["images"] !== undefined && $node["HTTP Request"].json["images"].length > 0}}
 
 // PASSO 5: Adicione um nó de Email na rota "true" do IF
 // - Para: {{$node["Webhook"].json.email}} (email do cliente que solicitou)
-// - Assunto: Relatório Financeiro - Últimos 7 dias
+// - Assunto: Relatório Financeiro - Gastos por Categoria
 // - Corpo: 
 //   <h2>Relatório Financeiro</h2>
 //   <p>Olá {{$node["Webhook"].json.nome}},</p>
@@ -73,3 +73,28 @@
 // 1. Receber esta solicitação
 // 2. Fazer uma chamada para a sua API para gerar o relatório com as imagens
 // 3. Enviar um email para o cliente com as imagens dos gráficos
+
+// 3. DEPURAÇÃO:
+// -----------
+// Se você estiver recebendo HTML em vez de JSON como resposta, verifique:
+// 1. Se você está enviando o header "Content-Type: application/json" na requisição
+// 2. Se seu endpoint de API está configurado para retornar JSON e não HTML
+// 3. Se seu servidor está processando corretamente a requisição e não redirecionando para uma página HTML
+// 4. Verifique os logs do seu servidor para identificar possíveis erros
+
+// 4. FORMATO CORRETO DE RESPOSTA:
+// ----------------------------
+// {
+//   "meta": { ... metadados do relatório ... },
+//   "dados": { ... dados para o relatório ... },
+//   "images": [
+//     {
+//       "name": "grafico_categorias.png",
+//       "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhE..."
+//     },
+//     {
+//       "name": "grafico_ranking.png", 
+//       "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhE..."
+//     }
+//   ]
+// }
