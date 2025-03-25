@@ -29,10 +29,14 @@
 //     "includeCharts": true
 //   }
 
-// PASSO 4: Adicione um nó "IF" para verificar se a resposta foi bem-sucedida
-// - Condição: {{$node["HTTP Request"].json["images"] !== undefined && $node["HTTP Request"].json["images"].length > 0}}
+// PASSO 4: Adicione um nó "JSON Parse" após o HTTP Request
+// - Configure para analisar dados na propriedade: data.body
+// - Isso é importante caso a resposta venha dentro de um objeto data
 
-// PASSO 5: Adicione um nó de Email na rota "true" do IF
+// PASSO 5: Adicione um nó "IF" para verificar se a resposta foi bem-sucedida
+// - Condição: {{$node["JSON Parse"].json["images"] !== undefined && $node["JSON Parse"].json["images"].length > 0}}
+
+// PASSO 6: Adicione um nó de Email na rota "true" do IF
 // - Para: {{$node["Webhook"].json.email}} (email do cliente que solicitou)
 // - Assunto: Relatório Financeiro - Gastos por Categoria
 // - Corpo: 
@@ -41,20 +45,33 @@
 //   <p>Segue o relatório financeiro dos últimos 7 dias conforme solicitado:</p>
 //   
 //   <h3>Gastos por Categoria:</h3>
-//   <img src="{{$node["HTTP Request"].json.images[0].data}}" alt="Gráfico de categorias" />
+//   <img src="{{$node["JSON Parse"].json.images[0].data}}" alt="Gráfico de categorias" />
 //   
 //   <h3>Ranking de Maiores Despesas:</h3>
-//   <img src="{{$node["HTTP Request"].json.images[1].data}}" alt="Ranking de categorias" />
+//   <img src="{{$node["JSON Parse"].json.images[1].data}}" alt="Ranking de categorias" />
 //   
 //   <p>Acesse seu dashboard para mais detalhes.</p>
 //   <p>Atenciosamente,<br>Sua Empresa</p>
 
-// PASSO 6: Na rota "false" do IF, adicione um nó de Email para notificar erro
+// PASSO 7: Na rota "false" do IF, adicione um nó de Email para notificar erro
 // - Para: {{$node["Webhook"].json.email}}
 // - Assunto: Erro na geração do relatório
 // - Corpo: Não foi possível gerar seu relatório. Por favor tente novamente mais tarde.
 
-// PASSO 7: Salve e ative o fluxo
+// PASSO 8: Adicione um nó "Function" para depuração entre o HTTP Request e o JSON Parse
+// - Isto é útil para verificar se a resposta está vindo como esperado
+// - Código JavaScript:
+//   const response = $input.all();
+//   console.log("Resposta bruta:", JSON.stringify(response));
+//   
+//   // Tentar detectar se a resposta é HTML
+//   if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
+//     console.log("ERRO: Recebendo HTML em vez de JSON!");
+//   }
+//   
+//   return response;
+
+// PASSO 9: Salve e ative o fluxo
 // - Clique em "Save" e depois "Active"
 
 // 2. CHAMADA CURL PARA DISPARAR O WEBHOOK:
@@ -78,9 +95,24 @@
 // -----------
 // Se você estiver recebendo HTML em vez de JSON como resposta, verifique:
 // 1. Se você está enviando o header "Content-Type: application/json" na requisição
-// 2. Se seu endpoint de API está configurado para retornar JSON e não HTML
+// 2. Se sua API está configurada corretamente em pages/api/generate-report.ts (Next.js) ou equivalente
 // 3. Se seu servidor está processando corretamente a requisição e não redirecionando para uma página HTML
-// 4. Verifique os logs do seu servidor para identificar possíveis erros
+// 4. Verifique os logs do servidor para identificar possíveis erros
+// 5. Teste diretamente com curl ou Postman antes de configurar no n8n:
+//
+//    curl -X POST https://seu-site.com/api/generate-report \
+//      -H "Content-Type: application/json" \
+//      -d '{
+//        "clientId": "123456",
+//        "reportType": "categorias",
+//        "dateRange": {
+//          "from": "2023-10-01T00:00:00.000Z",
+//          "to": "2023-10-07T23:59:59.999Z"
+//        },
+//        "includeCharts": true
+//      }'
+//
+// 6. Verifique se você está usando explicitamente o Content-Type: application/json nos cabeçalhos da resposta
 
 // 4. FORMATO CORRETO DE RESPOSTA:
 // ----------------------------
@@ -98,3 +130,4 @@
 //     }
 //   ]
 // }
+

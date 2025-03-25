@@ -37,19 +37,10 @@ const getMockChartImages = () => {
 // Função principal que o backend chamaria
 export const generateReportApi = async (req: any, res: any) => {
   try {
-    // Verificar se a requisição é um OPTIONS (preflight CORS)
-    if (req.method === 'OPTIONS') {
-      return res.status(200).end();
-    }
-    
-    // Verificar se a requisição é um POST
-    if (req.method !== 'POST') {
-      return res.status(405).json({ error: "Método não permitido" });
-    }
-    
-    // Garantir que o Content-Type está correto
+    // Verificar se o Content-Type está correto
     const contentType = req.headers['content-type'];
     if (!contentType || !contentType.includes('application/json')) {
+      console.error("Content-Type incorreto:", contentType);
       return res.status(415).json({ error: "Content-Type deve ser application/json" });
     }
     
@@ -65,10 +56,6 @@ export const generateReportApi = async (req: any, res: any) => {
       return res.status(400).json({ error: "clientId e reportType são obrigatórios" });
     }
     
-    // Aqui você executaria código no servidor para gerar o relatório
-    // Em um ambiente real, isso seria feito por um serviço no backend que
-    // teria acesso aos dados do cliente e geraria as imagens dos gráficos
-    
     // Para garantir que retornamos JSON, vamos estruturar corretamente a resposta
     const reportData = {
       meta: {
@@ -79,8 +66,6 @@ export const generateReportApi = async (req: any, res: any) => {
       },
       dados: {
         // Aqui viriam os dados extraídos do seu dashboard
-        // Na implementação real, você usaria um banco de dados 
-        // ou chamaria uma função que captura os dados dos gráficos
         categorias: [
           { nome: "Alimentação", valor: 450.75 },
           { nome: "Transporte", valor: 300.25 },
@@ -91,24 +76,17 @@ export const generateReportApi = async (req: any, res: any) => {
       images: includeCharts ? getMockChartImages() : []
     };
     
-    // Configurar cabeçalhos CORS para permitir acesso externo
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    
-    // Garantir que estamos definindo o Content-Type da resposta como JSON
+    // Definir explicitamente o Content-Type da resposta como JSON
     res.setHeader('Content-Type', 'application/json');
     
+    // Retornar os dados como JSON
     return res.status(200).json(reportData);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Erro ao gerar relatório via API:", error);
-    
-    // Configurar cabeçalhos CORS mesmo em caso de erro
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    
-    return res.status(500).json({ error: "Falha ao gerar relatório", detalhes: error.message });
+    return res.status(500).json({ 
+      error: "Falha ao gerar relatório", 
+      detalhes: error.message 
+    });
   }
 };
 
