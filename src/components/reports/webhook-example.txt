@@ -15,6 +15,7 @@
 // PASSO 3: Adicione um nó HTTP Request após o Webhook
 // - Método: POST
 // - URL: https://preview--renata-ia.lovable.app/api/generate-report 
+//   NOTA IMPORTANTE: Certifique-se de usar EXATAMENTE esta URL. Não use /dashboard ou qualquer outra rota.
 // - Headers: 
 //   - Content-Type: application/json
 //   - Authorization: Bearer seu_token_de_api (se necessário)
@@ -33,7 +34,7 @@
 // - Este passo é crucial para verificar o que está vindo da API
 // - Código JavaScript:
 //   const response = $input.all();
-//   console.log("Resposta bruta:", JSON.stringify(response));
+//   console.log("Resposta bruta da API:", JSON.stringify(response));
 //   
 //   // Verificar se a resposta contém HTML (o que indicaria erro)
 //   if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
@@ -43,7 +44,8 @@
 //   
 //   // Verificar se a resposta é um objeto JSON válido
 //   if (typeof response.data === 'object' && response.data !== null) {
-//     console.log("Resposta JSON válida recebida:", JSON.stringify(response.data));
+//     console.log("Resposta JSON válida recebida!");
+//     console.log("Dados recebidos:", JSON.stringify(response.data));
 //   }
 //   
 //   return response;
@@ -80,12 +82,13 @@
 // DICAS DE DEPURAÇÃO:
 // ----------------
 
-// 1. Certifique-se de que a URL está correta: 
-//    - Use exatamente: https://preview--renata-ia.lovable.app/api/generate-report
-//    - Não use qualquer outra URL como /dashboard ou /5cc683bb
+// 1. Verifique a URL da API - Certifique-se que está usando a URL correta:
+//    - CERTO: https://preview--renata-ia.lovable.app/api/generate-report
+//    - ERRADO: https://preview--renata-ia.lovable.app/dashboard/api/generate-report
+//    - ERRADO: https://preview--renata-ia.lovable.app/5cc683bb/api/generate-report
 
-// 2. Teste diretamente com curl antes de configurar no n8n:
-//    curl -X POST https://preview--renata-ia.lovable.app/api/generate-report \
+// 2. Teste a API diretamente com curl antes de configurar no n8n:
+//    curl -v -X POST https://preview--renata-ia.lovable.app/api/generate-report \
 //      -H "Content-Type: application/json" \
 //      -d '{
 //        "clientId": "5cc683bb",
@@ -96,13 +99,18 @@
 //        },
 //        "includeCharts": true
 //      }'
+//
+//    O parâmetro -v ativa o modo verbose, mostrando cabeçalhos e mais detalhes.
 
-// 3. Verifique os logs do nó Function para ver a resposta exata da API
+// 3. Verifique os logs do nó Function para ver a resposta exata da API:
+//    - Se ainda estiver recebendo HTML, veja o conteúdo exato para entender o problema
+//    - Busque por mensagens de erro no HTML que possam indicar o problema
 
-// 4. Se você ainda receber HTML, verifique:
-//    - Se a API está funcionando corretamente no servidor
-//    - Se o servidor está redirecionando para a página principal
-//    - Se há algum problema de CORS ou configuração de servidor
+// 4. Problemas comuns:
+//    - Headers CORS: Verifique se a API está configurada para permitir CORS
+//    - Método errado: Confirme se está usando POST e não GET
+//    - Content-Type: Certifique-se que está enviando com Content-Type: application/json
+//    - Formato do body: Verifique se o JSON está bem formatado
 
 // FORMATO CORRETO DE RESPOSTA JSON:
 // -----------------------------
@@ -120,3 +128,10 @@
 //     }
 //   ]
 // }
+
+// 5. Soluções para quando ainda recebe HTML:
+//    - Verifique se o arquivo src/pages/api/generate-report.ts existe e está corretamente implementado
+//    - Certifique-se de que a URL está correta - deve ser /api/generate-report
+//    - Tente um hard refresh no servidor (reinicie o servidor da aplicação)
+//    - Verifique se não há redirecionamento na API que esteja enviando para a página principal
+

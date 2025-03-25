@@ -37,7 +37,7 @@ const getMockChartImages = () => {
 // Função principal que o backend chamaria
 export const generateReportApi = async (req: any, res: any) => {
   try {
-    console.log("Iniciando generateReportApi");
+    console.log("=== INICIANDO GENERATE_REPORT_API ===");
     
     // Verificar se o Content-Type está correto
     const contentType = req.headers['content-type'];
@@ -48,7 +48,7 @@ export const generateReportApi = async (req: any, res: any) => {
     
     // Extrair o corpo da requisição
     const requestBody = req.body;
-    console.log("Corpo da requisição:", JSON.stringify(requestBody));
+    console.log("Corpo da requisição extraído:", JSON.stringify(requestBody));
     
     // Verificar se o corpo está vazio ou mal formatado
     if (!requestBody || Object.keys(requestBody).length === 0) {
@@ -90,9 +90,9 @@ export const generateReportApi = async (req: any, res: any) => {
       images: includeCharts ? getMockChartImages() : []
     };
     
-    console.log("Enviando resposta JSON");
+    console.log("Enviando resposta JSON:", JSON.stringify(reportData).substring(0, 200) + "...");
     
-    // Retornar os dados como JSON
+    // Garantir que estamos enviando com status 200
     return res.status(200).json(reportData);
   } catch (error: any) {
     console.error("Erro ao gerar relatório via API:", error);
@@ -105,8 +105,8 @@ export const generateReportApi = async (req: any, res: any) => {
 
 // COMANDO CURL CORRETO PARA TESTE:
 /*
-curl -X POST https://preview--renata-ia.lovable.app/api/generate-report 
-  -H "Content-Type: application/json" 
+curl -X POST https://preview--renata-ia.lovable.app/api/generate-report \
+  -H "Content-Type: application/json" \
   -d '{
     "clientId": "5cc683bb", 
     "reportType": "categorias",
