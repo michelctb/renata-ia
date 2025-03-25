@@ -1,0 +1,59 @@
+
+// Este é um exemplo de como configurar o webhook no n8n para gerar e enviar relatórios
+
+// 1. CONFIGURAÇÃO DO N8N:
+// ----------------------
+
+// PASSO 1: Crie um novo fluxo de trabalho (workflow) no n8n
+// - Clique em "Workflows" e depois "New"
+// - Dê um nome como "Envio de Relatórios Financeiros"
+
+// PASSO 2: Adicione um nó de gatilho "Webhook"
+// - Configure para método POST
+// - Salve e copie a URL gerada (será algo como https://your-n8n.com/webhook/abc123)
+
+// PASSO 3: Adicione um nó HTTP Request após o Webhook
+// - Método: POST
+// - URL: https://seu-site.com/api/generate-report (Substitua pelo seu domínio real)
+// - Autenticação: Defina se necessário
+// - Body: Envie o ID do cliente ou outros parâmetros necessários:
+//   {
+//     "clientId": "{{$json.clientId}}",
+//     "reportType": "financeiro",
+//     "includeCharts": true
+//   }
+
+// PASSO 4: Adicione um nó de processamento (Function)
+// - Este nó processará os dados retornados pela sua API
+// - Código de exemplo:
+//   return {
+//     json: {
+//       ...item,
+//       timestamp: new Date().toISOString(),
+//       reportReady: true
+//     }
+//   };
+
+// PASSO 5: Adicione um nó de Email (ou outro canal de comunicação)
+// - Destino: {{$node["Webhook"].json.email}}
+// - Assunto: Relatório Financeiro - {{$formatDate($today, "DD/MM/YYYY")}}
+// - Corpo: Use HTML para formatar e incluir as imagens:
+//   <p>Olá {{$node["Webhook"].json.name}},</p>
+//   <p>Segue o relatório financeiro solicitado:</p>
+//   <img src="{{$node["HTTP Request"].json.images[0].data}}" alt="Gráfico mensal" />
+//   <img src="{{$node["HTTP Request"].json.images[1].data}}" alt="Gráfico categorias" />
+//   <p>Acesse seu dashboard para mais detalhes.</p>
+
+// PASSO 6: Ative o fluxo
+// - Clique em "Save" e depois "Active"
+
+// 2. COMO USAR:
+// -------------
+// Para solicitar um relatório, basta enviar uma requisição para o webhook do n8n:
+// POST https://your-n8n.com/webhook/abc123
+// Body: 
+// {
+//   "clientId": "123456",
+//   "name": "Nome do Cliente",
+//   "email": "cliente@email.com"
+// }
