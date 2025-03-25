@@ -37,6 +37,8 @@ const getMockChartImages = () => {
 // Função principal que o backend chamaria
 export const generateReportApi = async (req: any, res: any) => {
   try {
+    console.log("Iniciando generateReportApi");
+    
     // Verificar se o Content-Type está correto
     const contentType = req.headers['content-type'];
     if (!contentType || !contentType.includes('application/json')) {
@@ -45,7 +47,16 @@ export const generateReportApi = async (req: any, res: any) => {
     }
     
     // Extrair o corpo da requisição
-    const { clientId, reportType, dateRange, includeCharts } = req.body as ReportRequestBody;
+    const requestBody = req.body;
+    console.log("Corpo da requisição:", JSON.stringify(requestBody));
+    
+    // Verificar se o corpo está vazio ou mal formatado
+    if (!requestBody || Object.keys(requestBody).length === 0) {
+      console.error("Corpo da requisição vazio ou mal formatado");
+      return res.status(400).json({ error: "Corpo da requisição inválido" });
+    }
+    
+    const { clientId, reportType, dateRange, includeCharts } = requestBody as ReportRequestBody;
     
     console.log(`Gerando relatório do tipo ${reportType} para o cliente ${clientId}`);
     console.log(`Período: de ${dateRange?.from} até ${dateRange?.to}`);
@@ -55,6 +66,9 @@ export const generateReportApi = async (req: any, res: any) => {
     if (!clientId || !reportType) {
       return res.status(400).json({ error: "clientId e reportType são obrigatórios" });
     }
+    
+    // Definir explicitamente o Content-Type da resposta como JSON
+    res.setHeader('Content-Type', 'application/json');
     
     // Para garantir que retornamos JSON, vamos estruturar corretamente a resposta
     const reportData = {
@@ -76,8 +90,7 @@ export const generateReportApi = async (req: any, res: any) => {
       images: includeCharts ? getMockChartImages() : []
     };
     
-    // Definir explicitamente o Content-Type da resposta como JSON
-    res.setHeader('Content-Type', 'application/json');
+    console.log("Enviando resposta JSON");
     
     // Retornar os dados como JSON
     return res.status(200).json(reportData);
@@ -92,11 +105,10 @@ export const generateReportApi = async (req: any, res: any) => {
 
 // COMANDO CURL CORRETO PARA TESTE:
 /*
-curl -X POST https://seu-site.com/api/generate-report 
+curl -X POST https://preview--renata-ia.lovable.app/api/generate-report 
   -H "Content-Type: application/json" 
-  -H "Authorization: Bearer seu_token_de_api" 
   -d '{
-    "clientId": "123456", 
+    "clientId": "5cc683bb", 
     "reportType": "categorias",
     "dateRange": {
       "from": "2023-10-01T00:00:00.000Z",
@@ -110,7 +122,7 @@ curl -X POST https://seu-site.com/api/generate-report
 /*
 {
   "meta": {
-    "clientId": "123456",
+    "clientId": "5cc683bb",
     "geradoEm": "2023-10-08T15:45:23.456Z",
     "reportType": "categorias",
     "periodo": {

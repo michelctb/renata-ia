@@ -14,7 +14,7 @@
 
 // PASSO 3: Adicione um nó HTTP Request após o Webhook
 // - Método: POST
-// - URL: https://seu-site.com/api/generate-report 
+// - URL: https://preview--renata-ia.lovable.app/api/generate-report 
 // - Headers: 
 //   - Content-Type: application/json
 //   - Authorization: Bearer seu_token_de_api (se necessário)
@@ -29,14 +29,33 @@
 //     "includeCharts": true
 //   }
 
-// PASSO 4: Adicione um nó "JSON Parse" após o HTTP Request
-// - Configure para analisar dados na propriedade: data.body
-// - Isso é importante caso a resposta venha dentro de um objeto data
+// PASSO 4: Adicione um nó "Function" para depuração antes do JSON Parse
+// - Este passo é crucial para verificar o que está vindo da API
+// - Código JavaScript:
+//   const response = $input.all();
+//   console.log("Resposta bruta:", JSON.stringify(response));
+//   
+//   // Verificar se a resposta contém HTML (o que indicaria erro)
+//   if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
+//     console.log("ERRO: Recebendo HTML em vez de JSON!");
+//     throw new Error("API retornou HTML em vez de JSON. Verifique a configuração da API.");
+//   }
+//   
+//   // Verificar se a resposta é um objeto JSON válido
+//   if (typeof response.data === 'object' && response.data !== null) {
+//     console.log("Resposta JSON válida recebida:", JSON.stringify(response.data));
+//   }
+//   
+//   return response;
 
-// PASSO 5: Adicione um nó "IF" para verificar se a resposta foi bem-sucedida
+// PASSO 5: Adicione um nó "JSON Parse" após o Function
+// - Configure para analisar dados na propriedade: data
+// - Isso é importante para extrair os dados da resposta HTTP
+
+// PASSO 6: Adicione um nó "IF" para verificar se a resposta foi bem-sucedida
 // - Condição: {{$node["JSON Parse"].json["images"] !== undefined && $node["JSON Parse"].json["images"].length > 0}}
 
-// PASSO 6: Adicione um nó de Email na rota "true" do IF
+// PASSO 7: Adicione um nó de Email na rota "true" do IF
 // - Para: {{$node["Webhook"].json.email}} (email do cliente que solicitou)
 // - Assunto: Relatório Financeiro - Gastos por Categoria
 // - Corpo: 
@@ -53,57 +72,23 @@
 //   <p>Acesse seu dashboard para mais detalhes.</p>
 //   <p>Atenciosamente,<br>Sua Empresa</p>
 
-// PASSO 7: Na rota "false" do IF, adicione um nó de Email para notificar erro
+// PASSO 8: Na rota "false" do IF, adicione um nó de Email para notificar erro
 // - Para: {{$node["Webhook"].json.email}}
 // - Assunto: Erro na geração do relatório
 // - Corpo: Não foi possível gerar seu relatório. Por favor tente novamente mais tarde.
 
-// PASSO 8: Adicione um nó "Function" para depuração entre o HTTP Request e o JSON Parse
-// - Isto é útil para verificar se a resposta está vindo como esperado
-// - Código JavaScript:
-//   const response = $input.all();
-//   console.log("Resposta bruta:", JSON.stringify(response));
-//   
-//   // Tentar detectar se a resposta é HTML
-//   if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
-//     console.log("ERRO: Recebendo HTML em vez de JSON!");
-//   }
-//   
-//   return response;
+// DICAS DE DEPURAÇÃO:
+// ----------------
 
-// PASSO 9: Salve e ative o fluxo
-// - Clique em "Save" e depois "Active"
+// 1. Certifique-se de que a URL está correta: 
+//    - Use exatamente: https://preview--renata-ia.lovable.app/api/generate-report
+//    - Não use qualquer outra URL como /dashboard ou /5cc683bb
 
-// 2. CHAMADA CURL PARA DISPARAR O WEBHOOK:
-// --------------------------------------
-// Para solicitar um relatório, envie esta requisição para o webhook do n8n:
-//
-// curl -X POST https://your-n8n.com/webhook/abc123 \
-//   -H "Content-Type: application/json" \
-//   -d '{
-//     "clientId": "123456",
-//     "nome": "Nome do Cliente",
-//     "email": "cliente@email.com"
-//   }'
-//
-// O n8n então irá:
-// 1. Receber esta solicitação
-// 2. Fazer uma chamada para a sua API para gerar o relatório com as imagens
-// 3. Enviar um email para o cliente com as imagens dos gráficos
-
-// 3. DEPURAÇÃO:
-// -----------
-// Se você estiver recebendo HTML em vez de JSON como resposta, verifique:
-// 1. Se você está enviando o header "Content-Type: application/json" na requisição
-// 2. Se sua API está configurada corretamente em pages/api/generate-report.ts (Next.js) ou equivalente
-// 3. Se seu servidor está processando corretamente a requisição e não redirecionando para uma página HTML
-// 4. Verifique os logs do servidor para identificar possíveis erros
-// 5. Teste diretamente com curl ou Postman antes de configurar no n8n:
-//
-//    curl -X POST https://seu-site.com/api/generate-report \
+// 2. Teste diretamente com curl antes de configurar no n8n:
+//    curl -X POST https://preview--renata-ia.lovable.app/api/generate-report \
 //      -H "Content-Type: application/json" \
 //      -d '{
-//        "clientId": "123456",
+//        "clientId": "5cc683bb",
 //        "reportType": "categorias",
 //        "dateRange": {
 //          "from": "2023-10-01T00:00:00.000Z",
@@ -111,11 +96,16 @@
 //        },
 //        "includeCharts": true
 //      }'
-//
-// 6. Verifique se você está usando explicitamente o Content-Type: application/json nos cabeçalhos da resposta
 
-// 4. FORMATO CORRETO DE RESPOSTA:
-// ----------------------------
+// 3. Verifique os logs do nó Function para ver a resposta exata da API
+
+// 4. Se você ainda receber HTML, verifique:
+//    - Se a API está funcionando corretamente no servidor
+//    - Se o servidor está redirecionando para a página principal
+//    - Se há algum problema de CORS ou configuração de servidor
+
+// FORMATO CORRETO DE RESPOSTA JSON:
+// -----------------------------
 // {
 //   "meta": { ... metadados do relatório ... },
 //   "dados": { ... dados para o relatório ... },
@@ -130,4 +120,3 @@
 //     }
 //   ]
 // }
-
