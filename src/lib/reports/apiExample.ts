@@ -39,31 +39,40 @@ export const generateReportApi = async (req: any, res: any) => {
   try {
     console.log("=== INICIANDO GENERATE_REPORT_API ===");
     
-    // Verificar se o Content-Type está correto
-    const contentType = req.headers['content-type'];
-    if (!contentType || !contentType.includes('application/json')) {
-      console.error("Content-Type incorreto:", contentType);
-      return res.status(415).json({ error: "Content-Type deve ser application/json" });
+    // Verificar o Content-Type apenas para requisições POST
+    if (req.method === 'POST') {
+      const contentType = req.headers['content-type'];
+      if (!contentType || !contentType.includes('application/json')) {
+        console.error("Content-Type incorreto:", contentType);
+        return res.status(415).json({ error: "Content-Type deve ser application/json" });
+      }
     }
     
     // Extrair o corpo da requisição
     const requestBody = req.body;
     console.log("Corpo da requisição extraído:", JSON.stringify(requestBody));
     
-    // Verificar se o corpo está vazio ou mal formatado
-    if (!requestBody || Object.keys(requestBody).length === 0) {
+    // Verificar se o corpo está vazio ou mal formatado para requisições POST
+    if (req.method === 'POST' && (!requestBody || Object.keys(requestBody).length === 0)) {
       console.error("Corpo da requisição vazio ou mal formatado");
       return res.status(400).json({ error: "Corpo da requisição inválido" });
     }
     
-    const { clientId, reportType, dateRange, includeCharts } = requestBody as ReportRequestBody;
+    // Extrair os dados da requisição POST ou usar valores padrão para GET
+    const clientId = requestBody?.clientId || 'client-test';
+    const reportType = requestBody?.reportType || 'categorias';
+    const dateRange = requestBody?.dateRange || {
+      from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      to: new Date().toISOString()
+    };
+    const includeCharts = requestBody?.includeCharts !== undefined ? requestBody.includeCharts : true;
     
     console.log(`Gerando relatório do tipo ${reportType} para o cliente ${clientId}`);
     console.log(`Período: de ${dateRange?.from} até ${dateRange?.to}`);
     console.log(`Incluir gráficos: ${includeCharts}`);
     
-    // Validar os parâmetros necessários
-    if (!clientId || !reportType) {
+    // Validar os parâmetros necessários apenas para requisições POST
+    if (req.method === 'POST' && (!clientId || !reportType)) {
       return res.status(400).json({ error: "clientId e reportType são obrigatórios" });
     }
     
@@ -117,6 +126,9 @@ curl -X POST https://preview--renata-ia.lovable.app/api/generate-report \
     "includeCharts": true
   }'
 */
+
+// TESTE SIMPLES VIA GET (apenas para debug):
+// https://preview--renata-ia.lovable.app/api/generate-report
 
 // EXEMPLO DE RESPOSTA CORRETA:
 /*

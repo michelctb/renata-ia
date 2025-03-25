@@ -15,7 +15,10 @@
 // PASSO 3: Adicione um nó HTTP Request após o Webhook
 // - Método: POST
 // - URL: https://preview--renata-ia.lovable.app/api/generate-report 
-//   NOTA IMPORTANTE: Certifique-se de usar EXATAMENTE esta URL. Não use /dashboard ou qualquer outra rota.
+//   NOTA IMPORTANTE: 
+//   - Certifique-se de usar EXATAMENTE esta URL. 
+//   - NÃO use /dashboard ou qualquer outra rota.
+//   - NÃO adicione o ID do cliente na URL, ele deve estar no body da requisição.
 // - Headers: 
 //   - Content-Type: application/json
 //   - Authorization: Bearer seu_token_de_api (se necessário)
@@ -39,13 +42,14 @@
 //   // Verificar se a resposta contém HTML (o que indicaria erro)
 //   if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
 //     console.log("ERRO: Recebendo HTML em vez de JSON!");
+//     console.log("Resposta HTML:", response.data.substring(0, 500));
 //     throw new Error("API retornou HTML em vez de JSON. Verifique a configuração da API.");
 //   }
 //   
 //   // Verificar se a resposta é um objeto JSON válido
 //   if (typeof response.data === 'object' && response.data !== null) {
 //     console.log("Resposta JSON válida recebida!");
-//     console.log("Dados recebidos:", JSON.stringify(response.data));
+//     console.log("Dados recebidos:", JSON.stringify(response.data).substring(0, 500));
 //   }
 //   
 //   return response;
@@ -82,12 +86,18 @@
 // DICAS DE DEPURAÇÃO:
 // ----------------
 
-// 1. Verifique a URL da API - Certifique-se que está usando a URL correta:
+// 1. TESTE PRIMEIRO COM GET (MAIS FÁCIL):
+//    - Antes de configurar todo o n8n, teste a API diretamente no navegador:
+//    - Acesse: https://preview--renata-ia.lovable.app/api/generate-report
+//    - Você deve receber uma resposta JSON de teste, não HTML
+
+// 2. Verifique a URL da API - Certifique-se que está usando a URL correta:
 //    - CERTO: https://preview--renata-ia.lovable.app/api/generate-report
 //    - ERRADO: https://preview--renata-ia.lovable.app/dashboard/api/generate-report
 //    - ERRADO: https://preview--renata-ia.lovable.app/5cc683bb/api/generate-report
+//    - ERRADO: https://preview--renata-ia.lovable.app/DirectAccess/5cc683bb/api/generate-report
 
-// 2. Teste a API diretamente com curl antes de configurar no n8n:
+// 3. Teste a API com curl antes de configurar no n8n:
 //    curl -v -X POST https://preview--renata-ia.lovable.app/api/generate-report \
 //      -H "Content-Type: application/json" \
 //      -d '{
@@ -102,13 +112,14 @@
 //
 //    O parâmetro -v ativa o modo verbose, mostrando cabeçalhos e mais detalhes.
 
-// 3. Verifique os logs do nó Function para ver a resposta exata da API:
+// 4. Verifique os logs do nó Function para ver a resposta exata da API:
 //    - Se ainda estiver recebendo HTML, veja o conteúdo exato para entender o problema
 //    - Busque por mensagens de erro no HTML que possam indicar o problema
 
-// 4. Problemas comuns:
+// 5. Problemas comuns:
+//    - URL incorreta: Certifique-se que está usando a URL correta (/api/generate-report)
 //    - Headers CORS: Verifique se a API está configurada para permitir CORS
-//    - Método errado: Confirme se está usando POST e não GET
+//    - Método errado: Confirme se está usando POST (ou GET para testes)
 //    - Content-Type: Certifique-se que está enviando com Content-Type: application/json
 //    - Formato do body: Verifique se o JSON está bem formatado
 
@@ -129,9 +140,8 @@
 //   ]
 // }
 
-// 5. Soluções para quando ainda recebe HTML:
-//    - Verifique se o arquivo src/pages/api/generate-report.ts existe e está corretamente implementado
-//    - Certifique-se de que a URL está correta - deve ser /api/generate-report
-//    - Tente um hard refresh no servidor (reinicie o servidor da aplicação)
-//    - Verifique se não há redirecionamento na API que esteja enviando para a página principal
-
+// OBSERVAÇÃO IMPORTANTE:
+// ---------------------
+// A rota /api/generate-report é DIFERENTE da rota /DirectAccess ou qualquer outra rota da sua aplicação.
+// O DirectAccess (https://preview--renata-ia.lovable.app/5cc683bb) é para acessar o dashboard de um cliente específico.
+// A API (/api/generate-report) é para gerar relatórios e retornar os dados em formato JSON.
