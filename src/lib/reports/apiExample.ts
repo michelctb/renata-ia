@@ -37,9 +37,33 @@ const getMockChartImages = () => {
 // Função principal que o backend chamaria
 export const generateReportApi = async (req: any, res: any) => {
   try {
+    // Verificar se a requisição é um OPTIONS (preflight CORS)
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
+    
+    // Verificar se a requisição é um POST
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: "Método não permitido" });
+    }
+    
+    // Garantir que o Content-Type está correto
+    const contentType = req.headers['content-type'];
+    if (!contentType || !contentType.includes('application/json')) {
+      return res.status(415).json({ error: "Content-Type deve ser application/json" });
+    }
+    
+    // Extrair o corpo da requisição
     const { clientId, reportType, dateRange, includeCharts } = req.body as ReportRequestBody;
     
     console.log(`Gerando relatório do tipo ${reportType} para o cliente ${clientId}`);
+    console.log(`Período: de ${dateRange?.from} até ${dateRange?.to}`);
+    console.log(`Incluir gráficos: ${includeCharts}`);
+    
+    // Validar os parâmetros necessários
+    if (!clientId || !reportType) {
+      return res.status(400).json({ error: "clientId e reportType são obrigatórios" });
+    }
     
     // Aqui você executaria código no servidor para gerar o relatório
     // Em um ambiente real, isso seria feito por um serviço no backend que
@@ -67,14 +91,28 @@ export const generateReportApi = async (req: any, res: any) => {
       images: includeCharts ? getMockChartImages() : []
     };
     
+    // Configurar cabeçalhos CORS para permitir acesso externo
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    // Garantir que estamos definindo o Content-Type da resposta como JSON
+    res.setHeader('Content-Type', 'application/json');
+    
     return res.status(200).json(reportData);
   } catch (error) {
     console.error("Erro ao gerar relatório via API:", error);
-    return res.status(500).json({ error: "Falha ao gerar relatório" });
+    
+    // Configurar cabeçalhos CORS mesmo em caso de erro
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    return res.status(500).json({ error: "Falha ao gerar relatório", detalhes: error.message });
   }
 };
 
-// Exemplo de como seria o curl para chamar esta API
+// COMANDO CURL CORRETO PARA TESTE:
 /*
 curl -X POST https://seu-site.com/api/generate-report 
   -H "Content-Type: application/json" 
