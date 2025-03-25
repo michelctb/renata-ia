@@ -14,7 +14,7 @@
 
 // PASSO 3: Adicione um nó HTTP Request após o Webhook
 // - Método: POST
-// - URL: https://preview--renata-ia.lovable.app/api/generate-report 
+// - URL: https://renata-ia.lovable.app/api/generate-report 
 //   NOTA IMPORTANTE: 
 //   - Certifique-se de usar EXATAMENTE esta URL. 
 //   - NÃO use /dashboard ou qualquer outra rota.
@@ -88,17 +88,17 @@
 
 // 1. TESTE PRIMEIRO COM GET (MAIS FÁCIL):
 //    - Antes de configurar todo o n8n, teste a API diretamente no navegador:
-//    - Acesse: https://preview--renata-ia.lovable.app/api/generate-report
+//    - Acesse: https://renata-ia.lovable.app/api/generate-report
 //    - Você deve receber uma resposta JSON de teste, não HTML
 
 // 2. Verifique a URL da API - Certifique-se que está usando a URL correta:
-//    - CERTO: https://preview--renata-ia.lovable.app/api/generate-report
-//    - ERRADO: https://preview--renata-ia.lovable.app/dashboard/api/generate-report
-//    - ERRADO: https://preview--renata-ia.lovable.app/5cc683bb/api/generate-report
-//    - ERRADO: https://preview--renata-ia.lovable.app/DirectAccess/5cc683bb/api/generate-report
+//    - CERTO: https://renata-ia.lovable.app/api/generate-report
+//    - ERRADO: https://renata-ia.lovable.app/dashboard/api/generate-report
+//    - ERRADO: https://renata-ia.lovable.app/5cc683bb/api/generate-report
+//    - ERRADO: https://renata-ia.lovable.app/DirectAccess/5cc683bb/api/generate-report
 
 // 3. Teste a API com curl antes de configurar no n8n:
-//    curl -v -X POST https://preview--renata-ia.lovable.app/api/generate-report \
+//    curl -v -X POST https://renata-ia.lovable.app/api/generate-report \
 //      -H "Content-Type: application/json" \
 //      -H "x-api-key: 784ce4af-6987-4711-b5bd-920f1d67a8d4" \
 //      -d '{
@@ -155,5 +155,5 @@
 // OBSERVAÇÃO IMPORTANTE:
 // ---------------------
 // A rota /api/generate-report é DIFERENTE da rota /DirectAccess ou qualquer outra rota da sua aplicação.
-// O DirectAccess (https://preview--renata-ia.lovable.app/5cc683bb) é para acessar o dashboard de um cliente específico.
+// O DirectAccess (https://renata-ia.lovable.app/5cc683bb) é para acessar o dashboard de um cliente específico.
 // A API (/api/generate-report) é para gerar relatórios e retornar os dados em formato JSON.
