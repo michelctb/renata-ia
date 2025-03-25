@@ -21,7 +21,7 @@
 //   - NÃO adicione o ID do cliente na URL, ele deve estar no body da requisição.
 // - Headers: 
 //   - Content-Type: application/json
-//   - Authorization: Bearer seu_token_de_api (se necessário)
+//   - x-api-key: 784ce4af-6987-4711-b5bd-920f1d67a8d4
 // - Body (JSON): Envie os parâmetros necessários:
 //   {
 //     "clientId": "{{$json.clientId}}",
@@ -100,6 +100,7 @@
 // 3. Teste a API com curl antes de configurar no n8n:
 //    curl -v -X POST https://preview--renata-ia.lovable.app/api/generate-report \
 //      -H "Content-Type: application/json" \
+//      -H "x-api-key: 784ce4af-6987-4711-b5bd-920f1d67a8d4" \
 //      -d '{
 //        "clientId": "5cc683bb",
 //        "reportType": "categorias",
@@ -121,7 +122,18 @@
 //    - Headers CORS: Verifique se a API está configurada para permitir CORS
 //    - Método errado: Confirme se está usando POST (ou GET para testes)
 //    - Content-Type: Certifique-se que está enviando com Content-Type: application/json
+//    - x-api-key: Inclua a chave de API no header da requisição
 //    - Formato do body: Verifique se o JSON está bem formatado
+
+// VERIFICAÇÕES IMPORTANTES PARA PRODUÇÃO:
+// ----------------------------------
+// 1. CHAVE DE API: Sempre use a chave de API correta no header "x-api-key"
+//    - CHAVE CORRETA: 784ce4af-6987-4711-b5bd-920f1d67a8d4
+//    - IMPORTANTE: Sem esta chave, a API rejeitará requisições POST com erro 401
+
+// 2. SSL: Se estiver tendo problemas com certificados SSL, adicione a opção
+//    "rejectUnauthorized: false" nas configurações do nó HTTP Request
+//    (mas lembre-se que isso reduz a segurança em produção)
 
 // FORMATO CORRETO DE RESPOSTA JSON:
 // -----------------------------

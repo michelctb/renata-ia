@@ -116,6 +116,7 @@ export const generateReportApi = async (req: any, res: any) => {
 /*
 curl -X POST https://preview--renata-ia.lovable.app/api/generate-report \
   -H "Content-Type: application/json" \
+  -H "x-api-key: 784ce4af-6987-4711-b5bd-920f1d67a8d4" \
   -d '{
     "clientId": "5cc683bb", 
     "reportType": "categorias",
