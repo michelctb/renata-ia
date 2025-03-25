@@ -32,10 +32,12 @@ const DirectAccess = () => {
         // Efetuar login com o ID
         login(userId);
         
-        // Aguardar um momento antes de redirecionar para garantir que o login seja processado
+        console.log('Login bem-sucedido, redirecionando para dashboard...');
+        
+        // Usar um timeout mais longo para garantir que o login seja processado
         setTimeout(() => {
-          navigate('/dashboard');
-        }, 500);
+          navigate('/dashboard', { replace: true });
+        }, 1000);
         
       } catch (error) {
         console.error('Erro no acesso direto:', error);
@@ -53,9 +55,12 @@ const DirectAccess = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="text-center">
-        <div className="animate-pulse text-xl mb-4">Autenticando...</div>
-        <div className="text-sm text-gray-500">Redirecionando para o dashboard</div>
+      <div className="text-center p-8 bg-white rounded-lg shadow-md">
+        <div className="flex flex-col items-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <div className="text-xl font-semibold mb-2">Autenticando...</div>
+          <div className="text-sm text-gray-500">Redirecionando para o dashboard</div>
+        </div>
       </div>
     </div>
   );

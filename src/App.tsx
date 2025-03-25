@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "next-themes";
 import Login from "./pages/Login";
@@ -30,6 +30,7 @@ const App = () => (
               <Route path="/admin" element={<Admin />} />
               <Route path="/subscription" element={<Subscription />} />
               <Route path="/client/:clientId" element={<ConsultorClientView />} />
+              <Route path="/user/:userId" element={<DirectAccess />} />
               <Route path="/:userId" element={<DirectAccess />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
