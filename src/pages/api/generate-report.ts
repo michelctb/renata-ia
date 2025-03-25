@@ -7,6 +7,7 @@ export default async function handler(req: any, res: any) {
   console.log("Método:", req.method);
   console.log("Headers:", JSON.stringify(req.headers));
   console.log("URL completa:", req.url);
+  console.log("Body:", JSON.stringify(req.body || {}));
   
   // Configurar cabeçalhos CORS para permitir acesso externo independente do método
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -70,7 +71,7 @@ export default async function handler(req: any, res: any) {
     console.log("Body recebido:", JSON.stringify(req.body));
     
     // Chamar a função de geração de relatório
-    await generateReportApi(req, res);
+    return await generateReportApi(req, res);
   } catch (error: any) {
     console.error("Erro no handler da API:", error);
     

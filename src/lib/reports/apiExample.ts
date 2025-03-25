@@ -114,7 +114,7 @@ export const generateReportApi = async (req: any, res: any) => {
 
 // COMANDO CURL CORRETO PARA TESTE:
 /*
-curl -X POST https://preview--renata-ia.lovable.app/api/generate-report \
+curl -X POST https://seu-dominio.com/api/generate-report \
   -H "Content-Type: application/json" \
   -d '{
     "clientId": "5cc683bb", 
@@ -128,7 +128,7 @@ curl -X POST https://preview--renata-ia.lovable.app/api/generate-report \
 */
 
 // TESTE SIMPLES VIA GET (apenas para debug):
-// https://preview--renata-ia.lovable.app/api/generate-report
+// https://seu-dominio.com/api/generate-report
 
 // EXEMPLO DE RESPOSTA CORRETA:
 /*
