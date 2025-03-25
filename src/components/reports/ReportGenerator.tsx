@@ -65,10 +65,7 @@ export const ReportGenerator: React.FC<ReportGeneratorProps> = ({
         images
       };
       
-      // Aqui você pode enviar os dados para sua API ou webhook
       console.log("Dados do relatório prontos para envio:", reportData);
-      
-      // Simulando o envio para a API
       toast.success("Relatório gerado com sucesso!");
       
       return reportData;
@@ -78,17 +75,68 @@ export const ReportGenerator: React.FC<ReportGeneratorProps> = ({
     }
   };
   
-  // Expor a função de geração de relatório na janela global para acesso externo
+  // Função específica para gerar apenas o relatório de categorias
+  const generateCategoryReport = async () => {
+    if (!chartsContainerRef.current) return;
+    
+    try {
+      // Encontre os SVGs específicos de categorias
+      const pieChartSvg = document.querySelector('.recharts-wrapper svg') as SVGElement;
+      const rankingSvg = document.querySelector('.ExpensesRanking svg') as SVGElement;
+      
+      if (!pieChartSvg || !rankingSvg) {
+        console.error("Não foi possível encontrar os gráficos de categoria");
+        return;
+      }
+      
+      // Converta os SVGs para imagens
+      const pieChartImage = await svgToImage(pieChartSvg, 800, 500);
+      const rankingImage = await svgToImage(rankingSvg, 800, 500);
+      
+      // Crie o objeto de resposta
+      const reportData = {
+        geradoEm: new Date().toISOString(),
+        clientId: clientId || 'user-dashboard',
+        periodo: dateRange ? {
+          inicio: dateRange.from?.toISOString(),
+          fim: dateRange.to?.toISOString()
+        } : null,
+        categorias: formatCategoryDataForReport(categoryData),
+        images: [
+          {
+            name: "grafico_categorias.png",
+            data: pieChartImage
+          },
+          {
+            name: "ranking_categorias.png",
+            data: rankingImage
+          }
+        ]
+      };
+      
+      return reportData;
+    } catch (error) {
+      console.error("Erro ao gerar relatório de categorias:", error);
+    }
+  };
+  
+  // Expor as funções de geração de relatório na janela global para acesso externo
   useEffect(() => {
-    // Typescript: adicionando a propriedade ao objeto window
+    // Typescript: adicionando as propriedades ao objeto window
     (window as any).generateFinancialReport = async () => {
       const reportData = await generateFullReport();
+      return reportData;
+    };
+    
+    (window as any).generateCategoryReport = async () => {
+      const reportData = await generateCategoryReport();
       return reportData;
     };
     
     return () => {
       // Limpar ao desmontar
       delete (window as any).generateFinancialReport;
+      delete (window as any).generateCategoryReport;
     };
   }, [categoryData, metasComProgresso, transactions, dateRange]);
   

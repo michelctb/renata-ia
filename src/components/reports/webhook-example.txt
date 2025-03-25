@@ -1,12 +1,12 @@
 
-// Este é um exemplo de como configurar o webhook no n8n para gerar e enviar relatórios
+// Configuração do Webhook no n8n para Gerar e Enviar Relatórios Financeiros
 
 // 1. CONFIGURAÇÃO DO N8N:
 // ----------------------
 
 // PASSO 1: Crie um novo fluxo de trabalho (workflow) no n8n
 // - Clique em "Workflows" e depois "New"
-// - Dê um nome como "Envio de Relatórios Financeiros"
+// - Dê um nome como "Relatório Financeiro - Últimos 7 Dias"
 
 // PASSO 2: Adicione um nó de gatilho "Webhook"
 // - Configure para método POST
@@ -14,46 +14,62 @@
 
 // PASSO 3: Adicione um nó HTTP Request após o Webhook
 // - Método: POST
-// - URL: https://seu-site.com/api/generate-report (Substitua pelo seu domínio real)
-// - Autenticação: Defina se necessário
-// - Body: Envie o ID do cliente ou outros parâmetros necessários:
+// - URL: https://seu-site.com/api/generate-report
+// - Headers: 
+//   - Content-Type: application/json
+//   - Authorization: Bearer seu_token_de_api (se necessário)
+// - Body (JSON): Envie os parâmetros necessários:
 //   {
 //     "clientId": "{{$json.clientId}}",
-//     "reportType": "financeiro",
+//     "reportType": "categorias",
+//     "dateRange": {
+//       "from": "{{$today.minus(7).format('YYYY-MM-DD')}}T00:00:00.000Z",
+//       "to": "{{$today.format('YYYY-MM-DD')}}T23:59:59.999Z"
+//     },
 //     "includeCharts": true
 //   }
 
-// PASSO 4: Adicione um nó de processamento (Function)
-// - Este nó processará os dados retornados pela sua API
-// - Código de exemplo:
-//   return {
-//     json: {
-//       ...item,
-//       timestamp: new Date().toISOString(),
-//       reportReady: true
-//     }
-//   };
+// PASSO 4: Adicione um nó "IF" para verificar se a resposta foi bem-sucedida
+// - Condição: {{$json["images"] !== undefined}}
 
-// PASSO 5: Adicione um nó de Email (ou outro canal de comunicação)
-// - Destino: {{$node["Webhook"].json.email}}
-// - Assunto: Relatório Financeiro - {{$formatDate($today, "DD/MM/YYYY")}}
-// - Corpo: Use HTML para formatar e incluir as imagens:
-//   <p>Olá {{$node["Webhook"].json.name}},</p>
-//   <p>Segue o relatório financeiro solicitado:</p>
-//   <img src="{{$node["HTTP Request"].json.images[0].data}}" alt="Gráfico mensal" />
-//   <img src="{{$node["HTTP Request"].json.images[1].data}}" alt="Gráfico categorias" />
+// PASSO 5: Adicione um nó de Email na rota "true" do IF
+// - Para: {{$node["Webhook"].json.email}} (email do cliente que solicitou)
+// - Assunto: Relatório Financeiro - Últimos 7 dias
+// - Corpo: 
+//   <h2>Relatório Financeiro</h2>
+//   <p>Olá {{$node["Webhook"].json.nome}},</p>
+//   <p>Segue o relatório financeiro dos últimos 7 dias conforme solicitado:</p>
+//   
+//   <h3>Gastos por Categoria:</h3>
+//   <img src="{{$node["HTTP Request"].json.images[0].data}}" alt="Gráfico de categorias" />
+//   
+//   <h3>Ranking de Maiores Despesas:</h3>
+//   <img src="{{$node["HTTP Request"].json.images[1].data}}" alt="Ranking de categorias" />
+//   
 //   <p>Acesse seu dashboard para mais detalhes.</p>
+//   <p>Atenciosamente,<br>Sua Empresa</p>
 
-// PASSO 6: Ative o fluxo
+// PASSO 6: Na rota "false" do IF, adicione um nó de Email para notificar erro
+// - Para: {{$node["Webhook"].json.email}}
+// - Assunto: Erro na geração do relatório
+// - Corpo: Não foi possível gerar seu relatório. Por favor tente novamente mais tarde.
+
+// PASSO 7: Salve e ative o fluxo
 // - Clique em "Save" e depois "Active"
 
-// 2. COMO USAR:
-// -------------
-// Para solicitar um relatório, basta enviar uma requisição para o webhook do n8n:
-// POST https://your-n8n.com/webhook/abc123
-// Body: 
-// {
-//   "clientId": "123456",
-//   "name": "Nome do Cliente",
-//   "email": "cliente@email.com"
-// }
+// 2. CHAMADA CURL PARA DISPARAR O WEBHOOK:
+// --------------------------------------
+// Para solicitar um relatório, envie esta requisição para o webhook do n8n:
+//
+// curl -X POST https://your-n8n.com/webhook/abc123 \
+//   -H "Content-Type: application/json" \
+//   -d '{
+//     "clientId": "123456",
+//     "nome": "Nome do Cliente",
+//     "email": "cliente@email.com"
+//   }'
+//
+// O n8n então irá:
+// 1. Receber esta solicitação
+// 2. Fazer uma chamada para a sua API para gerar o relatório com as imagens
+// 3. Enviar um email para o cliente com as imagens dos gráficos
