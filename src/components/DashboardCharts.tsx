@@ -9,7 +9,6 @@ import { useMetasProgress } from './charts/hooks/useMetaProgress';
 import { MonthlyChartCard } from './charts/MonthlyChartCard';
 import { CategoryChartsContainer } from './charts/CategoryChartsContainer';
 import { MetaProgressDisplay } from './charts/MetaProgressDisplay';
-import { ReportGenerator } from './reports/ReportGenerator';
 
 type DashboardChartsProps = {
   transactions?: Transaction[];
@@ -67,18 +66,6 @@ export default function DashboardCharts({
       
       {/* Meta Progress Display */}
       <MetaProgressDisplay metasComProgresso={metasComProgresso} />
-
-      {/* Componente invisível para geração de relatórios (apenas adiciona a funcionalidade) */}
-      <div className="hidden">
-        <ReportGenerator
-          transactions={filteredTransactions}
-          monthlyData={monthlyData}
-          categoryData={categoryData}
-          metasComProgresso={metasComProgresso}
-          dateRange={dateRange}
-          clientId={clientId}
-        />
-      </div>
     </div>
   );
 }
