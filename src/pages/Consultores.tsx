@@ -54,7 +54,7 @@ const Consultores = () => {
                   </Link>
                 </Button>
                 <Button variant="outline" size="lg" asChild>
-                  <a href="#como-funciona">
+                  <a href="#beneficios">
                     Saiba mais
                   </a>
                 </Button>
