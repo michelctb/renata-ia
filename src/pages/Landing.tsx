@@ -410,14 +410,14 @@ const Landing = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-sm text-slate-700 hover:text-primary dark:text-slate-400 dark:hover:text-white transition-colors">
+                  <Link to="/privacy" className="text-sm text-slate-700 hover:text-primary dark:text-slate-400 dark:hover:text-white transition-colors">
                     Política de privacidade
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="text-sm text-slate-700 hover:text-primary dark:text-slate-400 dark:hover:text-white transition-colors">
+                  <Link to="/terms" className="text-sm text-slate-700 hover:text-primary dark:text-slate-400 dark:hover:text-white transition-colors">
                     Termos de uso
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
