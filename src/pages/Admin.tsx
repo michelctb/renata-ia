@@ -7,7 +7,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import UsersTab from '@/components/admin/UsersTab';
-import PlansTab from '@/components/admin/PlansTab';
 import ReportsTab from '@/components/admin/ReportsTab';
 import { useClientData } from '@/hooks/useClientData';
 import { ChevronLeft } from 'lucide-react';
@@ -49,9 +48,8 @@ const Admin = () => {
         </div>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full animate-fade-in">
-          <TabsList className="w-full max-w-md mx-auto grid grid-cols-3 mb-8 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm shadow-sm">
+          <TabsList className="w-full max-w-md mx-auto grid grid-cols-2 mb-8 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm shadow-sm">
             <TabsTrigger value="usuarios" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Usuários</TabsTrigger>
-            <TabsTrigger value="planos" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Planos</TabsTrigger>
             <TabsTrigger value="relatorios" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Relatórios</TabsTrigger>
           </TabsList>
           
@@ -62,11 +60,6 @@ const Admin = () => {
               isLoading={isLoading} 
               loadClients={loadClients} 
             />
-          </TabsContent>
-          
-          {/* Conteúdo da tab de Planos */}
-          <TabsContent value="planos" className="space-y-4 animate-fade-up">
-            <PlansTab />
           </TabsContent>
           
           {/* Conteúdo da tab de Relatórios */}

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,7 +60,7 @@ const Login = () => {
                 />
               </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex flex-col gap-4">
               <Button 
                 type="submit" 
                 className="w-full h-11 bg-primary hover:bg-primary/90 transition-all"
@@ -68,6 +68,17 @@ const Login = () => {
               >
                 {isLoading ? 'Entrando...' : 'Entrar'}
               </Button>
+              
+              <div className="w-full flex items-center justify-center">
+                <Button 
+                  variant="outline" 
+                  className="w-full h-11 border-blue-400 text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-all"
+                  onClick={() => navigate('/subscription')}
+                  type="button"
+                >
+                  Assine Já
+                </Button>
+              </div>
             </CardFooter>
           </form>
         </Card>
