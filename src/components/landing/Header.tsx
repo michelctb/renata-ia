@@ -23,6 +23,9 @@ const Header = () => {
           <a href="#planos" className="text-sm font-medium text-slate-700 hover:text-primary dark:text-slate-300 dark:hover:text-white transition-colors">
             Planos
           </a>
+          <Link to="/consultores" className="text-sm font-medium text-slate-700 hover:text-primary dark:text-slate-300 dark:hover:text-white transition-colors">
+            Consultores
+          </Link>
           <Link to="/login" className="text-sm font-medium text-slate-700 hover:text-primary dark:text-slate-300 dark:hover:text-white transition-colors">
             Entrar
           </Link>

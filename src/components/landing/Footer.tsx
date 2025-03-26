@@ -31,6 +31,11 @@ const Footer = () => {
                   Metas financeiras
                 </a>
               </li>
+              <li>
+                <Link to="/consultores" className="text-sm text-slate-700 hover:text-primary dark:text-slate-400 dark:hover:text-white transition-colors">
+                  Para Consultores
+                </Link>
+              </li>
             </ul>
           </div>
           <div className="space-y-4">

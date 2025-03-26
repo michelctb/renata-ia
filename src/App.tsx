@@ -16,6 +16,7 @@ import ConsultorClientView from "./pages/ConsultorClientView";
 import Landing from "./pages/Landing";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import Consultores from "./pages/Consultores";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
               <Route path="/:userId" element={<DirectAccess />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
+              <Route path="/consultores" element={<Consultores />} />
               <Route path="/" element={<Navigate to="/landing" />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
