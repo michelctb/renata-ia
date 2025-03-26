@@ -9,7 +9,7 @@ export async function submitToWebhook(formData: CustomerFormValues, plan: PlanTy
   
   // Use specific webhook URL for the teste plan
   if (plan === "teste") {
-    webhookUrl = "http://192.168.1.8:5678/webhook/teste-gratis";
+    webhookUrl = "https://n8n.renata-ia.com.br/webhook/teste-gratis";
   }
   
   const webhookData = {
