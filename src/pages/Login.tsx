@@ -40,7 +40,7 @@ const Login = () => {
       <div className="w-full max-w-md animate-fade-up">
         <Card className="w-full shadow-lg border-none glassmorphism">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Dashboard Financeiro</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">Renata.ia Dashboard</CardTitle>
             <CardDescription className="text-center">
               Entre com seu ID de usuário para acessar seus dados financeiros
             </CardDescription>
