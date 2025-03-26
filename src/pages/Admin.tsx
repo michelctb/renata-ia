@@ -8,13 +8,14 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import UsersTab from '@/components/admin/UsersTab';
 import ReportsTab from '@/components/admin/ReportsTab';
+import AdminDashboard from '@/components/admin/AdminDashboard'; 
 import { useClientData } from '@/hooks/useClientData';
 import { ChevronLeft } from 'lucide-react';
 
 const Admin = () => {
   const { user, isAdmin, isConsultor } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('usuarios');
+  const [activeTab, setActiveTab] = useState('dashboard'); // Alterado para iniciar no dashboard
   const { clients, isLoading, loadClients } = useClientData();
 
   useEffect(() => {
@@ -48,10 +49,16 @@ const Admin = () => {
         </div>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full animate-fade-in">
-          <TabsList className="w-full max-w-md mx-auto grid grid-cols-2 mb-8 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm shadow-sm">
+          <TabsList className="w-full max-w-md mx-auto grid grid-cols-3 mb-8 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm shadow-sm">
+            <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Dashboard</TabsTrigger>
             <TabsTrigger value="usuarios" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Usuários</TabsTrigger>
             <TabsTrigger value="relatorios" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Relatórios</TabsTrigger>
           </TabsList>
+          
+          {/* Conteúdo da tab de Dashboard */}
+          <TabsContent value="dashboard" className="space-y-4 animate-fade-up">
+            <AdminDashboard clients={clients} isLoading={isLoading} />
+          </TabsContent>
           
           {/* Conteúdo da tab de Usuários */}
           <TabsContent value="usuarios" className="space-y-4 animate-fade-up">
