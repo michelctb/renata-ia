@@ -4,6 +4,7 @@ import Header from '@/components/landing/Header';
 import Hero from '@/components/landing/Hero';
 import Features from '@/components/landing/Features';
 import HowItWorks from '@/components/landing/HowItWorks';
+import ClienteDepoimentos from '@/components/landing/ClienteDepoimentos';
 import CTA from '@/components/landing/CTA';
 import Footer from '@/components/landing/Footer';
 
@@ -15,6 +16,7 @@ const Landing = () => {
         <Hero />
         <Features />
         <HowItWorks />
+        <ClienteDepoimentos />
         <CTA />
       </main>
       <Footer />
