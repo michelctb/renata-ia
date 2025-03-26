@@ -9,6 +9,7 @@ import { useMetasProgress } from './charts/hooks/useMetaProgress';
 import { MonthlyChartCard } from './charts/MonthlyChartCard';
 import { CategoryChartsContainer } from './charts/CategoryChartsContainer';
 import { MetaProgressDisplay } from './charts/MetaProgressDisplay';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type DashboardChartsProps = {
   transactions?: Transaction[];
@@ -25,6 +26,7 @@ export default function DashboardCharts({
 }: DashboardChartsProps) {
   // State for transaction type toggle
   const [transactionType, setTransactionType] = useState<'saída' | 'entrada'>('saída');
+  const isMobile = useIsMobile();
   
   // Load client transactions if in consultor viewMode
   const clientTransactions = useClientTransactions(clientId, viewMode);
@@ -53,7 +55,7 @@ export default function DashboardCharts({
   const metasComProgresso = useMetasProgress(metas, filteredTransactions);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <div className={`grid grid-cols-1 ${isMobile ? '' : 'lg:grid-cols-3'} gap-6 mb-6`}>
       {/* Monthly Chart Card */}
       <MonthlyChartCard data={monthlyData} />
       
