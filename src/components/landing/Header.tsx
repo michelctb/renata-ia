@@ -5,6 +5,13 @@ import { Button } from '@/components/ui/button';
 import { User } from 'lucide-react';
 
 const Header = () => {
+  const scrollToSection = (sectionId: string) => {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full backdrop-blur-lg bg-white/80 dark:bg-slate-900/80 border-b border-slate-200/80 dark:border-slate-800/80">
       <div className="container flex h-16 items-center justify-between">
@@ -14,12 +21,18 @@ const Header = () => {
           </span>
         </div>
         <nav className="hidden md:flex items-center gap-6">
-          <a href="#recursos" className="text-sm font-medium text-slate-700 hover:text-primary dark:text-slate-300 dark:hover:text-white transition-colors">
+          <button 
+            onClick={() => scrollToSection('recursos')} 
+            className="text-sm font-medium text-slate-700 hover:text-primary dark:text-slate-300 dark:hover:text-white transition-colors"
+          >
             Recursos
-          </a>
-          <a href="#como-funciona" className="text-sm font-medium text-slate-700 hover:text-primary dark:text-slate-300 dark:hover:text-white transition-colors">
+          </button>
+          <button 
+            onClick={() => scrollToSection('como-funciona')} 
+            className="text-sm font-medium text-slate-700 hover:text-primary dark:text-slate-300 dark:hover:text-white transition-colors"
+          >
             Como funciona
-          </a>
+          </button>
           <Link to="/subscription" className="text-sm font-medium text-slate-700 hover:text-primary dark:text-slate-300 dark:hover:text-white transition-colors">
             Planos
           </Link>
