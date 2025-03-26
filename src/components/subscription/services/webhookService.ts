@@ -4,8 +4,13 @@ import { PlanType } from "@/pages/Subscription";
 
 // Handle the webhook submission for all plans
 export async function submitToWebhook(formData: CustomerFormValues, plan: PlanType) {
-  // Updated webhook URL for production environment
-  const webhookUrl = "http://localhost:5678/webhook/renata-ia";
+  // Determine webhook URL based on the plan
+  let webhookUrl = "http://localhost:5678/webhook/renata-ia";
+  
+  // Use specific webhook URL for the teste plan
+  if (plan === "teste") {
+    webhookUrl = "https://n8n.renata-ia.com.br/webhook/teste-gratis";
+  }
   
   const webhookData = {
     plano: plan,

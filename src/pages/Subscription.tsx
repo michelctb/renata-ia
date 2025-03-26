@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { CreditCardIcon, CalendarIcon, RocketIcon, UsersIcon } from "lucide-react";
+import { CreditCardIcon, CalendarIcon, RocketIcon, UsersIcon, SparklesIcon } from "lucide-react";
 import CustomerForm from "@/components/subscription/CustomerForm";
 import PaymentConfirmation from "@/components/subscription/PaymentConfirmation";
 import PageHeader from "@/components/subscription/PageHeader";
@@ -8,7 +8,7 @@ import PlanGrid from "@/components/subscription/PlanGrid";
 import Header from "@/components/landing/Header";
 
 // Plan types
-export type PlanType = "mensal" | "semestral" | "anual" | "consultor";
+export type PlanType = "mensal" | "semestral" | "anual" | "consultor" | "teste";
 
 // Plan details
 export const PLANS = {
@@ -35,6 +35,12 @@ export const PLANS = {
     price: "",
     description: "Agende uma demonstração",
     icon: UsersIcon
+  },
+  teste: {
+    title: "Teste Grátis",
+    price: "Grátis",
+    description: "7 dias de teste grátis",
+    icon: SparklesIcon
   }
 };
 
