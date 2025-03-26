@@ -1,16 +1,38 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { User } from 'lucide-react';
 
 const Header = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
   const scrollToSection = (sectionId: string) => {
-    const section = document.getElementById(sectionId);
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth' });
+    // Se estiver na página inicial, apenas rola para a seção
+    if (location.pathname === '/landing' || location.pathname === '/') {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      // Se estiver em outra página, navega para a página inicial com um hash
+      navigate(`/landing#${sectionId}`);
     }
   };
+
+  // Efeito para verificar o hash da URL quando a página carrega
+  React.useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.replace('#', '');
+      const element = document.getElementById(id);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, [location]);
 
   return (
     <header className="sticky top-0 z-50 w-full backdrop-blur-lg bg-white/80 dark:bg-slate-900/80 border-b border-slate-200/80 dark:border-slate-800/80">
@@ -32,6 +54,12 @@ const Header = () => {
             className="text-sm font-medium text-slate-700 hover:text-primary dark:text-slate-300 dark:hover:text-white transition-colors"
           >
             Como funciona
+          </button>
+          <button 
+            onClick={() => scrollToSection('sobre')} 
+            className="text-sm font-medium text-slate-700 hover:text-primary dark:text-slate-300 dark:hover:text-white transition-colors"
+          >
+            Sobre nós
           </button>
           <Link to="/consultores" className="text-sm font-medium text-slate-700 hover:text-primary dark:text-slate-300 dark:hover:text-white transition-colors">
             Consultores

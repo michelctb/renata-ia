@@ -1,8 +1,24 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const Footer = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  const scrollToSection = (sectionId: string) => {
+    // Se estiver na página inicial, apenas rola para a seção
+    if (location.pathname === '/landing' || location.pathname === '/') {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      // Se estiver em outra página, navega para a página inicial com um hash
+      navigate(`/landing#${sectionId}`);
+    }
+  };
+
   return (
     <footer className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
       <div className="container px-4 md:px-6 py-8">
@@ -17,19 +33,28 @@ const Footer = () => {
             <h3 className="text-lg font-bold">Recursos</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#recursos" className="text-sm text-slate-700 hover:text-primary dark:text-slate-400 dark:hover:text-white transition-colors">
+                <button 
+                  onClick={() => scrollToSection('recursos')}
+                  className="text-sm text-slate-700 hover:text-primary dark:text-slate-400 dark:hover:text-white transition-colors"
+                >
                   Dashboard interativo
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#recursos" className="text-sm text-slate-700 hover:text-primary dark:text-slate-400 dark:hover:text-white transition-colors">
+                <button 
+                  onClick={() => scrollToSection('recursos')}
+                  className="text-sm text-slate-700 hover:text-primary dark:text-slate-400 dark:hover:text-white transition-colors"
+                >
                   Controle via WhatsApp
-                </a>
+                </button>
               </li>
               <li>
-                <a href="#recursos" className="text-sm text-slate-700 hover:text-primary dark:text-slate-400 dark:hover:text-white transition-colors">
+                <button 
+                  onClick={() => scrollToSection('recursos')}
+                  className="text-sm text-slate-700 hover:text-primary dark:text-slate-400 dark:hover:text-white transition-colors"
+                >
                   Metas financeiras
-                </a>
+                </button>
               </li>
               <li>
                 <Link to="/consultores" className="text-sm text-slate-700 hover:text-primary dark:text-slate-400 dark:hover:text-white transition-colors">
@@ -42,9 +67,12 @@ const Footer = () => {
             <h3 className="text-lg font-bold">Empresa</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-sm text-slate-700 hover:text-primary dark:text-slate-400 dark:hover:text-white transition-colors">
+                <button 
+                  onClick={() => scrollToSection('sobre')}
+                  className="text-sm text-slate-700 hover:text-primary dark:text-slate-400 dark:hover:text-white transition-colors"
+                >
                   Sobre nós
-                </a>
+                </button>
               </li>
               <li>
                 <Link to="/privacy" className="text-sm text-slate-700 hover:text-primary dark:text-slate-400 dark:hover:text-white transition-colors">
