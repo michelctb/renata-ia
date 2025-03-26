@@ -38,8 +38,6 @@ export function TransactionTableContainer({
   const {
     filteredTransactions,
     searchTerm,
-    totalReceived,
-    totalSpent
   } = filteringData;
   
   const isMobile = useIsMobile();
@@ -51,20 +49,10 @@ export function TransactionTableContainer({
           <div className="text-2xl font-bold text-gray-800 dark:text-white">
             Transações
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-sm">
-            <div>
-              <span className="text-green-500 font-medium">Entradas: </span>
-              <span className="font-bold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalReceived)}</span>
-            </div>
-            <div>
-              <span className="text-red-500 font-medium">Saídas: </span>
-              <span className="font-bold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalSpent)}</span>
-            </div>
-          </div>
         </div>
       </div>
 
-      <ScrollArea className="h-[400px]" orientation={isMobile ? "both" : "vertical"}>
+      <ScrollArea className="h-[400px]" orientation="both">
         <div className={isMobile ? "min-w-[650px]" : "min-w-full"}>
           <Table>
             <TransactionTableHeader isReadOnly={isReadOnly} />
