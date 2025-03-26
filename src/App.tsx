@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import DirectAccess from "./pages/DirectAccess";
 import Subscription from "./pages/Subscription";
 import ConsultorClientView from "./pages/ConsultorClientView";
+import Landing from "./pages/Landing";
 
 const queryClient = new QueryClient();
 
@@ -25,13 +26,15 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Login />} />
+              <Route path="/landing" element={<Landing />} />
+              <Route path="/login" element={<Login />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/subscription" element={<Subscription />} />
               <Route path="/client/:clientId" element={<ConsultorClientView />} />
               <Route path="/user/:userId" element={<DirectAccess />} />
               <Route path="/:userId" element={<DirectAccess />} />
+              <Route path="/" element={<Navigate to="/landing" />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
