@@ -90,4 +90,3 @@ export function TransactionTableContainer({
     </div>
   );
 }
-
