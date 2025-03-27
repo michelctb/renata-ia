@@ -21,6 +21,7 @@ type CustomerFormProps = {
 const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const planInfo = PLANS[plan];
 
   const form = useForm<CustomerFormValues>({
@@ -39,24 +40,47 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
     
     setIsSubmitting(true);
     setError(null);
+    setSuccessMessage(null);
     
     try {
       console.log("Calling submitToWebhook...");
       
-      // Show toast before redirect happens
-      toast.success("Redirecionando para o checkout...");
+      // Chamar o webhook e processar a resposta
+      const response = await submitToWebhook(formData, plan);
       
-      // Call the webhook service which will handle the form submission and redirect
-      await submitToWebhook(formData, plan);
-      
-      // Call onComplete to update UI state
-      // Note: This may not execute if the redirect happens immediately
-      onComplete();
-      
+      if (response.status === 'success') {
+        // Exibir mensagem de sucesso
+        toast.success(response.message);
+        setSuccessMessage(response.message);
+        
+        // Se for o plano de teste, apenas mostrar a mensagem
+        if (plan === 'teste') {
+          onComplete(); // Atualizar o estado da UI para mostrar tela de confirmação
+        } 
+        // Se for outro plano e tiver URL de redirecionamento, redirecionar
+        else if (response.redirectUrl) {
+          // Redirecionar para a URL recebida
+          console.log("Redirecting to:", response.redirectUrl);
+          window.location.href = response.redirectUrl;
+        } else {
+          // Se não tiver URL mas for sucesso, apenas mostrar a confirmação
+          onComplete();
+        }
+      } else {
+        // Exibir mensagem de erro
+        console.error("Error response:", response);
+        setError(response.message);
+        toast.error(response.message);
+      }
     } catch (error) {
       console.error("Erro no processo:", error);
-      setError("Ocorreu um erro ao processar a solicitação. Por favor, tente novamente.");
-      toast.error("Ocorreu um erro ao processar a solicitação. Por favor, tente novamente.");
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Ocorreu um erro ao processar a solicitação. Por favor, tente novamente.";
+      
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -92,6 +116,12 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
       {error && (
         <Alert variant="destructive" className="mb-4">
           <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {successMessage && (
+        <Alert className="mb-4 bg-green-50 border-green-200 text-green-800">
+          <AlertDescription>{successMessage}</AlertDescription>
         </Alert>
       )}
 

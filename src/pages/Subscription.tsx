@@ -47,6 +47,7 @@ export const PLANS = {
 const SubscriptionPage = () => {
   const [selectedPlan, setSelectedPlan] = useState<PlanType | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmationMessage, setConfirmationMessage] = useState<string | undefined>(undefined);
   
   const handlePlanSelect = (plan: PlanType) => {
     if (plan === "consultor") {
@@ -56,13 +57,15 @@ const SubscriptionPage = () => {
     }
   };
   
-  const handlePaymentComplete = () => {
+  const handlePaymentComplete = (message?: string) => {
+    setConfirmationMessage(message);
     setShowConfirmation(true);
   };
   
   const resetFlow = () => {
     setSelectedPlan(null);
     setShowConfirmation(false);
+    setConfirmationMessage(undefined);
   };
 
   return (
@@ -80,12 +83,12 @@ const SubscriptionPage = () => {
           )}
 
           {showConfirmation ? (
-            <PaymentConfirmation onReset={resetFlow} />
+            <PaymentConfirmation onReset={resetFlow} message={confirmationMessage} />
           ) : selectedPlan ? (
             <CustomerForm 
               plan={selectedPlan} 
               onBack={() => setSelectedPlan(null)} 
-              onComplete={handlePaymentComplete}
+              onComplete={() => handlePaymentComplete()}
             />
           ) : null}
         </div>
