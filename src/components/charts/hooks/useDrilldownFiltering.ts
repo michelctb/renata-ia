@@ -18,16 +18,21 @@ export function useDrilldownFiltering(
     const normalizedCategoryFilter = categoryFilter.toLowerCase().trim();
     
     // Se a categoria for "Outros", precisa tratar de forma especial
-    if (normalizedCategoryFilter.startsWith("outros")) {
-      console.log('Filtrando categoria especial "Outros"');
-      // Não podemos filtrar por "Outros" já que é uma categoria agregada
-      return transactions;
-    }
+    const isOthersCategory = normalizedCategoryFilter.startsWith("outros");
     
     const filtered = transactions.filter(transaction => {
-      const transactionCategory = transaction.categoria?.toLowerCase().trim() || '';
-      const isMatch = transactionCategory === normalizedCategoryFilter;
-      return isMatch;
+      // Se a transação não tiver categoria definida, não incluir nos resultados
+      if (!transaction.categoria) return false;
+      
+      const transactionCategory = transaction.categoria.toLowerCase().trim();
+      
+      // Para a categoria "Outros", incluímos todas as transações que começam com "outros"
+      if (isOthersCategory && transactionCategory.startsWith("outros")) {
+        return true;
+      }
+      
+      // Para outras categorias, verificamos se há correspondência exata
+      return transactionCategory === normalizedCategoryFilter;
     });
     
     console.log('Número de transações após filtro por categoria:', filtered.length);

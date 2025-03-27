@@ -42,7 +42,8 @@ export function ExpensesPieChart({
 
   // Função para lidar com o clique em uma fatia do gráfico
   const handlePieClick = (data: any) => {
-    if (onCategoryClick) {
+    console.log('Clique no gráfico de pizza:', data);
+    if (onCategoryClick && data && data.name) {
       onCategoryClick(data.name);
     }
   };

@@ -22,6 +22,10 @@ export function useTransactionFiltering(
 ) {
   const [searchTerm, setSearchTerm] = useState('');
   
+  // Log para debug
+  console.log('useTransactionFiltering - selectedCategory:', selectedCategory);
+  console.log('useTransactionFiltering - total transactions:', transactions.length);
+  
   const filteredTransactions = useMemo(() => {
     let filtered = transactions;
     
@@ -66,15 +70,19 @@ export function useTransactionFiltering(
     if (selectedCategory) {
       console.log('Filtrando por categoria:', selectedCategory);
       filtered = filtered.filter(transaction => {
-        const transactionCategory = transaction.categoria?.toLowerCase().trim() || '';
+        // Verificar se a categoria da transação existe e não é nula
+        if (!transaction.categoria) return false;
+        
+        const transactionCategory = transaction.categoria.toLowerCase().trim();
         const categoryToMatch = selectedCategory.toLowerCase().trim();
         
-        // Evitar filtrar por "Outros" pois é uma categoria agregada
-        if (categoryToMatch.startsWith('outros')) {
-          return true;
-        }
+        // Verificar se a categoria corresponde exatamente à categoria selecionada
+        // Ignorar a parte "(X)" em "Outros (X)" se existir
+        const isMatchingCategory = 
+          transactionCategory === categoryToMatch || 
+          (categoryToMatch.startsWith('outros') && transactionCategory.startsWith('outros'));
         
-        return transactionCategory === categoryToMatch;
+        return isMatchingCategory;
       });
       console.log('Após filtro de categoria, restaram:', filtered.length, 'transações');
     }

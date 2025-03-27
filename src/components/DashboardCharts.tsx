@@ -17,6 +17,7 @@ type DashboardChartsProps = {
   clientId?: string;
   viewMode?: 'user' | 'admin' | 'consultor';
   setDateRange?: (dateRange: DateRange) => void;
+  onCategorySelect?: (category: string | null) => void;  // Adicionado prop para passar a seleção de categoria
 };
 
 export default function DashboardCharts({ 
@@ -24,7 +25,8 @@ export default function DashboardCharts({
   dateRange, 
   clientId,
   viewMode = 'user',
-  setDateRange
+  setDateRange,
+  onCategorySelect  // Recebendo a função de callback
 }: DashboardChartsProps) {
   // Detector de dispositivo móvel
   const isMobile = useIsMobile();
@@ -52,7 +54,8 @@ export default function DashboardCharts({
     handleCategoryClick,
     clearAllDrilldownFilters
   } = useDashboardIntegration({
-    setDateRange
+    setDateRange,
+    onCategoryFilterChange: onCategorySelect  // Passando o callback para o hook
   });
   
   // Preparação de dados para o dashboard

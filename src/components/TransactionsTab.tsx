@@ -20,7 +20,7 @@ type TransactionsTabProps = {
   viewMode?: 'user' | 'admin' | 'consultor';
   isFormOpen?: boolean;
   setIsFormOpen?: React.Dispatch<React.SetStateAction<boolean>>;
-  selectedCategory?: string | null;  // Defina selectedCategory como prop opcional
+  selectedCategory?: string | null;
 };
 
 /**
@@ -62,6 +62,12 @@ const TransactionsTab = ({
       setSelectedCategory(propSelectedCategory);
     }
   }, [propSelectedCategory]);
+  
+  // Função para atualizar a categoria selecionada
+  const handleCategorySelect = (category: string | null) => {
+    console.log('TransactionsTab - Nova categoria selecionada:', category);
+    setSelectedCategory(category);
+  };
   
   // Use the custom hook for state and logic
   const {
@@ -111,6 +117,7 @@ const TransactionsTab = ({
         clientId={clientId}
         viewMode={viewMode}
         setDateRange={setDateRange}
+        onCategorySelect={handleCategorySelect}  // Passando a função de callback
       />
       
       <TransactionsHeaderContainer 
