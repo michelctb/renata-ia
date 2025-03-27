@@ -65,16 +65,21 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChart
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis 
             dataKey="name" 
-            tick={{ 
-              fill: (props: any) => {
-                // Destacar o mês selecionado
-                const isSelected = selectedMonth === props.payload.value;
-                return isSelected ? '#3b82f6' : 'currentColor';
-              },
-              fontWeight: (props: any) => {
-                const isSelected = selectedMonth === props.payload.value;
-                return isSelected ? 'bold' : 'normal';
-              }
+            tick={(props: any) => {
+              // Destacar o mês selecionado
+              const isSelected = selectedMonth === props.payload.value;
+              return (
+                <text
+                  x={props.x}
+                  y={props.y}
+                  dy={16}
+                  textAnchor="middle"
+                  fill={isSelected ? '#3b82f6' : 'currentColor'}
+                  fontWeight={isSelected ? 'bold' : 'normal'}
+                >
+                  {props.payload.value}
+                </text>
+              );
             }}
           />
           <YAxis 

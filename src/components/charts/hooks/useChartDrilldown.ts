@@ -21,6 +21,24 @@ export function useChartDrilldown({
     if (!onDateRangeChange) return;
     
     try {
+      // Se já está selecionado, limpa o filtro
+      if (selectedMonth === monthYear) {
+        setSelectedMonth(null);
+        
+        // Reset dateRange to current month
+        const today = new Date();
+        const firstDayOfMonth = startOfMonth(today);
+        const lastDayOfMonth = endOfMonth(today);
+        
+        onDateRangeChange({
+          from: firstDayOfMonth,
+          to: lastDayOfMonth
+        });
+        
+        console.log('Filtro de mês removido');
+        return;
+      }
+      
       // Converte o formato "Mmm/yyyy" para uma data
       // Ex: "Mai/2023" -> 01/05/2023
       const dateParts = monthYear.split('/');
@@ -37,6 +55,11 @@ export function useChartDrilldown({
       // Criar primeiro e último dia do mês
       const firstDayOfMonth = startOfMonth(new Date(year, monthIndex));
       const lastDayOfMonth = endOfMonth(new Date(year, monthIndex));
+      
+      // Verificar se as datas criadas são válidas
+      if (isNaN(firstDayOfMonth.getTime()) || isNaN(lastDayOfMonth.getTime())) {
+        throw new Error('Data inválida gerada');
+      }
       
       // Atualizar DateRange
       onDateRangeChange({

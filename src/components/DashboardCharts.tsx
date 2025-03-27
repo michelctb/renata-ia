@@ -3,7 +3,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { Transaction } from '@/lib/supabase';
 import { DateRange } from 'react-day-picker';
 import { useClientTransactions } from './charts/hooks/useClientTransactions';
-import { useFilteredTransactions, useMonthlyChartData, useCategoryChartData } from './charts/hooks/useChartData';
+import { useFilteredTransactions } from './charts/hooks/useFilteredTransactions';
+import { useMonthlyChartData, useCategoryChartData } from './charts/hooks/useChartData';
 import { useMetasData } from './charts/hooks/useMetasData';
 import { useMetasProgress } from './charts/hooks/useMetaProgress';
 import { useChartDrilldown } from './charts/hooks/useChartDrilldown';
@@ -13,6 +14,7 @@ import { CategoryChartsContainer } from './charts/CategoryChartsContainer';
 import { MetaProgressDisplay } from './charts/MetaProgressDisplay';
 import { ActiveFilters } from './charts/ActiveFilters';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useDateValidation } from '@/hooks/useDateValidation';
 
 type DashboardChartsProps = {
   transactions?: Transaction[];
@@ -32,6 +34,12 @@ export default function DashboardCharts({
   // State for transaction type toggle
   const [transactionType, setTransactionType] = useState<'saída' | 'entrada'>('saída');
   const isMobile = useIsMobile();
+  const { isValidDateRange, getSafeDateRange } = useDateValidation();
+  
+  // Usar um dateRange validado para evitar problemas com datas inválidas
+  const validDateRange = useMemo(() => {
+    return getSafeDateRange(dateRange);
+  }, [dateRange, getSafeDateRange]);
   
   // Load client transactions if in consultor viewMode
   const clientTransactions = useClientTransactions(clientId, viewMode);
@@ -57,10 +65,10 @@ export default function DashboardCharts({
   });
   
   // Load metas data
-  const metas = useMetasData(dateRange, clientId, viewMode);
+  const metas = useMetasData(validDateRange, clientId, viewMode);
   
   // Filter transactions by date range - apenas para graficos de categoria e metas
-  const filteredTransactions = useFilteredTransactions(transactions, dateRange);
+  const filteredTransactions = useFilteredTransactions(transactions, validDateRange);
   
   // Filtrar transações por categoria se necessário
   const { filteredByCategory } = useDrilldownFiltering(

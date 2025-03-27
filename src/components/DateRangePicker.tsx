@@ -1,7 +1,7 @@
 
 import * as React from "react";
 import { CalendarIcon } from "lucide-react";
-import { addDays, format } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 
@@ -25,6 +25,42 @@ export default function DateRangePicker({
   onDateRangeChange,
   className,
 }: DateRangePickerProps) {
+  // Função de formatação segura que verifica se a data é válida antes de formatar
+  const formatSafeDate = (date: Date | undefined): string => {
+    if (!date || isNaN(date.getTime())) {
+      return "";
+    }
+    return format(date, "dd/MM/yyyy", { locale: ptBR });
+  };
+
+  // Obter o texto a ser exibido no botão com base no intervalo de datas
+  const getButtonText = (): React.ReactNode => {
+    if (!dateRange) {
+      return <span>Selecione um período</span>;
+    }
+    
+    if (dateRange.from) {
+      if (dateRange.to) {
+        const fromText = formatSafeDate(dateRange.from);
+        const toText = formatSafeDate(dateRange.to);
+        if (fromText && toText) {
+          return (
+            <>
+              {fromText} - {toText}
+            </>
+          );
+        }
+      } else {
+        const fromText = formatSafeDate(dateRange.from);
+        if (fromText) {
+          return fromText;
+        }
+      }
+    }
+    
+    return <span>Selecione um período</span>;
+  };
+
   return (
     <div className={cn("grid gap-2", className)}>
       <Popover>
@@ -38,29 +74,19 @@ export default function DateRangePicker({
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {dateRange?.from ? (
-              dateRange.to ? (
-                <>
-                  {format(dateRange.from, "dd/MM/yyyy", { locale: ptBR })} -{" "}
-                  {format(dateRange.to, "dd/MM/yyyy", { locale: ptBR })}
-                </>
-              ) : (
-                format(dateRange.from, "dd/MM/yyyy", { locale: ptBR })
-              )
-            ) : (
-              <span>Selecione um período</span>
-            )}
+            {getButtonText()}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             initialFocus
             mode="range"
-            defaultMonth={dateRange?.from}
+            defaultMonth={dateRange?.from && !isNaN(dateRange.from.getTime()) ? dateRange.from : undefined}
             selected={dateRange}
             onSelect={onDateRangeChange}
             numberOfMonths={2}
             locale={ptBR}
+            className="pointer-events-auto"
           />
         </PopoverContent>
       </Popover>

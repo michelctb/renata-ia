@@ -13,9 +13,21 @@ export function useFilteredTransactions(
   dateRange?: DateRange | null
 ) {
   return useMemo(() => {
-    if (!dateRange || !dateRange.from) return transactions;
+    // Verificar se o dateRange existe e tem datas válidas
+    if (!dateRange || !dateRange.from || isNaN(dateRange.from.getTime())) {
+      return transactions;
+    }
     
-    console.log(`Filtering chart data with date range: ${dateRange.from.toISOString()} to ${dateRange.to?.toISOString() || 'none'}`);
+    // Validar também a data final do intervalo se existir
+    if (dateRange.to && isNaN(dateRange.to.getTime())) {
+      return transactions;
+    }
+    
+    try {
+      console.log(`Filtering chart data with date range: ${dateRange.from.toISOString()} to ${dateRange.to?.toISOString() || 'none'}`);
+    } catch (error) {
+      console.error('Error logging date range:', error);
+    }
     
     return transactions.filter(transaction => {
       try {
