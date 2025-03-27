@@ -8,6 +8,7 @@ import { PlanConversionChart } from './dashboard/PlanConversionChart';
 import { RetentionRateChart } from './dashboard/RetentionRateChart';
 import { RecurrencePreview } from './dashboard/RecurrencePreview';
 import { RecurrencePreviewConsultor } from './dashboard/RecurrencePreviewConsultor';
+import { ConsultorRevenueChartCard } from './dashboard/ConsultorRevenueChartCard';
 import { Cliente } from '@/lib/supabase/types';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -97,6 +98,13 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
           )}
         </div>
       </div>
+
+      {/* Gráfico de Faturamento Mensal (apenas para consultores) */}
+      {viewMode === 'consultor' && (
+        <div className="mt-6">
+          <ConsultorRevenueChartCard clients={clients} />
+        </div>
+      )}
     </div>
   );
 };
