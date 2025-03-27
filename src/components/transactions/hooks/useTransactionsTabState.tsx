@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
+
+import { useState } from 'react';
 import { Transaction } from '@/lib/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTransactionFiltering } from '../useTransactionFiltering';
-import { useTransactionSubmit, useTransactionDelete, useTransactionReload, useBatchEdit } from './index';
-import { useCategories } from '@/hooks/categories';
 import { useTransactionSelection } from './useTransactionSelection';
-import { useTransactionDialogs } from './useTransactionDialogs';
+import { useTransactionsFilters } from './useTransactionsFilters';
+import { useTransactionsDialogs } from './useTransactionsDialogs';
+import { useTransactionsOperations } from './useTransactionsOperations';
+import { useBatchEdit } from './useBatchEdit';
+import { useCategories } from '@/hooks/categories';
 
 type UseTransactionsTabStateProps = {
   transactions: Transaction[];
@@ -21,7 +22,8 @@ type UseTransactionsTabStateProps = {
 };
 
 /**
- * Custom hook that encapsulates the state and logic for the TransactionsTab component.
+ * Hook principal que encapsula o estado e a lógica do componente TransactionsTab.
+ * Coordena os hooks especializados.
  */
 export function useTransactionsTabState({
   transactions,
@@ -36,93 +38,80 @@ export function useTransactionsTabState({
 }: UseTransactionsTabStateProps) {
   const { user } = useAuth();
   
-  // Use hooks específicos
+  // Obter o ID do usuário correto com base no modo de visualização
+  const userId = (viewMode === 'consultor' && clientId) ? clientId : user?.id;
+  
+  // Hook para selecionar transações
   const {
     editingTransaction, 
     setEditingTransaction,
     transactionToDelete,
     setTransactionToDelete,
-    deleteDialogOpen,
-    setDeleteDialogOpen,
     handleAddNew: selectionHandleAddNew,
     handleEdit: selectionHandleEdit,
     handleDeleteRequest: selectionHandleDeleteRequest,
     isUserActive
   } = useTransactionSelection(viewMode);
   
-  const localDialogs = useTransactionDialogs();
+  // Hook para gerenciar diálogos
+  const dialogStates = useTransactionsDialogs({
+    isFormOpen: propIsFormOpen,
+    setIsFormOpen: propSetIsFormOpen
+  });
   
-  // Use provided props or local state for form open state
-  const isFormOpen = propIsFormOpen !== undefined ? propIsFormOpen : localDialogs.isFormOpen;
-  const setIsFormOpen = propSetIsFormOpen || localDialogs.setIsFormOpen;
+  const {
+    isFormOpen,
+    setIsFormOpen,
+    deleteDialogOpen,
+    setDeleteDialogOpen,
+    handleCloseForm
+  } = dialogStates;
   
-  // Get the correct user ID based on view mode
-  const userId = (viewMode === 'consultor' && clientId) ? clientId : user?.id;
+  // Hook para filtrar transações
+  const filteringData = useTransactionsFilters({
+    transactions,
+    dateRange,
+    setDateRange,
+    selectedCategory
+  });
   
-  // Custom hooks for transaction management
-  const { 
-    searchTerm, 
-    setSearchTerm, 
+  const {
+    searchTerm,
+    setSearchTerm,
     filteredTransactions,
     hasFilters,
     totalReceived,
     totalSpent
-  } = useTransactionFiltering(transactions, dateRange, selectedCategory);
+  } = filteringData;
   
-  const { 
-    handleSubmitTransaction, 
-    isSubmitting 
-  } = useTransactionSubmit({
+  // Hook para operações CRUD
+  const operations = useTransactionsOperations({
     userId: userId || '',
     setTransactions,
-    onSuccess: () => {
+    dateRange,
+    onFormSuccess: () => {
       setIsFormOpen(false);
       setEditingTransaction(null);
-    }
-  });
-  
-  const { 
-    handleDeleteTransaction,
-    isDeleting
-  } = useTransactionDelete({
-    setTransactions,
-    onSuccess: () => {
+    },
+    onDeleteSuccess: () => {
       setDeleteDialogOpen(false);
       setTransactionToDelete(null);
     }
   });
   
   const {
-    reloadTransactions,
-    isReloading
-  } = useTransactionReload({
-    userId: userId || '',
-    setTransactions
-  });
+    handleSubmitTransaction,
+    handleDeleteTransaction,
+    isLoading
+  } = operations;
 
-  // Batch edit functionality
-  const {
-    selectedTransactions,
-    isBatchEditOpen,
-    isUpdating,
-    handleSelectTransaction,
-    handleSelectAll,
-    openBatchEdit,
-    closeBatchEdit,
-    processBatchEdit
-  } = useBatchEdit({
+  // Hook para edição em lote
+  const batchEditState = useBatchEdit({
     setTransactions
   });
 
   // Carregar categorias para o formulário de edição em lote
   const { categories, isLoading: isLoadingCategories } = useCategories(userId || '');
-  
-  // Reload when date range changes
-  useEffect(() => {
-    if (userId) {
-      reloadTransactions();
-    }
-  }, [userId, dateRange]);
   
   // Adaptadores para manter a mesma interface dos métodos originais
   const handleAddNew = () => {
@@ -150,24 +139,15 @@ export function useTransactionsTabState({
     }
   };
   
-  // Confirm delete
+  // Confirmar exclusão
   const handleConfirmDelete = async () => {
     if (transactionToDelete) {
       await handleDeleteTransaction(transactionToDelete.id as number);
     }
   };
-  
-  // Close form
-  const handleCloseForm = () => {
-    localDialogs.handleCloseForm();
-    setIsFormOpen(false);
-    setEditingTransaction(null);
-  };
 
-  const isLoading = isSubmitting || isDeleting || isReloading || isUpdating;
-  
   return {
-    // State
+    // Estado
     userId,
     isFormOpen,
     deleteDialogOpen,
@@ -175,7 +155,7 @@ export function useTransactionsTabState({
     transactionToDelete,
     isLoading,
     
-    // Filtering data
+    // Dados de filtragem
     searchTerm,
     setSearchTerm,
     filteredTransactions,
@@ -196,25 +176,16 @@ export function useTransactionsTabState({
     setDeleteDialogOpen,
     setIsFormOpen,
     
-    // User state
+    // Estado do usuário
     isUserActive,
     
-    // View state
+    // Estado da visualização
     isReadOnly: viewMode === 'consultor',
 
-    // Batch edit
-    batchEdit: {
-      selectedTransactions,
-      isBatchEditOpen,
-      handleSelectTransaction,
-      handleSelectAll,
-      openBatchEdit,
-      closeBatchEdit,
-      processBatchEdit,
-      isUpdating
-    },
+    // Edição em lote
+    batchEdit: batchEditState,
 
-    // Categories for batch edit form
+    // Categorias para o formulário de edição em lote
     categories,
     isLoadingCategories
   };
