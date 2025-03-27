@@ -9,6 +9,7 @@ import { RetentionRateChart } from './dashboard/RetentionRateChart';
 import { RecurrencePreview } from './dashboard/RecurrencePreview';
 import { RecurrencePreviewConsultor } from './dashboard/RecurrencePreviewConsultor';
 import { ConsultorRevenueChartCard } from './dashboard/ConsultorRevenueChartCard';
+import { ConsultorRevenueChart } from './dashboard/ConsultorRevenueChart';
 import { Cliente } from '@/lib/supabase/types';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -49,7 +50,7 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
               <CardDescription>
                 {viewMode === 'admin' 
                   ? 'Visualize o crescimento e conversão de usuários ao longo do tempo'
-                  : 'Visualize o crescimento e retenção de clientes ao longo do tempo'
+                  : 'Visualize o crescimento, retenção e faturamento dos clientes ao longo do tempo'
                 }
               </CardDescription>
             </CardHeader>
@@ -62,9 +63,10 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
                     <TabsTrigger value="retention">Retenção</TabsTrigger>
                   </TabsList>
                 ) : (
-                  <TabsList className="grid grid-cols-2 mb-6">
+                  <TabsList className="grid grid-cols-3 mb-6">
                     <TabsTrigger value="growth">Crescimento</TabsTrigger>
                     <TabsTrigger value="retention">Retenção</TabsTrigger>
+                    <TabsTrigger value="revenue">Faturamento</TabsTrigger>
                   </TabsList>
                 )}
                 
@@ -81,6 +83,12 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
                 <TabsContent value="retention" className="min-h-[350px]">
                   <RetentionRateChart clients={clients} />
                 </TabsContent>
+
+                {viewMode === 'consultor' && (
+                  <TabsContent value="revenue" className="min-h-[350px]">
+                    <ConsultorRevenueChart clients={clients} />
+                  </TabsContent>
+                )}
               </Tabs>
             </CardContent>
             <CardFooter className="text-sm text-muted-foreground">
@@ -99,12 +107,7 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
         </div>
       </div>
 
-      {/* Gráfico de Faturamento Mensal (apenas para consultores) */}
-      {viewMode === 'consultor' && (
-        <div className="mt-6">
-          <ConsultorRevenueChartCard clients={clients} />
-        </div>
-      )}
+      {/* Removido o gráfico de faturamento mensal independente, pois agora está integrado nas abas */}
     </div>
   );
 };

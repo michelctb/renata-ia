@@ -24,3 +24,4 @@ export const ConsultorRevenueChartCard = ({ clients }: ConsultorRevenueChartCard
     </Card>
   );
 };
+
