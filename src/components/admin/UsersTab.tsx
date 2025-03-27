@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,28 +7,32 @@ import { toast } from 'sonner';
 import { Cliente, updateCliente, deleteCliente, addCliente } from '@/lib/clientes';
 import UserManagementDialog from '@/components/admin/UserManagementDialog';
 import { useAuth } from '@/contexts/AuthContext';
-
 interface UsersTabProps {
   clients: Cliente[];
   isLoading: boolean;
   loadClients: () => Promise<void>;
 }
-
-const UsersTab: React.FC<UsersTabProps> = ({ clients, isLoading, loadClients }) => {
-  const { user, isAdmin } = useAuth();
+const UsersTab: React.FC<UsersTabProps> = ({
+  clients,
+  isLoading,
+  loadClients
+}) => {
+  const {
+    user,
+    isAdmin
+  } = useAuth();
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<Cliente | null>(null);
-
   const handleEditUser = (client: Cliente) => {
-    setEditingUser({...client});
+    setEditingUser({
+      ...client
+    });
     setIsAddUserDialogOpen(true);
   };
-
   const handleDeleteUser = async (clientId: string) => {
     if (!confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.')) {
       return;
     }
-    
     try {
       await deleteCliente(clientId);
       toast.success('Usuário excluído com sucesso');
@@ -39,7 +42,6 @@ const UsersTab: React.FC<UsersTabProps> = ({ clients, isLoading, loadClients }) 
       toast.error('Erro ao excluir usuário');
     }
   };
-
   const handleUserSave = async (client: Cliente) => {
     try {
       if (editingUser) {
@@ -49,7 +51,7 @@ const UsersTab: React.FC<UsersTabProps> = ({ clients, isLoading, loadClients }) 
       } else {
         // Gerar ID para novo usuário
         const newClientId = crypto.randomUUID().substring(0, 8);
-        
+
         // Criar novo usuário com ID gerado e consultor associado (se aplicável)
         const newClient = {
           ...client,
@@ -57,12 +59,11 @@ const UsersTab: React.FC<UsersTabProps> = ({ clients, isLoading, loadClients }) 
           consultor: !isAdmin() && user?.id ? user.id : null,
           perfil: 'consultorado' // Definir o perfil como 'consultorado' para usuários adicionados por consultores
         };
-        
+
         // Adicionar usuário
         await addCliente(newClient);
         toast.success('Usuário adicionado com sucesso');
       }
-      
       setIsAddUserDialogOpen(false);
       setEditingUser(null);
       loadClients(); // Recarregar a lista após adicionar/atualizar
@@ -71,29 +72,25 @@ const UsersTab: React.FC<UsersTabProps> = ({ clients, isLoading, loadClients }) 
       toast.error('Erro ao salvar usuário');
     }
   };
-
-  return (
-    <>
+  return <>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div>
-            <CardTitle>Gerenciamento de Usuários</CardTitle>
+            <CardTitle>Gerenciamento de Clientes</CardTitle>
             <CardDescription>
-              {isAdmin() 
-                ? 'Visualize e gerencie todos os usuários do sistema' 
-                : 'Visualize e gerencie os usuários vinculados a você'}
+              {isAdmin() ? 'Visualize e gerencie todos os usuários do sistema' : 'Visualize e gerencie os usuários vinculados a você'}
             </CardDescription>
           </div>
-          <Button onClick={() => {setEditingUser(null); setIsAddUserDialogOpen(true);}} className="flex items-center gap-1">
+          <Button onClick={() => {
+          setEditingUser(null);
+          setIsAddUserDialogOpen(true);
+        }} className="flex items-center gap-1">
             <UserPlus className="h-4 w-4" />
             Novo Usuário
           </Button>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center py-8">Carregando...</div>
-          ) : (
-            <div className="rounded-md border">
+          {isLoading ? <div className="flex justify-center py-8">Carregando...</div> : <div className="rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -108,15 +105,11 @@ const UsersTab: React.FC<UsersTabProps> = ({ clients, isLoading, loadClients }) 
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {clients.length === 0 ? (
-                    <TableRow>
+                  {clients.length === 0 ? <TableRow>
                       <TableCell colSpan={8} className="text-center py-6 text-muted-foreground">
                         Nenhum usuário encontrado
                       </TableCell>
-                    </TableRow>
-                  ) : (
-                    clients.map((client) => (
-                      <TableRow key={client.id_cliente}>
+                    </TableRow> : clients.map(client => <TableRow key={client.id_cliente}>
                         <TableCell className="font-medium">{client.nome || '-'}</TableCell>
                         <TableCell>{client.id_cliente}</TableCell>
                         <TableCell>{client.telefone || '-'}</TableCell>
@@ -130,46 +123,26 @@ const UsersTab: React.FC<UsersTabProps> = ({ clients, isLoading, loadClients }) 
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              onClick={() => handleEditUser(client)}
-                            >
+                            <Button variant="ghost" size="icon" onClick={() => handleEditUser(client)}>
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              onClick={() => handleDeleteUser(client.id_cliente)}
-                              className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                            >
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(client.id_cliente)} className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </TableCell>
-                      </TableRow>
-                    ))
-                  )}
+                      </TableRow>)}
                 </TableBody>
               </Table>
-            </div>
-          )}
+            </div>}
         </CardContent>
       </Card>
       
       {/* Diálogo de Gestão de Usuários */}
-      <UserManagementDialog 
-        isOpen={isAddUserDialogOpen}
-        onClose={() => {
-          setIsAddUserDialogOpen(false);
-          setEditingUser(null);
-        }}
-        onSave={handleUserSave}
-        userToEdit={editingUser}
-        isAdminMode={isAdmin()}
-      />
-    </>
-  );
+      <UserManagementDialog isOpen={isAddUserDialogOpen} onClose={() => {
+      setIsAddUserDialogOpen(false);
+      setEditingUser(null);
+    }} onSave={handleUserSave} userToEdit={editingUser} isAdminMode={isAdmin()} />
+    </>;
 };
-
 export default UsersTab;
