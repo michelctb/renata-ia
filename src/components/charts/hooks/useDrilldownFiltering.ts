@@ -18,7 +18,7 @@ export function useDrilldownFiltering(
     const normalizedCategoryFilter = categoryFilter.toLowerCase().trim();
     
     // Se a categoria for "Outros", precisa tratar de forma especial
-    const isOthersCategory = normalizedCategoryFilter.startsWith("outros");
+    const isOthersCategory = normalizedCategoryFilter.includes("outros");
     
     const filtered = transactions.filter(transaction => {
       // Se a transação não tiver categoria definida, não incluir nos resultados
@@ -26,8 +26,8 @@ export function useDrilldownFiltering(
       
       const transactionCategory = transaction.categoria.toLowerCase().trim();
       
-      // Para a categoria "Outros", incluímos todas as transações que começam com "outros"
-      if (isOthersCategory && transactionCategory.startsWith("outros")) {
+      // Para a categoria "Outros", incluímos todas as transações que incluem "outros"
+      if (isOthersCategory && transactionCategory.includes("outros")) {
         return true;
       }
       

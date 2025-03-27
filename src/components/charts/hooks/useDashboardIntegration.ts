@@ -5,7 +5,7 @@ import { useChartDrilldown } from './useChartDrilldown';
 
 type UseDashboardIntegrationProps = {
   setDateRange?: (dateRange: DateRange) => void;
-  onCategoryFilterChange?: (category: string | null) => void;  // Adicionado prop para callback
+  onCategoryFilterChange?: (category: string | null) => void;
 };
 
 /**
@@ -24,7 +24,7 @@ export function useDashboardIntegration({
     clearAllDrilldownFilters
   } = useChartDrilldown({
     onDateRangeChange: setDateRange,
-    onCategoryFilterChange  // Propagando o callback
+    onCategoryFilterChange
   });
 
   // Log de mudanças para debug

@@ -41,8 +41,8 @@ export function ExpensesPieChart({
   }
 
   // Função para lidar com o clique em uma fatia do gráfico
-  const handlePieClick = (data: any) => {
-    console.log('Clique no gráfico de pizza:', data);
+  const handlePieClick = (data: any, index: number) => {
+    console.log('Clique no gráfico de pizza:', data, 'index:', index);
     if (onCategoryClick && data && data.name) {
       onCategoryClick(data.name);
     }
@@ -60,7 +60,7 @@ export function ExpensesPieChart({
   return (
     <div className="h-full flex flex-col">
       {onCategoryClick && interactiveMessage}
-      <ResponsiveContainer width="100%" height={onCategoryClick ? "calc(100% - 20px)" : "100%"}>
+      <ResponsiveContainer width="100%" height={onCategoryClick ? "90%" : "100%"}>
         <PieChart>
           <Pie
             data={processedData}
@@ -68,7 +68,7 @@ export function ExpensesPieChart({
             cy="50%"
             labelLine={false}
             label={PieChartLabel}
-            outerRadius={120}
+            outerRadius={80}
             fill="#8884d8"
             dataKey="value"
             onClick={onCategoryClick ? handlePieClick : undefined}
@@ -76,11 +76,10 @@ export function ExpensesPieChart({
             // Destacar a fatia selecionada
             activeIndex={selectedCategory ? processedData.findIndex(item => item.name === selectedCategory) : undefined}
             activeShape={(props) => {
-              // Apenas retorna o mesmo shape, mas com uma animação de escala
               return {
                 ...props,
-                innerRadius: 5, // adiciona um pequeno espaço interno
-                opacity: 0.8 // deixa um pouco mais transparente
+                innerRadius: 5,
+                opacity: 0.8
               };
             }}
           >
@@ -88,7 +87,6 @@ export function ExpensesPieChart({
               <Cell 
                 key={`cell-${index}`} 
                 fill={renderColors[index % renderColors.length]} 
-                // Aplica um estilo de destaque para a categoria selecionada
                 stroke={entry.name === selectedCategory ? "#000" : "none"}
                 strokeWidth={entry.name === selectedCategory ? 2 : 0}
               />
