@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react';
 import { Transaction } from '@/lib/supabase/types';
 import { DateRange } from 'react-day-picker';
 import { parseISO, startOfDay, endOfDay } from 'date-fns';
-import { zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz';
+import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 
 const TIMEZONE = 'America/Sao_Paulo';
 
@@ -33,14 +33,14 @@ export function useTransactionFiltering(
           const transactionDateUTC = parseISO(transactionDateStr);
           
           // Converte para o fuso horário desejado (America/Sao_Paulo)
-          const transactionDateSaoPaulo = utcToZonedTime(transactionDateUTC, TIMEZONE);
+          const transactionDateSaoPaulo = toZonedTime(transactionDateUTC, TIMEZONE);
           
           // Normaliza para o início do dia no fuso horário de São Paulo
           const transactionDate = startOfDay(transactionDateSaoPaulo);
           
           // Normalizar as datas do intervalo para garantir consistência no fuso horário de São Paulo
-          const fromDate = dateRange.from ? startOfDay(utcToZonedTime(dateRange.from, TIMEZONE)) : null;
-          const toDate = dateRange.to ? endOfDay(utcToZonedTime(dateRange.to, TIMEZONE)) : null;
+          const fromDate = dateRange.from ? startOfDay(toZonedTime(dateRange.from, TIMEZONE)) : null;
+          const toDate = dateRange.to ? endOfDay(toZonedTime(dateRange.to, TIMEZONE)) : null;
           
           // Filter by start date if provided
           if (fromDate && transactionDate < fromDate) {

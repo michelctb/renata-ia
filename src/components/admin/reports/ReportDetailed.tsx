@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { format, parseISO } from 'date-fns';
-import { utcToZonedTime } from 'date-fns-tz';
+import { toZonedTime } from 'date-fns-tz';
 
 const TIMEZONE = 'America/Sao_Paulo';
 
@@ -39,7 +39,7 @@ const ReportDetailed: React.FC<ReportDetailedProps> = ({ transactions }) => {
                     <TableRow key={transaction.id}>
                       <TableCell>
                         {format(
-                          utcToZonedTime(parseISO(transaction.data), TIMEZONE),
+                          toZonedTime(parseISO(transaction.data), TIMEZONE),
                           'dd/MM/yyyy'
                         )}
                       </TableCell>

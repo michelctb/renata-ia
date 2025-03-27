@@ -7,7 +7,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Transaction } from '@/lib/supabase/types';
 import { parseISO } from 'date-fns';
-import { utcToZonedTime } from 'date-fns-tz';
+import { toZonedTime } from 'date-fns-tz';
 
 const TIMEZONE = 'America/Sao_Paulo';
 
@@ -34,7 +34,7 @@ export function TransactionRow({
   const isExpense = type === 'saída';
 
   // Formatação da data considerando o fuso horário de São Paulo
-  const dateSaoPaulo = utcToZonedTime(parseISO(transaction.data), TIMEZONE);
+  const dateSaoPaulo = toZonedTime(parseISO(transaction.data), TIMEZONE);
   const formattedDate = format(dateSaoPaulo, 'dd MMM yyyy', { locale: ptBR });
   const formattedValue = formatCurrency(transaction.valor);
 

@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { fetchTransactions } from '@/lib/supabase/transactions';
 import { DateRange } from 'react-day-picker';
 import { format, isWithinInterval, subMonths, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { utcToZonedTime, formatInTimeZone } from 'date-fns-tz';
+import { toZonedTime, formatInTimeZone } from 'date-fns-tz';
 import { toast } from 'sonner';
 
 const TIMEZONE = 'America/Sao_Paulo';
@@ -94,14 +93,14 @@ export function useReportData(selectedClient: string | null, dateRange: DateRang
         // Converter para o fuso horário de São Paulo
         const transactionDateStr = transaction.data;
         const transactionDateUTC = parseISO(transactionDateStr);
-        const transactionDateSaoPaulo = utcToZonedTime(transactionDateUTC, TIMEZONE);
+        const transactionDateSaoPaulo = toZonedTime(transactionDateUTC, TIMEZONE);
         
         // Normalizar para o início do dia
         const transactionDate = startOfDay(transactionDateSaoPaulo);
         
         // Normalizar as datas do intervalo para o fuso horário de São Paulo
-        const fromDate = dateRange.from ? startOfDay(utcToZonedTime(dateRange.from, TIMEZONE)) : null;
-        const toDate = dateRange.to ? endOfDay(utcToZonedTime(dateRange.to, TIMEZONE)) : null;
+        const fromDate = dateRange.from ? startOfDay(toZonedTime(dateRange.from, TIMEZONE)) : null;
+        const toDate = dateRange.to ? endOfDay(toZonedTime(dateRange.to, TIMEZONE)) : null;
         
         if (fromDate && toDate) {
           return isWithinInterval(transactionDate, {
@@ -128,7 +127,7 @@ export function useReportData(selectedClient: string | null, dateRange: DateRang
       try {
         // Converter para o fuso horário de São Paulo
         const dateUTC = parseISO(item.data);
-        const dateSaoPaulo = utcToZonedTime(dateUTC, TIMEZONE);
+        const dateSaoPaulo = toZonedTime(dateUTC, TIMEZONE);
         
         const monthYear = format(dateSaoPaulo, 'MMM/yyyy', { locale: ptBR });
         

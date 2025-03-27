@@ -2,7 +2,7 @@
 import { toast } from 'sonner';
 import { svgToImage } from './chartExport';
 import { parseISO, format } from 'date-fns';
-import { formatInTimeZone } from 'date-fns-tz';
+import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
 
 // Importar as funções que estavam faltando
 import { formatMetasDataForReport, formatCategoryDataForReport } from './chartExport';

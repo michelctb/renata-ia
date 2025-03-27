@@ -6,7 +6,7 @@ import { Transaction } from '@/lib/supabase';
 import { formatCurrency } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
 import { parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
-import { utcToZonedTime } from 'date-fns-tz';
+import { toZonedTime } from 'date-fns-tz';
 
 const TIMEZONE = 'America/Sao_Paulo';
 
@@ -34,14 +34,14 @@ const SummaryCards = ({ transactions, dateRange }: SummaryCardsProps) => {
         // Parse a data da transação e converter para o fuso horário de São Paulo
         const transactionDateStr = transaction.data;
         const transactionDateUTC = parseISO(transactionDateStr);
-        const transactionDateSaoPaulo = utcToZonedTime(transactionDateUTC, TIMEZONE);
+        const transactionDateSaoPaulo = toZonedTime(transactionDateUTC, TIMEZONE);
         
         // Normalizar para o início do dia
         const transactionDate = startOfDay(transactionDateSaoPaulo);
         
         // Normalizar as datas do intervalo para o fuso horário de São Paulo
-        const fromDate = startOfDay(utcToZonedTime(dateRange.from, TIMEZONE));
-        const toDate = dateRange.to ? endOfDay(utcToZonedTime(dateRange.to, TIMEZONE)) : null;
+        const fromDate = startOfDay(toZonedTime(dateRange.from, TIMEZONE));
+        const toDate = dateRange.to ? endOfDay(toZonedTime(dateRange.to, TIMEZONE)) : null;
         
         if (fromDate && toDate) {
           // Verificar se a data da transação está dentro do intervalo (inclusivo)
