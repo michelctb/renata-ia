@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -35,13 +34,16 @@ const Header = () => {
   }, [location]);
 
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-lg bg-white/80 dark:bg-slate-900/80 border-b border-slate-200/80 dark:border-slate-800/80">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Link to="/landing" className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Renata.ia
-          </Link>
-        </div>
+    <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-sm">
+      <div className="container flex h-16 items-center">
+        <Link to="/" className="flex items-center gap-2 font-bold mr-6">
+          <img
+            src="/lovable-uploads/14875af2-1f77-4e8e-af52-102a211d5723.png"
+            alt="Renata.ia Logo"
+            className="h-8 w-auto"
+          />
+          <span>Renata.ia</span>
+        </Link>
         <nav className="hidden md:flex items-center gap-6">
           <button 
             onClick={() => scrollToSection('recursos')} 

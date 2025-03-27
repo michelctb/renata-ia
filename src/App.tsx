@@ -29,7 +29,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/landing" element={<Landing />} />
+              <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/admin" element={<Admin />} />
@@ -40,7 +40,7 @@ const App = () => (
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/consultores" element={<Consultores />} />
-              <Route path="/" element={<Navigate to="/landing" />} />
+              <Route path="/landing" element={<Navigate to="/" />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
