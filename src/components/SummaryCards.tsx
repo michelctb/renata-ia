@@ -1,11 +1,10 @@
-
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowDownIcon, ArrowUpIcon, TrendingUpIcon } from 'lucide-react';
 import { Transaction } from '@/lib/supabase';
 import { formatCurrency } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
-import { parseISO, isWithinInterval } from 'date-fns';
+import { parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 
 type SummaryCardsProps = {
   transactions: Transaction[];
@@ -28,27 +27,21 @@ const SummaryCards = ({ transactions, dateRange }: SummaryCardsProps) => {
       if (!dateRange || !dateRange.from) return true;
       
       try {
-        // Parse the date directly from the ISO string
+        // Parse a data da transação, ignorando o fuso horário
         const transactionDateStr = transaction.data;
-        const transactionDate = parseISO(transactionDateStr);
+        const transactionDate = startOfDay(parseISO(transactionDateStr));
         
-        if (dateRange.from && dateRange.to) {
-          // Log para debug em casos específicos
-          if (transactionDateStr.includes('2025-03-01')) {
-            console.log('Verificando transação de 01/03:', 
-              transactionDateStr,
-              'Range:', dateRange.from.toISOString(), 'até', dateRange.to.toISOString(),
-              'Está no intervalo?', 
-              transactionDate >= dateRange.from && transactionDate <= dateRange.to
-            );
-          }
-          
+        // Normalizar as datas do intervalo para garantir consistência
+        const fromDate = startOfDay(dateRange.from);
+        const toDate = dateRange.to ? endOfDay(dateRange.to) : null;
+        
+        if (fromDate && toDate) {
           // Verificar se a data da transação está dentro do intervalo (inclusivo)
-          return transactionDate >= dateRange.from && transactionDate <= dateRange.to;
+          return transactionDate >= fromDate && transactionDate <= toDate;
         }
         
-        if (dateRange.from) {
-          return transactionDate >= dateRange.from;
+        if (fromDate) {
+          return transactionDate >= fromDate;
         }
         
         return true;

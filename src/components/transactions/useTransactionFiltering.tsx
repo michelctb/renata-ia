@@ -2,6 +2,7 @@
 import { useState, useMemo } from 'react';
 import { Transaction } from '@/lib/supabase/types';
 import { DateRange } from 'react-day-picker';
+import { parseISO, startOfDay, endOfDay } from 'date-fns';
 
 /**
  * Custom hook for filtering transactions based on search term and date range
@@ -22,23 +23,31 @@ export function useTransactionFiltering(
     // Filter by date range if provided
     if (dateRange?.from || dateRange?.to) {
       filtered = filtered.filter(transaction => {
-        const transactionDate = new Date(transaction.data);
+        const transactionDateStr = transaction.data;
         
-        // Filter by start date if provided
-        if (dateRange.from && transactionDate < dateRange.from) {
-          return false;
-        }
-        
-        // Filter by end date if provided
-        if (dateRange.to) {
-          const endDate = new Date(dateRange.to);
-          endDate.setHours(23, 59, 59, 999); // End of day
-          if (transactionDate > endDate) {
+        try {
+          // Parse a data ignorando o fuso horário
+          const transactionDate = startOfDay(parseISO(transactionDateStr));
+          
+          // Normalizar as datas do intervalo para garantir consistência
+          const fromDate = dateRange.from ? startOfDay(dateRange.from) : null;
+          const toDate = dateRange.to ? endOfDay(dateRange.to) : null;
+          
+          // Filter by start date if provided
+          if (fromDate && transactionDate < fromDate) {
             return false;
           }
+          
+          // Filter by end date if provided
+          if (toDate && transactionDate > toDate) {
+            return false;
+          }
+          
+          return true;
+        } catch (error) {
+          console.error('Erro ao processar data para filtragem:', transaction.data, error);
+          return false;
         }
-        
-        return true;
       });
     }
     
@@ -47,8 +56,8 @@ export function useTransactionFiltering(
       const normalizedSearchTerm = searchTerm.toLowerCase().trim();
       
       filtered = filtered.filter(transaction => {
-        const description = transaction.descrição.toLowerCase();
-        const category = transaction.categoria.toLowerCase();
+        const description = transaction.descrição?.toLowerCase() || '';
+        const category = transaction.categoria?.toLowerCase() || '';
         
         // Check if any field contains the search term
         return (

@@ -2,7 +2,7 @@
 import { useMemo } from 'react';
 import { Transaction } from '@/lib/supabase';
 import { DateRange } from 'react-day-picker';
-import { format, parseISO, isWithinInterval } from 'date-fns';
+import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export function useFilteredTransactions(
@@ -16,19 +16,25 @@ export function useFilteredTransactions(
     
     return transactions.filter(transaction => {
       try {
-        // Parse the date directly from ISO string
+        // Garantir que a string da data está em formato ISO
         const transactionDateStr = transaction.data;
-        const transactionDate = parseISO(transactionDateStr);
         
-        if (dateRange.from && dateRange.to) {
+        // Parse a data ignorando o fuso horário
+        const transactionDate = startOfDay(parseISO(transactionDateStr));
+        
+        // Ajustar as datas do intervalo para início e fim do dia
+        const fromDate = startOfDay(dateRange.from);
+        const toDate = dateRange.to ? endOfDay(dateRange.to) : null;
+        
+        if (fromDate && toDate) {
           return isWithinInterval(transactionDate, { 
-            start: dateRange.from, 
-            end: dateRange.to 
+            start: fromDate, 
+            end: toDate 
           });
         }
         
-        if (dateRange.from) {
-          return transactionDate >= dateRange.from;
+        if (fromDate) {
+          return transactionDate >= fromDate;
         }
         
         return true;

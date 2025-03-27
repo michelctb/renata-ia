@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { fetchTransactions } from '@/lib/supabase/transactions';
 import { DateRange } from 'react-day-picker';
-import { format, isWithinInterval, subMonths } from 'date-fns';
+import { format, isWithinInterval, subMonths, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 
@@ -87,30 +86,52 @@ export function useReportData(selectedClient: string | null, dateRange: DateRang
     
     // Filtrar por data range
     const filteredData = data.filter(transaction => {
-      const transactionDate = new Date(transaction.data);
-      return dateRange.from && dateRange.to && 
-        isWithinInterval(transactionDate, {
-          start: dateRange.from,
-          end: dateRange.to
-        });
+      try {
+        const transactionDateStr = transaction.data;
+        const transactionDate = startOfDay(parseISO(transactionDateStr));
+        
+        // Normalizar as datas do intervalo para garantir consistência
+        const fromDate = dateRange.from ? startOfDay(dateRange.from) : null;
+        const toDate = dateRange.to ? endOfDay(dateRange.to) : null;
+        
+        if (fromDate && toDate) {
+          return isWithinInterval(transactionDate, {
+            start: fromDate,
+            end: toDate
+          });
+        }
+        
+        if (fromDate) {
+          return transactionDate >= fromDate;
+        }
+        
+        return true;
+      } catch (error) {
+        console.error('Erro ao processar data para relatório:', transaction.data, error);
+        return false;
+      }
     });
 
     // Processar dados mensais (receitas e despesas por mês)
     const monthlyDataMap = new Map();
     
     filteredData.forEach(item => {
-      const date = new Date(item.data);
-      const monthYear = format(date, 'MMM/yyyy', { locale: ptBR });
-      
-      if (!monthlyDataMap.has(monthYear)) {
-        monthlyDataMap.set(monthYear, { month: monthYear, receitas: 0, despesas: 0 });
-      }
-      
-      const monthData = monthlyDataMap.get(monthYear);
-      if (item.operação === 'entrada') {
-        monthData.receitas += Number(item.valor || 0);
-      } else if (item.operação === 'saída') {
-        monthData.despesas += Number(item.valor || 0);
+      try {
+        const date = parseISO(item.data);
+        const monthYear = format(date, 'MMM/yyyy', { locale: ptBR });
+        
+        if (!monthlyDataMap.has(monthYear)) {
+          monthlyDataMap.set(monthYear, { month: monthYear, receitas: 0, despesas: 0 });
+        }
+        
+        const monthData = monthlyDataMap.get(monthYear);
+        if (item.operação === 'entrada') {
+          monthData.receitas += Number(item.valor || 0);
+        } else if (item.operação === 'saída') {
+          monthData.despesas += Number(item.valor || 0);
+        }
+      } catch (error) {
+        console.error('Erro ao processar dados mensais:', item, error);
       }
     });
     

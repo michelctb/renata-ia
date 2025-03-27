@@ -1,6 +1,10 @@
 
 import { toast } from 'sonner';
-import { svgToImage, formatMetasDataForReport, formatCategoryDataForReport } from './chartExport';
+import { svgToImage } from './chartExport';
+import { parseISO, format } from 'date-fns';
+
+// Importar as funções que estavam faltando
+import { formatMetasDataForReport, formatCategoryDataForReport } from './chartExport';
 
 /**
  * Converte elementos SVG para imagens
@@ -27,6 +31,23 @@ export const convertSvgsToImages = async (svgElements: NodeListOf<Element>): Pro
 };
 
 /**
+ * Formata datas ISO para o formato do relatório, ignorando o fuso horário
+ * @param isoDate - Data em formato ISO
+ * @returns Data formatada para o relatório
+ */
+export const formatDateForReport = (isoDate: string | Date | null | undefined): string | null => {
+  if (!isoDate) return null;
+  
+  try {
+    const date = typeof isoDate === 'string' ? parseISO(isoDate) : isoDate;
+    return format(date, 'yyyy-MM-dd');
+  } catch (error) {
+    console.error('Erro ao formatar data para relatório:', error);
+    return null;
+  }
+};
+
+/**
  * Prepara os dados do relatório
  */
 export const prepareReportData = (
@@ -41,8 +62,8 @@ export const prepareReportData = (
     geradoEm: new Date().toISOString(),
     clientId: clientId || 'user-dashboard',
     periodo: dateRange ? {
-      inicio: dateRange.from?.toISOString(),
-      fim: dateRange.to?.toISOString()
+      inicio: formatDateForReport(dateRange.from),
+      fim: formatDateForReport(dateRange.to)
     } : null,
     totalTransacoes: transactions.length,
     metas: formatMetasDataForReport(metasComProgresso),
