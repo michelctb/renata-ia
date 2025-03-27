@@ -17,15 +17,15 @@ const ClienteDepoimentos = () => {
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           <ClienteTestimonialCard
-            quote="Com a Renata.ia consegui organizar minhas finanças e finalmente começar a poupar para realizar meus sonhos."
+            quote="A Renata.ia transformou minha relação com o dinheiro. Antes eu vivia no vermelho, sem conseguir planejar nada. Agora consigo visualizar todos os meus gastos, estabelecer metas claras e finalmente estou economizando. O que mais me impressionou é como a plataforma me alerta sobre gastos excessivos e me sugere onde posso economizar. Já recomendei para toda a minha família e amigos que também tinham dificuldades com as finanças."
             author="Beatriz Alexandre"
           />
           <ClienteTestimonialCard
-            quote="A visualização clara dos meus gastos mudou completamente minha relação com o dinheiro. Agora sei exatamente onde economizar."
+            quote="Sempre fui desorganizada com minhas finanças e acabava gastando sem perceber. Com a Renata.ia, finalmente consegui visualizar para onde vai meu dinheiro a cada mês. A plataforma me ajudou a identificar padrões de consumo que eu nem percebia e agora consigo economizar até 30% da minha renda. O sistema de categorização automática e os alertas de orçamento são exatamente o que eu precisava para manter o controle. Estou muito satisfeita com os resultados!"
             author="Jéssica Oliveira"
           />
           <ClienteTestimonialCard
-            quote="Nunca imaginei que seria tão fácil controlar meu orçamento. A Renata.ia simplificou todo o processo para mim."
+            quote="Durante anos tentei usar planilhas para controlar meus gastos, mas sempre acabava desistindo por falta de praticidade. A Renata.ia simplificou todo esse processo para mim. Consigo registrar despesas rapidamente, visualizar relatórios detalhados e acompanhar minhas metas de economia em tempo real. O recurso que mais gosto é poder fotografar recibos e notas fiscais que são automaticamente categorizados. É impressionante como a plataforma tornou o controle financeiro algo simples e até prazeroso!"
             author="Camila Alves"
           />
           <ClienteTestimonialCard
