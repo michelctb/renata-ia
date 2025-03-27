@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,10 +7,11 @@ import { useClientData } from '@/hooks/useClientData';
 import { fetchTransactions } from '@/lib/supabase/transactions';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import DateRangePicker from '@/components/DateRangePicker';
-import { format, subMonths, isWithinInterval } from 'date-fns';
+import { format, subMonths, isWithinInterval, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { ReportGenerator } from '@/components/reports/ReportGenerator';
+import { DateRange } from 'react-day-picker';
 
 const ReportsTab: React.FC = () => {
   const { clients, isLoading } = useClientData();
@@ -19,10 +19,7 @@ const ReportsTab: React.FC = () => {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
   const [activeTab, setActiveTab] = useState('resumo');
-  const [dateRange, setDateRange] = useState<{
-    from: Date | undefined;
-    to: Date | undefined;
-  }>({
+  const [dateRange, setDateRange] = useState<DateRange>({
     from: subMonths(new Date(), 3),
     to: new Date()
   });
@@ -90,8 +87,14 @@ const ReportsTab: React.FC = () => {
     
     const processedMonthlyData = Array.from(monthlyDataMap.values())
       .sort((a, b) => {
-        const dateA = new Date(a.month.split('/')[1], ptBR.months.indexOf(a.month.split('/')[0]));
-        const dateB = new Date(b.month.split('/')[1], ptBR.months.indexOf(b.month.split('/')[0]));
+        const monthA = a.month.split('/')[0];
+        const yearA = a.month.split('/')[1];
+        const monthB = b.month.split('/')[0];
+        const yearB = b.month.split('/')[1];
+        
+        const dateA = new Date(`${yearA}-${getMonthNumberFromName(monthA)}-01`);
+        const dateB = new Date(`${yearB}-${getMonthNumberFromName(monthB)}-01`);
+        
         return dateA.getTime() - dateB.getTime();
       });
     
@@ -131,6 +134,16 @@ const ReportsTab: React.FC = () => {
       }
     ]);
   };
+  
+  // Função auxiliar para obter o número do mês a partir do nome abreviado
+  const getMonthNumberFromName = (monthName: string): string => {
+    const monthIndex = [
+      'jan', 'fev', 'mar', 'abr', 'mai', 'jun', 
+      'jul', 'ago', 'set', 'out', 'nov', 'dez'
+    ].findIndex(m => monthName.toLowerCase().startsWith(m)) + 1;
+    
+    return monthIndex < 10 ? `0${monthIndex}` : `${monthIndex}`;
+  };
 
   // Atualizar processamento quando mudar o date range
   useEffect(() => {
@@ -149,6 +162,11 @@ const ReportsTab: React.FC = () => {
     // Em uma implementação real, aqui enviaríamos os dados para um endpoint que geraria
     // um arquivo Excel ou PDF, ou usaríamos uma biblioteca como xlsx ou jspdf
     toast.success("Relatório gerado com sucesso!");
+  };
+
+  // Função para lidar com mudanças no intervalo de datas
+  const handleDateRangeChange = (range: DateRange) => {
+    setDateRange(range);
   };
 
   return (
@@ -175,7 +193,7 @@ const ReportsTab: React.FC = () => {
               <label className="text-sm font-medium mb-2 block">Selecione o período</label>
               <DateRangePicker 
                 dateRange={dateRange}
-                onDateRangeChange={setDateRange}
+                onDateRangeChange={handleDateRangeChange}
                 className="w-full"
               />
             </div>
@@ -366,7 +384,6 @@ const ReportsTab: React.FC = () => {
             </div>
           )}
           
-          {/* Componente para geração de relatórios avançados */}
           {transactions.length > 0 && (
             <ReportGenerator 
               transactions={transactions}
