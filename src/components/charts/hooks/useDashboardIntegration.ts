@@ -36,6 +36,11 @@ export function useDashboardIntegration({
       onCategoryFilterChange(selectedCategory);
     }
   }, [selectedCategory, onCategoryFilterChange]);
+  
+  // Log para mudanças no mês selecionado
+  useEffect(() => {
+    console.log('DashboardIntegration - Mês selecionado mudou para:', selectedMonth);
+  }, [selectedMonth]);
 
   return {
     selectedMonth,

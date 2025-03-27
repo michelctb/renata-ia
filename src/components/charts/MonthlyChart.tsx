@@ -50,6 +50,7 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChart
 
   // Função para lidar com o clique em uma barra
   const handleBarClick = (data: any) => {
+    console.log('MonthlyChart - handleBarClick:', data);
     if (onMonthClick) {
       onMonthClick(data.name);
     }

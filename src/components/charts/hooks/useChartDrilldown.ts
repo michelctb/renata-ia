@@ -1,7 +1,8 @@
 
 import { useState, useCallback } from 'react';
 import { DateRange } from 'react-day-picker';
-import { startOfMonth, endOfMonth } from 'date-fns';
+import { startOfMonth, endOfMonth, parse } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 type UseChartDrilldownProps = {
   onDateRangeChange?: (dateRange: DateRange) => void;
@@ -34,6 +35,10 @@ export function useChartDrilldown({
         const today = new Date();
         const firstDayOfMonth = startOfMonth(today);
         const lastDayOfMonth = endOfMonth(today);
+        
+        console.log('Resetando dateRange para o mês atual:', 
+          { from: firstDayOfMonth, to: lastDayOfMonth });
+          
         onDateRangeChange({
           from: firstDayOfMonth,
           to: lastDayOfMonth
@@ -44,24 +49,42 @@ export function useChartDrilldown({
     
     setSelectedMonth(month);
     
-    // Converter nome do mês para número
-    const monthMap: Record<string, number> = {
-      'Jan': 0, 'Fev': 1, 'Mar': 2, 'Abr': 3, 'Mai': 4, 'Jun': 5,
-      'Jul': 6, 'Ago': 7, 'Set': 8, 'Out': 9, 'Nov': 10, 'Dez': 11
-    };
+    // Extrair mês e ano do formato "Mmm/yyyy"
+    const [monthAbbr, yearStr] = month.split('/');
+    if (!monthAbbr || !yearStr) {
+      console.error('Formato de mês inválido:', month);
+      return;
+    }
     
-    // Atualizar o dateRange para o mês clicado
-    if (onDateRangeChange && month in monthMap) {
-      const monthNumber = monthMap[month];
-      const year = new Date().getFullYear();
-      const firstDay = new Date(year, monthNumber, 1);
-      const lastDay = endOfMonth(firstDay);
+    const year = parseInt(yearStr, 10);
+    if (isNaN(year)) {
+      console.error('Ano inválido:', yearStr);
+      return;
+    }
+    
+    try {
+      // Criar uma data para o primeiro dia do mês
+      const monthDate = parse(`01 ${monthAbbr} ${year}`, 'dd MMM yyyy', new Date(), { locale: ptBR });
       
-      console.log('Atualizando dateRange para:', firstDay, 'até', lastDay);
-      onDateRangeChange({
-        from: firstDay,
-        to: lastDay
-      });
+      if (isNaN(monthDate.getTime())) {
+        throw new Error('Data inválida');
+      }
+      
+      const firstDay = startOfMonth(monthDate);
+      const lastDay = endOfMonth(monthDate);
+      
+      console.log('Atualizando dateRange para:', 
+        { month, firstDay: firstDay.toISOString(), lastDay: lastDay.toISOString() });
+      
+      // Atualizar o dateRange para o mês clicado
+      if (onDateRangeChange) {
+        onDateRangeChange({
+          from: firstDay,
+          to: lastDay
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao processar data do mês:', month, error);
     }
   }, [selectedMonth, onDateRangeChange]);
   

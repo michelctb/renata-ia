@@ -27,6 +27,13 @@ export function MonthlyChartCard({
   // Se os dados forem fornecidos diretamente, use-os
   // Caso contrário, processe os dados de todas as transações
   const chartData = data || useMonthlyChartData(transactions || []);
+  
+  // Log para debug
+  useEffect(() => {
+    if (selectedMonth) {
+      console.log('MonthlyChartCard - Mês selecionado:', selectedMonth);
+    }
+  }, [selectedMonth]);
 
   return (
     <Card className="border-none shadow-md animate-fade-up col-span-1 lg:col-span-3" style={{ animationDelay: '0.1s' }}>

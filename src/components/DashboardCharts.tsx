@@ -17,7 +17,7 @@ type DashboardChartsProps = {
   clientId?: string;
   viewMode?: 'user' | 'admin' | 'consultor';
   setDateRange?: (dateRange: DateRange) => void;
-  onCategorySelect?: (category: string | null) => void;  // Adicionado prop para passar a seleção de categoria
+  onCategorySelect?: (category: string | null) => void;
 };
 
 export default function DashboardCharts({ 
@@ -26,7 +26,7 @@ export default function DashboardCharts({
   clientId,
   viewMode = 'user',
   setDateRange,
-  onCategorySelect  // Recebendo a função de callback
+  onCategorySelect
 }: DashboardChartsProps) {
   // Detector de dispositivo móvel
   const isMobile = useIsMobile();
@@ -55,7 +55,7 @@ export default function DashboardCharts({
     clearAllDrilldownFilters
   } = useDashboardIntegration({
     setDateRange,
-    onCategoryFilterChange: onCategorySelect  // Passando o callback para o hook
+    onCategoryFilterChange: onCategorySelect
   });
   
   // Preparação de dados para o dashboard
@@ -83,7 +83,7 @@ export default function DashboardCharts({
     handleMonthClick,
     handleCategoryClick,
     clearAllDrilldownFilters,
-    setDateRange
+    setDateRange: validDateRange
   });
   
   // Logging para debug
@@ -92,10 +92,11 @@ export default function DashboardCharts({
     console.log('- Categoria selecionada:', selectedCategory);
     console.log('- Mês selecionado:', selectedMonth);
     console.log('- Transações filtradas:', filteredTransactions.length);
+    console.log('- DateRange válido:', validDateRange);
     if (selectedCategory) {
       console.log('- Transações filtradas por categoria:', filteredByCategory.length);
     }
-  }, [selectedCategory, selectedMonth, filteredTransactions, filteredByCategory.length]);
+  }, [selectedCategory, selectedMonth, filteredTransactions, filteredByCategory.length, validDateRange]);
 
   return (
     <div className={`grid grid-cols-1 ${isMobile ? '' : 'lg:grid-cols-3'} gap-6 mb-6`}>
