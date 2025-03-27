@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
@@ -10,13 +10,57 @@ import {
   CarouselNext, 
   CarouselPrevious 
 } from '@/components/ui/carousel';
+import { supabase } from '@/integrations/supabase/client';
 
 const Hero = () => {
-  const images = [
+  // Estado para armazenar as imagens do carrossel vindas do Supabase
+  const [carouselImages, setCarouselImages] = useState<string[]>([]);
+  // Imagens padrão como fallback caso o Supabase não retorne nada
+  const defaultImages = [
     "/lovable-uploads/14875af2-1f77-4e8e-af52-102a211d5723.png",
     "/lovable-uploads/05cd25e7-1e4c-46fc-a2ef-668452870824.png",
     "/lovable-uploads/06ffd448-8330-471b-b5b5-2617f8005c37.png"
   ];
+
+  // Buscar imagens do bucket do Supabase
+  useEffect(() => {
+    const fetchCarouselImages = async () => {
+      try {
+        const { data, error } = await supabase
+          .storage
+          .from('carousel-images')
+          .list();
+
+        if (error) {
+          console.error('Erro ao buscar imagens do carrossel:', error);
+          return;
+        }
+
+        if (data && data.length > 0) {
+          // Filtrar apenas arquivos de imagem
+          const imageFiles = data.filter(file => 
+            file.name.match(/\.(jpeg|jpg|png|gif|webp)$/i)
+          );
+
+          // Criar URLs públicas para as imagens
+          const imageUrls = imageFiles.map(file => {
+            const { data } = supabase.storage.from('carousel-images')
+              .getPublicUrl(file.name);
+            return data.publicUrl;
+          });
+
+          setCarouselImages(imageUrls);
+        }
+      } catch (error) {
+        console.error('Erro ao processar imagens do carrossel:', error);
+      }
+    };
+
+    fetchCarouselImages();
+  }, []);
+
+  // Usar imagens do Supabase se disponíveis, caso contrário usar as imagens padrão
+  const images = carouselImages.length > 0 ? carouselImages : defaultImages;
 
   return (
     <section className="py-20 md:py-28 bg-gradient-to-b from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-800">
