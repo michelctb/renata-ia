@@ -1,72 +1,75 @@
 
-import { useEffect } from 'react';
+import { useState, useCallback } from 'react';
+import { DateRange } from 'react-day-picker';
 import { Transaction } from '@/lib/supabase/types';
-import { useAuth } from '@/contexts/AuthContext';
-import { useTransactionSubmit } from './useTransactionSubmit';
-import { useTransactionDelete } from './useTransactionDelete';
-import { useTransactionReload } from './useTransactionReload';
+import { toast } from 'sonner';
+import { deleteTransaction } from '@/lib/supabase/transactions';
 
 type UseTransactionsOperationsProps = {
-  userId: string;
-  setTransactions: React.Dispatch<React.SetStateAction<Transaction[]>>;
+  clientId?: string;
   dateRange: DateRange | null;
-  onFormSuccess?: () => void;
-  onDeleteSuccess?: () => void;
+  filteredTransactions: Transaction[];
+  reloadTransactions: () => Promise<void>;
 };
 
 /**
- * Hook para gerenciar operações CRUD de transações
+ * Hook para gerenciar operações relacionadas a transações (adicionar, editar, remover)
  */
 export function useTransactionsOperations({
-  userId,
-  setTransactions,
+  clientId,
   dateRange,
-  onFormSuccess,
-  onDeleteSuccess
+  filteredTransactions,
+  reloadTransactions
 }: UseTransactionsOperationsProps) {
-  // Hooks para submissão, exclusão e recarregamento
-  const { 
-    handleSubmitTransaction, 
-    isSubmitting 
-  } = useTransactionSubmit({
-    userId: userId || '',
-    setTransactions,
-    onSuccess: onFormSuccess
-  });
-  
-  const { 
-    handleDeleteTransaction,
-    isDeleting
-  } = useTransactionDelete({
-    setTransactions,
-    onSuccess: onDeleteSuccess
-  });
-  
-  const {
-    reloadTransactions,
-    isReloading
-  } = useTransactionReload({
-    userId: userId || '',
-    setTransactions
-  });
+  const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
+  const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
+  const [selectedTransactions, setSelectedTransactions] = useState<Transaction[]>([]);
 
-  // Recarregar transações quando o intervalo de datas mudar
-  useEffect(() => {
-    if (userId) {
+  // Funções para manipulação de transações individuais
+  const handleTransactionEdit = useCallback((transaction: Transaction) => {
+    setTransactionToEdit(transaction);
+  }, []);
+
+  const handleTransactionDelete = useCallback(async (transaction: Transaction) => {
+    try {
+      await deleteTransaction(transaction.id!);
+      toast.success('Transação excluída com sucesso!');
       reloadTransactions();
+    } catch (error) {
+      console.error('Erro ao excluir transação:', error);
+      toast.error('Erro ao excluir transação. Tente novamente.');
     }
-  }, [userId, dateRange]);
+  }, [reloadTransactions]);
 
-  // Estado geral de carregamento
-  const isLoading = isSubmitting || isDeleting || isReloading;
+  // Funções para lidar com seleção em lote
+  const toggleTransactionSelection = useCallback((transaction: Transaction) => {
+    setSelectedTransactions(prev => {
+      // Verifica se a transação já está selecionada
+      const isSelected = prev.some(t => t.id === transaction.id);
+      
+      // Se já estiver selecionada, remove da lista
+      if (isSelected) {
+        return prev.filter(t => t.id !== transaction.id);
+      }
+      
+      // Se não estiver selecionada, adiciona à lista
+      return [...prev, transaction];
+    });
+  }, []);
+
+  const clearTransactionSelection = useCallback(() => {
+    setSelectedTransactions([]);
+  }, []);
 
   return {
-    handleSubmitTransaction,
-    handleDeleteTransaction,
-    reloadTransactions,
-    isLoading,
-    isSubmitting,
-    isDeleting,
-    isReloading
+    transactionToEdit,
+    setTransactionToEdit,
+    transactionToDelete,
+    setTransactionToDelete,
+    selectedTransactions,
+    handleTransactionEdit,
+    handleTransactionDelete,
+    toggleTransactionSelection,
+    clearTransactionSelection
   };
 }
