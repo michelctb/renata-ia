@@ -2,6 +2,7 @@
 import React from 'react';
 import { ActiveFilters } from '../ActiveFilters';
 import { Transaction } from '@/lib/supabase';
+import { DateRange } from 'react-day-picker';
 
 type UseDashboardUIProps = {
   selectedMonth: string | null;
@@ -9,11 +10,11 @@ type UseDashboardUIProps = {
   handleMonthClick: (month: string) => void;
   handleCategoryClick: (category: string) => void;
   clearAllDrilldownFilters: () => void;
-  setDateRange?: (dateRange: any) => void;
+  setDateRange?: (dateRange: DateRange) => void;
 };
 
 /**
- * Hook para renderizar elementos de UI do dashboard
+ * Hook para gerenciar elementos de UI do dashboard
  */
 export function useDashboardUI({
   selectedMonth,
@@ -33,12 +34,14 @@ export function useDashboardUI({
         selectedMonth={selectedMonth}
         selectedCategory={selectedCategory}
         onClearMonth={() => {
-          if (setDateRange) {
-            handleMonthClick(selectedMonth!);  // Clicando novamente no mesmo mês remove o filtro
+          if (setDateRange && selectedMonth) {
+            handleMonthClick(selectedMonth);  // Clicando novamente no mesmo mês remove o filtro
           }
         }}
         onClearCategory={() => {
-          handleCategoryClick(selectedCategory!);  // Clicando novamente na mesma categoria remove o filtro
+          if (selectedCategory) {
+            handleCategoryClick(selectedCategory);  // Clicando novamente na mesma categoria remove o filtro
+          }
         }}
         onClearAll={clearAllDrilldownFilters}
       />

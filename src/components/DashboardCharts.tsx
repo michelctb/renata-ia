@@ -83,7 +83,7 @@ export default function DashboardCharts({
     handleMonthClick,
     handleCategoryClick,
     clearAllDrilldownFilters,
-    setDateRange: validDateRange
+    setDateRange // Passando a função, não o objeto DateRange
   });
   
   // Logging para debug
