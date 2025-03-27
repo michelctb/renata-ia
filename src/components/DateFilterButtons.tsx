@@ -5,6 +5,7 @@ import { DateRange } from 'react-day-picker';
 import { Button } from '@/components/ui/button';
 import DateRangePicker from '@/components/DateRangePicker';
 import { Plus } from 'lucide-react';
+import { useEffect } from 'react';
 
 interface DateFilterButtonsProps {
   dateRange: DateRange | undefined;
@@ -23,37 +24,50 @@ export function DateFilterButtons({
 }: DateFilterButtonsProps) {
   const isReadOnly = viewMode === 'consultor';
   
+  // Efeito para log de mudanças no dateRange
+  useEffect(() => {
+    console.log('DateFilterButtons - dateRange atualizado:', dateRange);
+  }, [dateRange]);
+  
   const handleTodayClick = () => {
     const today = new Date();
-    onDateRangeChange({
+    const newRange = {
       from: startOfDay(today),
       to: endOfDay(today)
-    });
+    };
+    console.log('DateFilterButtons - Aplicando filtro de hoje:', newRange);
+    onDateRangeChange(newRange);
   };
 
   const handleThisWeekClick = () => {
     const today = new Date();
-    onDateRangeChange({
+    const newRange = {
       from: startOfWeek(today, { locale: ptBR, weekStartsOn: 0 }),
       to: endOfWeek(today, { locale: ptBR, weekStartsOn: 0 })
-    });
+    };
+    console.log('DateFilterButtons - Aplicando filtro desta semana:', newRange);
+    onDateRangeChange(newRange);
   };
 
   const handleThisMonthClick = () => {
     const today = new Date();
-    onDateRangeChange({
+    const newRange = {
       from: startOfMonth(today),
       to: endOfMonth(today)
-    });
+    };
+    console.log('DateFilterButtons - Aplicando filtro deste mês:', newRange);
+    onDateRangeChange(newRange);
   };
 
   const handleLastMonthClick = () => {
     const today = new Date();
     const lastMonth = subMonths(today, 1);
-    onDateRangeChange({
+    const newRange = {
       from: startOfMonth(lastMonth),
       to: endOfMonth(lastMonth)
-    });
+    };
+    console.log('DateFilterButtons - Aplicando filtro do mês passado:', newRange);
+    onDateRangeChange(newRange);
   };
 
   return (

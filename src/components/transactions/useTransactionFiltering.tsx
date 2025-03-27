@@ -2,7 +2,7 @@
 import { useState, useMemo } from 'react';
 import { Transaction } from '@/lib/supabase/types';
 import { DateRange } from 'react-day-picker';
-import { parseISO, startOfDay, endOfDay } from 'date-fns';
+import { parseISO, startOfDay, endOfDay, isWithinInterval } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 
 const TIMEZONE = 'America/Sao_Paulo';
@@ -25,17 +25,29 @@ export function useTransactionFiltering(
   // Log para debug
   console.log('useTransactionFiltering - selectedCategory:', selectedCategory);
   console.log('useTransactionFiltering - total transactions:', transactions.length);
+  console.log('useTransactionFiltering - dateRange:', dateRange);
   
   const filteredTransactions = useMemo(() => {
     let filtered = transactions;
     
     // Filter by date range if provided
-    if (dateRange?.from || dateRange?.to) {
+    if (dateRange?.from) {
+      console.log('Filtrando por intervalo de datas:', dateRange);
+      
+      const fromDate = startOfDay(toZonedTime(dateRange.from, TIMEZONE));
+      const toDate = dateRange.to 
+        ? endOfDay(toZonedTime(dateRange.to, TIMEZONE))
+        : endOfDay(toZonedTime(dateRange.from, TIMEZONE));
+      
+      console.log('Intervalo normalizado:', {
+        de: fromDate.toISOString(),
+        ate: toDate.toISOString()
+      });
+      
       filtered = filtered.filter(transaction => {
-        const transactionDateStr = transaction.data;
-        
         try {
           // Parse a data da string para um objeto Date no fuso horário UTC
+          const transactionDateStr = transaction.data;
           const transactionDateUTC = parseISO(transactionDateStr);
           
           // Converte para o fuso horário desejado (America/Sao_Paulo)
@@ -44,26 +56,24 @@ export function useTransactionFiltering(
           // Normaliza para o início do dia no fuso horário de São Paulo
           const transactionDate = startOfDay(transactionDateSaoPaulo);
           
-          // Normalizar as datas do intervalo para garantir consistência no fuso horário de São Paulo
-          const fromDate = dateRange.from ? startOfDay(toZonedTime(dateRange.from, TIMEZONE)) : null;
-          const toDate = dateRange.to ? endOfDay(toZonedTime(dateRange.to, TIMEZONE)) : null;
+          // Verificar se a data da transação está dentro do intervalo
+          const result = isWithinInterval(transactionDate, {
+            start: fromDate,
+            end: toDate
+          });
           
-          // Filter by start date if provided
-          if (fromDate && transactionDate < fromDate) {
-            return false;
+          if (!result) {
+            console.log(`Transação fora do intervalo: ID=${transaction.id}, data=${transaction.data} (${transactionDate.toISOString()})`);
           }
           
-          // Filter by end date if provided
-          if (toDate && transactionDate > toDate) {
-            return false;
-          }
-          
-          return true;
+          return result;
         } catch (error) {
           console.error('Erro ao processar data para filtragem:', transaction.data, error);
           return false;
         }
       });
+      
+      console.log('Após filtro de data, restaram:', filtered.length, 'transações');
     }
     
     // Filter by category if selected
@@ -101,6 +111,8 @@ export function useTransactionFiltering(
           category.includes(normalizedSearchTerm)
         );
       });
+      
+      console.log('Após filtro de busca, restaram:', filtered.length, 'transações');
     }
     
     return filtered;
@@ -108,7 +120,7 @@ export function useTransactionFiltering(
 
   // Check if any filters are applied
   const hasFilters = searchTerm.trim().length > 0 || 
-                    (dateRange?.from !== undefined || dateRange?.to !== undefined) ||
+                    (dateRange?.from !== undefined) ||
                     !!selectedCategory;
 
   // Calculate totals for income and expense transactions

@@ -60,6 +60,12 @@ export default function DateRangePicker({
     
     return <span>Selecione um período</span>;
   };
+  
+  // Log de eventos
+  const handleDateRangeChange = (newRange: DateRange | undefined) => {
+    console.log('DateRangePicker - Nova seleção de datas:', newRange);
+    onDateRangeChange(newRange);
+  };
 
   return (
     <div className={cn("grid gap-2", className)}>
@@ -83,7 +89,7 @@ export default function DateRangePicker({
             mode="range"
             defaultMonth={dateRange?.from && !isNaN(dateRange.from.getTime()) ? dateRange.from : undefined}
             selected={dateRange}
-            onSelect={onDateRangeChange}
+            onSelect={handleDateRangeChange}
             numberOfMonths={2}
             locale={ptBR}
             className="pointer-events-auto"

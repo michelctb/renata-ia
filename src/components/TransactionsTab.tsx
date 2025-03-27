@@ -56,6 +56,11 @@ const TransactionsTab = ({
   const isFormOpen = propIsFormOpen !== undefined ? propIsFormOpen : localIsFormOpen;
   const setIsFormOpen = propSetIsFormOpen || setLocalIsFormOpen;
   
+  // Log de mudanças no dateRange
+  useEffect(() => {
+    console.log('TransactionsTab - dateRange atualizado:', dateRange);
+  }, [dateRange]);
+  
   // Sincronizar com a prop selectedCategory quando ela mudar
   useEffect(() => {
     if (propSelectedCategory !== undefined) {
@@ -67,6 +72,12 @@ const TransactionsTab = ({
   const handleCategorySelect = (category: string | null) => {
     console.log('TransactionsTab - Nova categoria selecionada:', category);
     setSelectedCategory(category);
+  };
+  
+  // Função para atualizar o intervalo de datas
+  const handleDateRangeChange = (newDateRange: DateRange | undefined) => {
+    console.log('TransactionsTab - handleDateRangeChange:', newDateRange);
+    setDateRange(newDateRange);
   };
   
   // Use the custom hook for state and logic
@@ -97,12 +108,12 @@ const TransactionsTab = ({
     transactions,
     setTransactions,
     dateRange,
-    setDateRange,
+    setDateRange: handleDateRangeChange,
     clientId,
     viewMode,
     isFormOpen,
     setIsFormOpen,
-    selectedCategory  // Passando a categoria selecionada para o hook
+    selectedCategory
   });
   
   return (
@@ -116,19 +127,19 @@ const TransactionsTab = ({
         dateRange={dateRange}
         clientId={clientId}
         viewMode={viewMode}
-        setDateRange={setDateRange}
-        onCategorySelect={handleCategorySelect}  // Passando a função de callback
+        setDateRange={handleDateRangeChange}
+        onCategorySelect={handleCategorySelect}
       />
       
       <TransactionsHeaderContainer 
         onSearch={setSearchTerm}
         searchTerm={searchTerm}
         dateRange={dateRange}
-        onDateRangeChange={setDateRange}
+        onDateRangeChange={handleDateRangeChange}
         onAddNew={handleAddNew}
         isUserActive={isUserActive}
         viewMode={viewMode}
-        selectedCategory={selectedCategory} // Passando a categoria selecionada
+        selectedCategory={selectedCategory}
       />
       
       <TransactionTableContainer
@@ -144,7 +155,7 @@ const TransactionsTab = ({
           hasFilters,
           totalReceived,
           totalSpent,
-          selectedCategory // Adicionando a categoria selecionada aos dados de filtragem
+          selectedCategory
         }}
         batchEdit={!isReadOnly ? batchEdit : undefined}
         categories={categories}
