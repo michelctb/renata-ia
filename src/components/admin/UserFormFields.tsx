@@ -91,35 +91,37 @@ const UserFormFields: React.FC<UserFormFieldsProps> = ({ isAdminMode }) => {
         />
       </div>
       
-      <div className="grid grid-cols-2 gap-4">
-        <FormField
-          control={control}
-          name="plano"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Plano</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                defaultValue={field.value || 'Mensal'}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um plano" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="Mensal">Mensal</SelectItem>
-                  <SelectItem value="Semestral">Semestral</SelectItem>
-                  <SelectItem value="Anual">Anual</SelectItem>
-                  <SelectItem value="Consultor">Consultor</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        {isAdminMode && (
+      {/* Somente mostrar seleção de plano para administradores */}
+      {isAdminMode && (
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={control}
+            name="plano"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Plano</FormLabel>
+                <Select 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value || 'Mensal'}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um plano" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Mensal">Mensal</SelectItem>
+                    <SelectItem value="Semestral">Semestral</SelectItem>
+                    <SelectItem value="Anual">Anual</SelectItem>
+                    <SelectItem value="Consultor">Consultor</SelectItem>
+                    <SelectItem value="Consultorado">Consultorado</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
           <FormField
             control={control}
             name="perfil"
@@ -145,8 +147,8 @@ const UserFormFields: React.FC<UserFormFieldsProps> = ({ isAdminMode }) => {
               </FormItem>
             )}
           />
-        )}
-      </div>
+        </div>
+      )}
       
       <FormField
         control={control}

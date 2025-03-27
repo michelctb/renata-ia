@@ -63,6 +63,7 @@ const UsersTab: React.FC<UsersTabProps> = ({
           ...client,
           id_cliente: newClientId,
           consultor: !isAdmin() && user?.id ? user.id : null,
+          plano: !isAdmin() ? 'Consultorado' : client.plano, // Define o plano como 'Consultorado' para clientes adicionados por consultores
           perfil: 'consultorado' // Definir o perfil como 'consultorado' para usuários adicionados por consultores
         };
 
@@ -85,6 +86,8 @@ const UsersTab: React.FC<UsersTabProps> = ({
     // Remove a parte @s.whatsapp.net se existir
     return phone.split('@')[0] || phone;
   };
+
+  const isConsultorView = !isAdmin();
 
   return <>
       <Card>
@@ -124,7 +127,7 @@ const UsersTab: React.FC<UsersTabProps> = ({
                 </TableHeader>
                 <TableBody>
                   {clients.length === 0 ? <TableRow>
-                      <TableCell colSpan={isAdmin() ? 8 : 6} className="text-center py-6 text-muted-foreground">
+                      <TableCell colSpan={isConsultorView ? 5 : 8} className="text-center py-6 text-muted-foreground">
                         Nenhum {isAdmin() ? 'usuário' : 'cliente'} encontrado
                       </TableCell>
                     </TableRow> : clients.map(client => <TableRow key={client.id_cliente}>
