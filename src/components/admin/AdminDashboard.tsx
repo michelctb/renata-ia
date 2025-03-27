@@ -9,6 +9,7 @@ import { RetentionRateChart } from './dashboard/RetentionRateChart';
 import { RecurrencePreview } from './dashboard/RecurrencePreview';
 import { Cliente } from '@/lib/supabase/types';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AdminDashboardProps {
   clients: Cliente[];
@@ -17,6 +18,8 @@ interface AdminDashboardProps {
 
 const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
   const [activeChart, setActiveChart] = useState('growth');
+  const { isAdmin, isConsultor } = useAuth();
+  const viewMode = isAdmin() ? 'admin' : 'consultor';
   
   if (isLoading) {
     return (
@@ -30,11 +33,11 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
   return (
     <div className="space-y-6">
       {/* Estatísticas resumidas */}
-      <UserStatsSummary clients={clients} />
+      <UserStatsSummary clients={clients} viewMode={viewMode} />
 
-      {/* Previsão de recorrência */}
+      {/* Previsão de recorrência - só mostrar para administradores */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="md:col-span-2">
+        <div className={`${viewMode === 'admin' ? 'md:col-span-2' : 'md:col-span-3'}`}>
           {/* Gráficos detalhados */}
           <Card className="bg-white dark:bg-gray-800">
             <CardHeader>
@@ -68,9 +71,11 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
           </Card>
         </div>
         
-        <div>
-          <RecurrencePreview clients={clients} />
-        </div>
+        {viewMode === 'admin' && (
+          <div>
+            <RecurrencePreview clients={clients} />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -7,9 +7,10 @@ import { formatCurrency } from '@/lib/utils';
 
 interface UserStatsSummaryProps {
   clients: Cliente[];
+  viewMode?: 'admin' | 'consultor';
 }
 
-export const UserStatsSummary = ({ clients }: UserStatsSummaryProps) => {
+export const UserStatsSummary = ({ clients, viewMode = 'admin' }: UserStatsSummaryProps) => {
   const stats = useMemo(() => {
     // Total de usuários
     const totalUsers = clients.length;
@@ -36,7 +37,7 @@ export const UserStatsSummary = ({ clients }: UserStatsSummaryProps) => {
       ? ((recentUsers / totalUsers) * 100).toFixed(1) 
       : 0;
     
-    // Distribuição por planos
+    // Distribuição por planos (apenas para admin)
     const planCounts: Record<string, number> = {};
     clients.forEach(client => {
       const plan = client.plano || 'Sem plano';
@@ -51,7 +52,7 @@ export const UserStatsSummary = ({ clients }: UserStatsSummaryProps) => {
         percentage: ((count / totalUsers) * 100).toFixed(1)
       }))[0] || { plan: 'Nenhum', count: 0, percentage: '0' };
     
-    // Total de recorrência mensal
+    // Total de recorrência mensal (apenas para admin)
     const monthlyRecurrence = clients
       .filter(client => client.ativo === true)
       .reduce((sum, client) => sum + (client.valor || 0), 0);
@@ -66,9 +67,12 @@ export const UserStatsSummary = ({ clients }: UserStatsSummaryProps) => {
       monthlyRecurrence
     };
   }, [clients]);
+  
+  // Determina o número de colunas com base no modo de visualização
+  const gridCols = viewMode === 'consultor' ? 'lg:grid-cols-3' : 'lg:grid-cols-5';
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+    <div className={`grid gap-4 md:grid-cols-2 ${gridCols}`}>
       {/* Total de Usuários */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -111,33 +115,38 @@ export const UserStatsSummary = ({ clients }: UserStatsSummaryProps) => {
         </CardContent>
       </Card>
 
-      {/* Plano Mais Popular */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Plano Mais Popular</CardTitle>
-          <LineChart className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.topPlan.plan}</div>
-          <p className="text-xs text-muted-foreground">
-            {stats.topPlan.count} usuários ({stats.topPlan.percentage}%)
-          </p>
-        </CardContent>
-      </Card>
-      
-      {/* Recorrência Mensal */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Recorrência Mensal</CardTitle>
-          <CreditCard className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-income">{formatCurrency(stats.monthlyRecurrence)}</div>
-          <p className="text-xs text-muted-foreground">
-            Previsão de faturamento
-          </p>
-        </CardContent>
-      </Card>
+      {/* Apenas para administradores: Plano Mais Popular e Recorrência Mensal */}
+      {viewMode === 'admin' && (
+        <>
+          {/* Plano Mais Popular */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Plano Mais Popular</CardTitle>
+              <LineChart className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.topPlan.plan}</div>
+              <p className="text-xs text-muted-foreground">
+                {stats.topPlan.count} usuários ({stats.topPlan.percentage}%)
+              </p>
+            </CardContent>
+          </Card>
+          
+          {/* Recorrência Mensal */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Recorrência Mensal</CardTitle>
+              <CreditCard className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-income">{formatCurrency(stats.monthlyRecurrence)}</div>
+              <p className="text-xs text-muted-foreground">
+                Previsão de faturamento
+              </p>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 };
