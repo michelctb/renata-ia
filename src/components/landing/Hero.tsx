@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 const Hero = () => {
   // Estado para armazenar as imagens do carrossel vindas do Supabase
   const [carouselImages, setCarouselImages] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   // Imagens padrão como fallback caso o Supabase não retorne nada
   const defaultImages = [
     "/lovable-uploads/14875af2-1f77-4e8e-af52-102a211d5723.png",
@@ -25,14 +26,18 @@ const Hero = () => {
   // Buscar imagens do bucket do Supabase
   useEffect(() => {
     const fetchCarouselImages = async () => {
+      setIsLoading(true);
       try {
         const { data, error } = await supabase
           .storage
           .from('carousel-images')
-          .list();
+          .list('', {
+            sortBy: { column: 'name', order: 'asc' }
+          });
 
         if (error) {
           console.error('Erro ao buscar imagens do carrossel:', error);
+          setIsLoading(false);
           return;
         }
 
@@ -42,6 +47,8 @@ const Hero = () => {
             file.name.match(/\.(jpeg|jpg|png|gif|webp)$/i)
           );
 
+          console.log('Arquivos de imagem encontrados:', imageFiles.length);
+
           // Criar URLs públicas para as imagens
           const imageUrls = imageFiles.map(file => {
             const { data } = supabase.storage.from('carousel-images')
@@ -49,10 +56,15 @@ const Hero = () => {
             return data.publicUrl;
           });
 
+          console.log('URLs das imagens geradas:', imageUrls);
           setCarouselImages(imageUrls);
+        } else {
+          console.log('Nenhuma imagem encontrada no bucket. Usando imagens padrão.');
         }
       } catch (error) {
         console.error('Erro ao processar imagens do carrossel:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -91,7 +103,13 @@ const Hero = () => {
             </div>
           </div>
           <div className="mx-auto w-full max-w-[500px] lg:max-w-none animate-fade-up overflow-hidden rounded-xl shadow-xl">
-            <AutoPlayCarousel images={images} />
+            {isLoading ? (
+              <div className="flex items-center justify-center h-[300px] bg-slate-100 dark:bg-slate-800 rounded-lg">
+                <div className="animate-pulse text-primary">Carregando imagens...</div>
+              </div>
+            ) : (
+              <AutoPlayCarousel images={images} />
+            )}
           </div>
         </div>
       </div>
@@ -159,6 +177,11 @@ const AutoPlayCarousel = ({ images }: AutoPlayCarouselProps) => {
                   height: '300px',
                   width: '100%',
                   backgroundColor: 'rgba(255, 255, 255, 0.05)'
+                }}
+                onError={(e) => {
+                  console.error(`Erro ao carregar imagem: ${image}`);
+                  // Definir uma imagem de fallback quando houver erro
+                  e.currentTarget.src = "/placeholder.svg";
                 }}
               />
             </div>
