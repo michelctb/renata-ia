@@ -3,12 +3,11 @@ import React, { useState } from 'react';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Edit, Trash2, UserPlus, ExternalLink } from 'lucide-react';
+import { Edit, Trash2, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Cliente, updateCliente, deleteCliente, addCliente } from '@/lib/clientes';
 import UserManagementDialog from '@/components/admin/UserManagementDialog';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 
 interface UsersTabProps {
   clients: Cliente[];
@@ -17,10 +16,9 @@ interface UsersTabProps {
 }
 
 const UsersTab: React.FC<UsersTabProps> = ({ clients, isLoading, loadClients }) => {
-  const { user, isAdmin, isConsultor } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<Cliente | null>(null);
-  const navigate = useNavigate();
 
   const handleEditUser = (client: Cliente) => {
     setEditingUser({...client});
@@ -72,11 +70,6 @@ const UsersTab: React.FC<UsersTabProps> = ({ clients, isLoading, loadClients }) 
       console.error('Error saving user:', error);
       toast.error('Erro ao salvar usuário');
     }
-  };
-
-  const handleViewClientDashboard = (clientId: string) => {
-    // Redirecionar para o dashboard do cliente com o ID dele na URL
-    navigate(`/${clientId}`);
   };
 
   return (
@@ -137,17 +130,6 @@ const UsersTab: React.FC<UsersTabProps> = ({ clients, isLoading, loadClients }) 
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            {isConsultor() && (
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => handleViewClientDashboard(client.id_cliente)}
-                                title="Acessar Dashboard do Cliente"
-                                className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                              >
-                                <ExternalLink className="h-4 w-4" />
-                              </Button>
-                            )}
                             <Button 
                               variant="ghost" 
                               size="icon"
