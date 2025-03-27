@@ -41,7 +41,9 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
           {/* Gráficos detalhados */}
           <Card className="bg-white dark:bg-gray-800">
             <CardHeader>
-              <CardTitle>Análise de Usuários</CardTitle>
+              <CardTitle>
+                {viewMode === 'admin' ? 'Análise de Usuários' : 'Análise de Clientes'}
+              </CardTitle>
               <CardDescription>Visualize o crescimento e conversão de usuários ao longo do tempo</CardDescription>
             </CardHeader>
             <CardContent>
