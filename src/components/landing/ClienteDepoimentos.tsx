@@ -19,22 +19,18 @@ const ClienteDepoimentos = () => {
           <ClienteTestimonialCard
             quote="Com a Renata.ia consegui organizar minhas finanças e finalmente começar a poupar para realizar meus sonhos."
             author="Beatriz Alexandre"
-            role="Professora"
           />
           <ClienteTestimonialCard
             quote="A visualização clara dos meus gastos mudou completamente minha relação com o dinheiro. Agora sei exatamente onde economizar."
             author="Jéssica Oliveira"
-            role="Engenheira"
           />
           <ClienteTestimonialCard
             quote="Nunca imaginei que seria tão fácil controlar meu orçamento. A Renata.ia simplificou todo o processo para mim."
             author="Camila Alves"
-            role="Advogada"
           />
           <ClienteTestimonialCard
-            quote="Depois que comecei a usar a plataforma, finalmente consegui sair das dívidas e começar a investir. Mudou minha vida financeira."
+            quote="Ferramenta incrível, eu sou totalmente desorganizado nas finanças, fiquei maravilhado, consegui criar categorias de gasto e me organizar, ela também me avisa as datas em que tenho que pagar as despesas, o que pra mim, foi de grande ajuda porque sempre esquecia e me originava juros, meus parabéns ao criador da ferramenta, pra mim e tenho certeza que para muitos, será de grande ajuda."
             author="Fernando Gomes"
-            role="Empresário"
           />
         </div>
       </div>

@@ -4,10 +4,9 @@ import React from 'react';
 interface TestimonialCardProps {
   quote: string;
   author: string;
-  role: string;
 }
 
-const ClienteTestimonialCard = ({ quote, author, role }: TestimonialCardProps) => (
+const ClienteTestimonialCard = ({ quote, author }: TestimonialCardProps) => (
   <div className="p-6 bg-slate-50 border border-slate-200 rounded-lg">
     <p className="italic text-slate-700 mb-4">"{quote}"</p>
     <div className="flex items-center">
@@ -16,7 +15,6 @@ const ClienteTestimonialCard = ({ quote, author, role }: TestimonialCardProps) =
       </div>
       <div className="ml-3">
         <p className="font-semibold">{author}</p>
-        <p className="text-sm text-slate-600">{role}</p>
       </div>
     </div>
   </div>
