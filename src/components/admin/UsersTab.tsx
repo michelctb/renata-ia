@@ -112,7 +112,7 @@ const UsersTab: React.FC<UsersTabProps> = ({
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome</TableHead>
-                    <TableHead>ID</TableHead>
+                    {isAdmin() && <TableHead>ID</TableHead>}
                     <TableHead>Telefone</TableHead>
                     <TableHead>Email</TableHead>
                     {isAdmin() && (
@@ -127,12 +127,12 @@ const UsersTab: React.FC<UsersTabProps> = ({
                 </TableHeader>
                 <TableBody>
                   {clients.length === 0 ? <TableRow>
-                      <TableCell colSpan={isConsultorView ? 5 : 8} className="text-center py-6 text-muted-foreground">
+                      <TableCell colSpan={isConsultorView ? 4 : 8} className="text-center py-6 text-muted-foreground">
                         Nenhum {isAdmin() ? 'usuário' : 'cliente'} encontrado
                       </TableCell>
                     </TableRow> : clients.map(client => <TableRow key={client.id_cliente}>
                         <TableCell className="font-medium">{client.nome || '-'}</TableCell>
-                        <TableCell>{client.id_cliente}</TableCell>
+                        {isAdmin() && <TableCell>{client.id_cliente}</TableCell>}
                         <TableCell>{formatPhoneNumber(client.telefone)}</TableCell>
                         <TableCell>{client.email || '-'}</TableCell>
                         {isAdmin() && (
