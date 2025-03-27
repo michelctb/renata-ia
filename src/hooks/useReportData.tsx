@@ -1,9 +1,13 @@
+
 import { useState, useEffect } from 'react';
 import { fetchTransactions } from '@/lib/supabase/transactions';
 import { DateRange } from 'react-day-picker';
 import { format, isWithinInterval, subMonths, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { utcToZonedTime, formatInTimeZone } from 'date-fns-tz';
 import { toast } from 'sonner';
+
+const TIMEZONE = 'America/Sao_Paulo';
 
 // Função auxiliar para normalizar o tipo de operação
 export const normalizeOperationType = (operation: string): 'entrada' | 'saída' => {
@@ -87,12 +91,17 @@ export function useReportData(selectedClient: string | null, dateRange: DateRang
     // Filtrar por data range
     const filteredData = data.filter(transaction => {
       try {
+        // Converter para o fuso horário de São Paulo
         const transactionDateStr = transaction.data;
-        const transactionDate = startOfDay(parseISO(transactionDateStr));
+        const transactionDateUTC = parseISO(transactionDateStr);
+        const transactionDateSaoPaulo = utcToZonedTime(transactionDateUTC, TIMEZONE);
         
-        // Normalizar as datas do intervalo para garantir consistência
-        const fromDate = dateRange.from ? startOfDay(dateRange.from) : null;
-        const toDate = dateRange.to ? endOfDay(dateRange.to) : null;
+        // Normalizar para o início do dia
+        const transactionDate = startOfDay(transactionDateSaoPaulo);
+        
+        // Normalizar as datas do intervalo para o fuso horário de São Paulo
+        const fromDate = dateRange.from ? startOfDay(utcToZonedTime(dateRange.from, TIMEZONE)) : null;
+        const toDate = dateRange.to ? endOfDay(utcToZonedTime(dateRange.to, TIMEZONE)) : null;
         
         if (fromDate && toDate) {
           return isWithinInterval(transactionDate, {
@@ -117,8 +126,11 @@ export function useReportData(selectedClient: string | null, dateRange: DateRang
     
     filteredData.forEach(item => {
       try {
-        const date = parseISO(item.data);
-        const monthYear = format(date, 'MMM/yyyy', { locale: ptBR });
+        // Converter para o fuso horário de São Paulo
+        const dateUTC = parseISO(item.data);
+        const dateSaoPaulo = utcToZonedTime(dateUTC, TIMEZONE);
+        
+        const monthYear = format(dateSaoPaulo, 'MMM/yyyy', { locale: ptBR });
         
         if (!monthlyDataMap.has(monthYear)) {
           monthlyDataMap.set(monthYear, { month: monthYear, receitas: 0, despesas: 0 });

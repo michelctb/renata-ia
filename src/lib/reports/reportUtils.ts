@@ -2,9 +2,12 @@
 import { toast } from 'sonner';
 import { svgToImage } from './chartExport';
 import { parseISO, format } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 
 // Importar as funções que estavam faltando
 import { formatMetasDataForReport, formatCategoryDataForReport } from './chartExport';
+
+const TIMEZONE = 'America/Sao_Paulo';
 
 /**
  * Converte elementos SVG para imagens
@@ -31,7 +34,7 @@ export const convertSvgsToImages = async (svgElements: NodeListOf<Element>): Pro
 };
 
 /**
- * Formata datas ISO para o formato do relatório, ignorando o fuso horário
+ * Formata datas ISO para o formato do relatório, considerando o fuso horário de São Paulo
  * @param isoDate - Data em formato ISO
  * @returns Data formatada para o relatório
  */
@@ -40,7 +43,8 @@ export const formatDateForReport = (isoDate: string | Date | null | undefined): 
   
   try {
     const date = typeof isoDate === 'string' ? parseISO(isoDate) : isoDate;
-    return format(date, 'yyyy-MM-dd');
+    // Usar formatInTimeZone para garantir que a data seja formatada no fuso horário correto
+    return formatInTimeZone(date, TIMEZONE, 'yyyy-MM-dd');
   } catch (error) {
     console.error('Erro ao formatar data para relatório:', error);
     return null;
@@ -59,7 +63,7 @@ export const prepareReportData = (
   clientId?: string
 ) => {
   return {
-    geradoEm: new Date().toISOString(),
+    geradoEm: formatInTimeZone(new Date(), TIMEZONE, 'yyyy-MM-dd\'T\'HH:mm:ssXXX'),
     clientId: clientId || 'user-dashboard',
     periodo: dateRange ? {
       inicio: formatDateForReport(dateRange.from),

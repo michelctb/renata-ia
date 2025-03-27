@@ -4,6 +4,9 @@ import { Transaction } from '@/lib/supabase';
 import { DateRange } from 'react-day-picker';
 import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { utcToZonedTime } from 'date-fns-tz';
+
+const TIMEZONE = 'America/Sao_Paulo';
 
 export function useFilteredTransactions(
   transactions: Transaction[], 
@@ -19,12 +22,16 @@ export function useFilteredTransactions(
         // Garantir que a string da data está em formato ISO
         const transactionDateStr = transaction.data;
         
-        // Parse a data ignorando o fuso horário
-        const transactionDate = startOfDay(parseISO(transactionDateStr));
+        // Converter para o fuso horário de São Paulo
+        const transactionDateUTC = parseISO(transactionDateStr);
+        const transactionDateSaoPaulo = utcToZonedTime(transactionDateUTC, TIMEZONE);
         
-        // Ajustar as datas do intervalo para início e fim do dia
-        const fromDate = startOfDay(dateRange.from);
-        const toDate = dateRange.to ? endOfDay(dateRange.to) : null;
+        // Normalizar para o início do dia
+        const transactionDate = startOfDay(transactionDateSaoPaulo);
+        
+        // Ajustar as datas do intervalo para o fuso horário de São Paulo
+        const fromDate = dateRange.from ? startOfDay(utcToZonedTime(dateRange.from, TIMEZONE)) : null;
+        const toDate = dateRange.to ? endOfDay(utcToZonedTime(dateRange.to, TIMEZONE)) : null;
         
         if (fromDate && toDate) {
           return isWithinInterval(transactionDate, { 
@@ -52,9 +59,9 @@ export function useMonthlyChartData(filteredTransactions: Transaction[]) {
     
     filteredTransactions.forEach(transaction => {
       try {
-        // Parse the date directly
+        // Parse the date and convert to São Paulo timezone
         const dateStr = transaction.data;
-        const date = parseISO(dateStr);
+        const date = utcToZonedTime(parseISO(dateStr), TIMEZONE);
         
         const monthKey = format(date, 'yyyy-MM');
         const monthLabel = format(date, 'MMM yyyy', { locale: ptBR });

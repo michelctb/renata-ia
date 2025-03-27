@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowDownIcon, ArrowUpIcon, TrendingUpIcon } from 'lucide-react';
@@ -5,6 +6,9 @@ import { Transaction } from '@/lib/supabase';
 import { formatCurrency } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
 import { parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
+import { utcToZonedTime } from 'date-fns-tz';
+
+const TIMEZONE = 'America/Sao_Paulo';
 
 type SummaryCardsProps = {
   transactions: Transaction[];
@@ -27,13 +31,17 @@ const SummaryCards = ({ transactions, dateRange }: SummaryCardsProps) => {
       if (!dateRange || !dateRange.from) return true;
       
       try {
-        // Parse a data da transação, ignorando o fuso horário
+        // Parse a data da transação e converter para o fuso horário de São Paulo
         const transactionDateStr = transaction.data;
-        const transactionDate = startOfDay(parseISO(transactionDateStr));
+        const transactionDateUTC = parseISO(transactionDateStr);
+        const transactionDateSaoPaulo = utcToZonedTime(transactionDateUTC, TIMEZONE);
         
-        // Normalizar as datas do intervalo para garantir consistência
-        const fromDate = startOfDay(dateRange.from);
-        const toDate = dateRange.to ? endOfDay(dateRange.to) : null;
+        // Normalizar para o início do dia
+        const transactionDate = startOfDay(transactionDateSaoPaulo);
+        
+        // Normalizar as datas do intervalo para o fuso horário de São Paulo
+        const fromDate = startOfDay(utcToZonedTime(dateRange.from, TIMEZONE));
+        const toDate = dateRange.to ? endOfDay(utcToZonedTime(dateRange.to, TIMEZONE)) : null;
         
         if (fromDate && toDate) {
           // Verificar se a data da transação está dentro do intervalo (inclusivo)

@@ -6,6 +6,10 @@ import { PencilIcon, Trash2Icon } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Transaction } from '@/lib/supabase/types';
+import { parseISO } from 'date-fns';
+import { utcToZonedTime } from 'date-fns-tz';
+
+const TIMEZONE = 'America/Sao_Paulo';
 
 export interface TransactionRowProps {
   transaction: Transaction;
@@ -29,7 +33,9 @@ export function TransactionRow({
   const isIncome = type === 'entrada';
   const isExpense = type === 'saída';
 
-  const formattedDate = format(new Date(transaction.data), 'dd MMM yyyy', { locale: ptBR });
+  // Formatação da data considerando o fuso horário de São Paulo
+  const dateSaoPaulo = utcToZonedTime(parseISO(transaction.data), TIMEZONE);
+  const formattedDate = format(dateSaoPaulo, 'dd MMM yyyy', { locale: ptBR });
   const formattedValue = formatCurrency(transaction.valor);
 
   return (

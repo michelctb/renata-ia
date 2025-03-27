@@ -2,7 +2,10 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
+import { utcToZonedTime } from 'date-fns-tz';
+
+const TIMEZONE = 'America/Sao_Paulo';
 
 interface ReportDetailedProps {
   transactions: any[];
@@ -27,10 +30,19 @@ const ReportDetailed: React.FC<ReportDetailedProps> = ({ transactions }) => {
               </TableHeader>
               <TableBody>
                 {transactions
-                  .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
+                  .sort((a, b) => {
+                    const dateA = parseISO(a.data);
+                    const dateB = parseISO(b.data);
+                    return dateB.getTime() - dateA.getTime();
+                  })
                   .map((transaction) => (
                     <TableRow key={transaction.id}>
-                      <TableCell>{format(new Date(transaction.data), 'dd/MM/yyyy')}</TableCell>
+                      <TableCell>
+                        {format(
+                          utcToZonedTime(parseISO(transaction.data), TIMEZONE),
+                          'dd/MM/yyyy'
+                        )}
+                      </TableCell>
                       <TableCell>{transaction.descrição || '-'}</TableCell>
                       <TableCell>{transaction.categoria || '-'}</TableCell>
                       <TableCell>{transaction.operação === 'entrada' ? 'Receita' : 'Despesa'}</TableCell>
