@@ -31,6 +31,18 @@ export default function DashboardCharts({
   // Detector de dispositivo móvel
   const isMobile = useIsMobile();
   
+  // Log inicial para debug
+  useEffect(() => {
+    console.log('DashboardCharts - Montado com props:', { 
+      hasTransactions: !!propTransactions?.length,
+      dateRange,
+      clientId,
+      viewMode,
+      hasSetDateRange: !!setDateRange,
+      hasOnCategorySelect: !!onCategorySelect
+    });
+  }, []);
+  
   // Estado base do dashboard
   const {
     transactionType,
@@ -46,6 +58,17 @@ export default function DashboardCharts({
     setDateRange
   });
   
+  // Função de callback para atualizar o DateRange
+  const handleDateRangeChange = (newDateRange: DateRange) => {
+    console.log('DashboardCharts - handleDateRangeChange recebido:', newDateRange);
+    if (setDateRange) {
+      console.log('DashboardCharts - Propagando dateRange para componente pai');
+      setDateRange(newDateRange);
+    } else {
+      console.log('DashboardCharts - Sem função setDateRange disponível');
+    }
+  };
+  
   // Integração com drill-down e outros componentes
   const {
     selectedMonth,
@@ -54,7 +77,7 @@ export default function DashboardCharts({
     handleCategoryClick,
     clearAllDrilldownFilters
   } = useDashboardIntegration({
-    setDateRange,
+    setDateRange: handleDateRangeChange,
     onCategoryFilterChange: onCategorySelect
   });
   
@@ -83,7 +106,7 @@ export default function DashboardCharts({
     handleMonthClick,
     handleCategoryClick,
     clearAllDrilldownFilters,
-    setDateRange // Passando a função, não o objeto DateRange
+    setDateRange: handleDateRangeChange // Passando a função, não o objeto DateRange
   });
   
   // Logging para debug

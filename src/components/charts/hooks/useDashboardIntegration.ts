@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { DateRange } from 'react-day-picker';
 import { useChartDrilldown } from './useChartDrilldown';
 
@@ -15,6 +15,14 @@ export function useDashboardIntegration({
   setDateRange,
   onCategoryFilterChange
 }: UseDashboardIntegrationProps) {
+  // Adicionar callback de debug para DateRange
+  const handleDateRangeChange = useCallback((newDateRange: DateRange) => {
+    console.log('useDashboardIntegration - Atualizando DateRange:', newDateRange);
+    if (setDateRange) {
+      setDateRange(newDateRange);
+    }
+  }, [setDateRange]);
+
   // Usar o hook de drill-down para gerenciar filtros interativos
   const {
     selectedMonth,
@@ -23,13 +31,14 @@ export function useDashboardIntegration({
     handleCategoryClick,
     clearAllDrilldownFilters
   } = useChartDrilldown({
-    onDateRangeChange: setDateRange,
+    onDateRangeChange: handleDateRangeChange,
     onCategoryFilterChange
   });
 
   // Log de mudanças para debug
   useEffect(() => {
-    console.log('DashboardIntegration - Categoria selecionada mudou para:', selectedCategory);
+    console.log('useDashboardIntegration - Categoria selecionada:', selectedCategory);
+    console.log('useDashboardIntegration - Callback disponível:', !!onCategoryFilterChange);
     
     // Notificar componente pai sobre a mudança na categoria selecionada
     if (onCategoryFilterChange) {
@@ -39,8 +48,9 @@ export function useDashboardIntegration({
   
   // Log para mudanças no mês selecionado
   useEffect(() => {
-    console.log('DashboardIntegration - Mês selecionado mudou para:', selectedMonth);
-  }, [selectedMonth]);
+    console.log('useDashboardIntegration - Mês selecionado:', selectedMonth);
+    console.log('useDashboardIntegration - Callback de DateRange disponível:', !!setDateRange);
+  }, [selectedMonth, setDateRange]);
 
   return {
     selectedMonth,

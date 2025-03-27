@@ -28,12 +28,22 @@ export function MonthlyChartCard({
   // Caso contrário, processe os dados de todas as transações
   const chartData = data || useMonthlyChartData(transactions || []);
   
+  // Função de callback para clique com log de debug
+  const handleMonthClick = (month: string) => {
+    console.log('MonthlyChartCard - Mês clicado:', month);
+    console.log('MonthlyChartCard - Callback disponível:', !!onMonthClick);
+    if (onMonthClick) {
+      onMonthClick(month);
+    }
+  };
+  
   // Log para debug
   useEffect(() => {
     if (selectedMonth) {
       console.log('MonthlyChartCard - Mês selecionado:', selectedMonth);
     }
-  }, [selectedMonth]);
+    console.log('MonthlyChartCard - Callback disponível:', !!onMonthClick);
+  }, [selectedMonth, onMonthClick]);
 
   return (
     <Card className="border-none shadow-md animate-fade-up col-span-1 lg:col-span-3" style={{ animationDelay: '0.1s' }}>
@@ -47,7 +57,7 @@ export function MonthlyChartCard({
       <CardContent className="h-[350px]">
         <MonthlyChart 
           data={chartData} 
-          onMonthClick={onMonthClick}
+          onMonthClick={onMonthClick ? handleMonthClick : undefined}
           selectedMonth={selectedMonth}
         />
       </CardContent>

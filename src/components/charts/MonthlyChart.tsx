@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
   TooltipProps,
 } from 'recharts';
+import { useCallback } from 'react';
 
 interface MonthlyChartProps {
   data: Array<{
@@ -49,12 +50,12 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChart
   }
 
   // Função para lidar com o clique em uma barra
-  const handleBarClick = (data: any) => {
+  const handleBarClick = useCallback((data: any) => {
     console.log('MonthlyChart - handleBarClick:', data);
     if (onMonthClick) {
       onMonthClick(data.name);
     }
-  };
+  }, [onMonthClick]);
 
   return (
     <div className="relative h-full">
@@ -96,7 +97,7 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChart
             // Adicionar cursor pointer para indicar que é clicável
             cursor="pointer" 
             // Estilizar a barra quando estiver sobre ela
-            onMouseOver={(data, index) => {
+            onMouseOver={() => {
               document.body.style.cursor = 'pointer';
             }}
             onMouseOut={() => {
