@@ -2,7 +2,7 @@
 import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Cliente } from '@/lib/clientes';
-import { format, parseISO, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths, isWithinInterval } from 'date-fns';
+import { format, parseISO, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths, isWithinInterval, isAfter, isSameMonth, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency } from '@/lib/utils';
 
@@ -18,14 +18,7 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
       return [];
     }
 
-    // Encontrar a data mais antiga criação de cliente
-    const oldestDate = clients.reduce((oldest, client) => {
-      if (!client.created_at) return oldest;
-      const createdDate = parseISO(client.created_at);
-      return createdDate < oldest ? createdDate : oldest;
-    }, new Date()); // Iniciar com data atual
-
-    // Definir intervalo de datas (de 12 meses atrás até agora)
+    // Definir intervalo de datas (de 12 meses atrás até o mês atual)
     const endDate = new Date();
     const startDate = subMonths(endDate, 11); // 12 meses incluindo o atual
     
@@ -37,35 +30,38 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
       const monthStart = startOfMonth(monthDate);
       const monthEnd = endOfMonth(monthDate);
       
-      // Filtrar clientes criados neste mês (para adesões)
-      const clientsCreatedThisMonth = clients.filter(client => {
-        if (!client.created_at) return false;
+      // Inicializar valores para o mês
+      let adhesionRevenue = 0;
+      let recurrenceRevenue = 0;
+      
+      // Para cada cliente
+      clients.forEach(client => {
+        if (!client.created_at) return;
+        
         const createdDate = parseISO(client.created_at);
-        return isWithinInterval(createdDate, {
-          start: monthStart,
-          end: monthEnd
-        });
+        
+        // Verificar se o cliente foi criado neste mês ou antes
+        if (isAfter(createdDate, monthEnd)) {
+          // Cliente ainda não existia neste mês
+          return;
+        }
+        
+        // Se o cliente foi criado neste mês exato, adicionar a adesão
+        if (isSameMonth(createdDate, monthDate)) {
+          adhesionRevenue += client.adesao || 0;
+        }
+        
+        // Se o cliente já existia neste mês, adicionar a recorrência
+        // (ou seja, se foi criado neste mês ou antes)
+        if (!isAfter(createdDate, monthEnd)) {
+          recurrenceRevenue += client.recorrencia || 0;
+        }
       });
-      
-      // Calcular total de adesões deste mês
-      const adhesionRevenue = clientsCreatedThisMonth.reduce((sum, client) => {
-        return sum + (client.adesao || 0);
-      }, 0);
-      
-      // Calcular recorrências para este mês (todos clientes ativos criados até este mês)
-      const clientsActiveUntilThisMonth = clients.filter(client => {
-        if (!client.created_at || !client.ativo) return false;
-        const createdDate = parseISO(client.created_at);
-        return createdDate <= monthEnd;
-      });
-      
-      const recurrenceRevenue = clientsActiveUntilThisMonth.reduce((sum, client) => {
-        return sum + (client.recorrencia || 0);
-      }, 0);
       
       // Retornar dados formatados para o mês
       return {
         name: format(monthDate, 'MMM', { locale: ptBR }),
+        month: format(monthDate, 'MM/yyyy'),
         adesao: adhesionRevenue,
         recorrencia: recurrenceRevenue,
         total: adhesionRevenue + recurrenceRevenue
@@ -78,7 +74,7 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 shadow-md rounded-md border text-sm">
-          <p className="font-medium">{`${label}`}</p>
+          <p className="font-medium">{`${label} (${payload[0]?.payload?.month})`}</p>
           <p className="text-red-500">{`Adesões: ${formatCurrency(payload[0].value)}`}</p>
           <p className="text-blue-500">{`Recorrências: ${formatCurrency(payload[1].value)}`}</p>
           <p className="font-medium">{`Total: ${formatCurrency(payload[2].value)}`}</p>
