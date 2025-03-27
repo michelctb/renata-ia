@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, TrendingUp, UserCheck, LineChart, CreditCard } from 'lucide-react';
@@ -71,12 +70,17 @@ export const UserStatsSummary = ({ clients, viewMode = 'admin' }: UserStatsSumma
   // Determina o número de colunas com base no modo de visualização
   const gridCols = viewMode === 'consultor' ? 'lg:grid-cols-3' : 'lg:grid-cols-5';
 
+  // Definir os termos baseado no viewMode
+  const terms = viewMode === 'admin' 
+    ? { users: 'Usuários', newUsers: 'Novos Usuários', activeUsers: 'Usuários Ativos' }
+    : { users: 'Clientes', newUsers: 'Novos Clientes', activeUsers: 'Clientes Ativos' };
+
   return (
     <div className={`grid gap-4 md:grid-cols-2 ${gridCols}`}>
-      {/* Total de Usuários */}
+      {/* Total de Usuários/Clientes */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
+          <CardTitle className="text-sm font-medium">Total de {terms.users}</CardTitle>
           <Users className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
@@ -87,10 +91,10 @@ export const UserStatsSummary = ({ clients, viewMode = 'admin' }: UserStatsSumma
         </CardContent>
       </Card>
 
-      {/* Novos Usuários */}
+      {/* Novos Usuários/Clientes */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Novos Usuários (30 dias)</CardTitle>
+          <CardTitle className="text-sm font-medium">{terms.newUsers} (30 dias)</CardTitle>
           <TrendingUp className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
@@ -101,16 +105,16 @@ export const UserStatsSummary = ({ clients, viewMode = 'admin' }: UserStatsSumma
         </CardContent>
       </Card>
 
-      {/* Usuários Ativos */}
+      {/* Usuários/Clientes Ativos */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Usuários Ativos</CardTitle>
+          <CardTitle className="text-sm font-medium">{terms.activeUsers}</CardTitle>
           <UserCheck className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{stats.activeUsers}</div>
           <p className="text-xs text-muted-foreground">
-            {stats.activePercentage}% do total de usuários
+            {stats.activePercentage}% do total de {terms.users.toLowerCase()}
           </p>
         </CardContent>
       </Card>
