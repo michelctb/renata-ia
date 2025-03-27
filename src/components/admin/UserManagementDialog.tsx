@@ -1,13 +1,9 @@
 
-import React, { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Form } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
+import React from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Cliente } from '@/lib/clientes';
-import UserFormFields from './UserFormFields';
-import { userFormSchema, UserFormValues, parsePhoneNumber, formatUserDataForSaving } from './UserFormSchema';
+import UserFormContent from './user-form/UserFormContent';
+import { useUserFormManagement } from '@/hooks/admin/useUserFormManagement';
 
 interface UserManagementDialogProps {
   isOpen: boolean;
@@ -24,57 +20,10 @@ const UserManagementDialog: React.FC<UserManagementDialogProps> = ({
   userToEdit,
   isAdminMode,
 }) => {
-  const form = useForm<UserFormValues>({
-    resolver: zodResolver(userFormSchema),
-    defaultValues: {
-      nome: '',
-      countryCode: '55',
-      phoneNumber: '',
-      email: '',
-      cpf: '',
-      ativo: true,
-      plano: 'Mensal',
-      perfil: 'user',
-      adesao: 0,
-      recorrencia: 0,
-    },
-  });
+  const { form, processFormData } = useUserFormManagement(userToEdit);
 
-  // Atualizar o formulário quando userToEdit mudar
-  useEffect(() => {
-    if (userToEdit) {
-      const { countryCode, phoneNumber } = parsePhoneNumber(userToEdit.telefone);
-      
-      form.reset({
-        nome: userToEdit.nome || '',
-        countryCode,
-        phoneNumber,
-        email: userToEdit.email || '',
-        cpf: userToEdit.cpf ? String(userToEdit.cpf) : '',
-        ativo: userToEdit.ativo !== undefined ? userToEdit.ativo : true,
-        plano: userToEdit.plano || 'Mensal',
-        perfil: userToEdit.perfil || 'user',
-        adesao: userToEdit.adesao !== undefined ? Number(userToEdit.adesao) : 0,
-        recorrencia: userToEdit.recorrencia !== undefined ? Number(userToEdit.recorrencia) : 0,
-      });
-    } else {
-      form.reset({
-        nome: '',
-        countryCode: '55',
-        phoneNumber: '',
-        email: '',
-        cpf: '',
-        ativo: true,
-        plano: 'Mensal',
-        perfil: 'user',
-        adesao: 0,
-        recorrencia: 0,
-      });
-    }
-  }, [userToEdit, form]);
-
-  const onSubmit = (values: UserFormValues) => {
-    const userData = formatUserDataForSaving(values, userToEdit);
+  const handleSubmit = (values: any) => {
+    const userData = processFormData(values);
     onSave(userData);
   };
 
@@ -87,24 +36,13 @@ const UserManagementDialog: React.FC<UserManagementDialogProps> = ({
           </DialogTitle>
         </DialogHeader>
         
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <UserFormFields isAdminMode={isAdminMode} />
-            
-            <DialogFooter className="pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit">
-                {userToEdit ? 'Atualizar' : 'Adicionar'} Usuário
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+        <UserFormContent 
+          form={form}
+          onSubmit={handleSubmit}
+          onClose={onClose}
+          isAdminMode={isAdminMode}
+          isEditing={!!userToEdit}
+        />
       </DialogContent>
     </Dialog>
   );
