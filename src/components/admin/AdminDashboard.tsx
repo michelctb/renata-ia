@@ -46,19 +46,28 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
             </CardHeader>
             <CardContent>
               <Tabs value={activeChart} onValueChange={setActiveChart} className="w-full">
-                <TabsList className="grid grid-cols-3 mb-6">
-                  <TabsTrigger value="growth">Crescimento</TabsTrigger>
-                  <TabsTrigger value="conversion">Conversão de Planos</TabsTrigger>
-                  <TabsTrigger value="retention">Retenção</TabsTrigger>
-                </TabsList>
+                {viewMode === 'admin' ? (
+                  <TabsList className="grid grid-cols-3 mb-6">
+                    <TabsTrigger value="growth">Crescimento</TabsTrigger>
+                    <TabsTrigger value="conversion">Conversão de Planos</TabsTrigger>
+                    <TabsTrigger value="retention">Retenção</TabsTrigger>
+                  </TabsList>
+                ) : (
+                  <TabsList className="grid grid-cols-2 mb-6">
+                    <TabsTrigger value="growth">Crescimento</TabsTrigger>
+                    <TabsTrigger value="retention">Retenção</TabsTrigger>
+                  </TabsList>
+                )}
                 
                 <TabsContent value="growth" className="h-80">
                   <UserGrowthChart clients={clients} />
                 </TabsContent>
                 
-                <TabsContent value="conversion" className="h-80">
-                  <PlanConversionChart clients={clients} />
-                </TabsContent>
+                {viewMode === 'admin' && (
+                  <TabsContent value="conversion" className="h-80">
+                    <PlanConversionChart clients={clients} />
+                  </TabsContent>
+                )}
                 
                 <TabsContent value="retention" className="h-80">
                   <RetentionRateChart clients={clients} />
