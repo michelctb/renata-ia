@@ -86,9 +86,11 @@ export function useTransactionsTabState({
   
   // Hook para operações CRUD
   const operations = useTransactionsOperations({
-    userId: userId || '',
-    setTransactions,
+    userId,
+    clientId,
     dateRange,
+    filteredTransactions,
+    setTransactions,
     onFormSuccess: () => {
       setIsFormOpen(false);
       setEditingTransaction(null);
