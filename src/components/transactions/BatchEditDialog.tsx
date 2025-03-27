@@ -88,19 +88,23 @@ export function BatchEditDialog({
   const getFilteredCategories = () => {
     if (selectedTransactions.length === 0) return categories;
 
-    // Verificamos se todas as transações são do mesmo tipo
-    const allSameType = selectedTransactions.every(
-      t => t.operação === selectedTransactions[0].operação
+    // Verificamos se todas as transações são do mesmo tipo e têm o campo operação definido
+    const validTransactions = selectedTransactions.filter(t => t.operação !== undefined);
+    
+    if (validTransactions.length === 0) return categories;
+    
+    const allSameType = validTransactions.every(
+      t => t.operação === validTransactions[0].operação
     );
 
-    if (allSameType) {
-      const operationType = selectedTransactions[0].operação;
+    if (allSameType && validTransactions.length > 0) {
+      const operationType = validTransactions[0].operação.toLowerCase();
       return categories.filter(
-        cat => cat.tipo === 'ambos' || cat.tipo.toLowerCase() === operationType.toLowerCase()
+        cat => cat.tipo === 'ambos' || cat.tipo.toLowerCase() === operationType
       );
     }
 
-    // Se existirem tipos misturados, exibimos apenas categorias "ambos"
+    // Se existirem tipos misturados ou indefinidos, exibimos apenas categorias "ambos"
     return categories.filter(cat => cat.tipo === 'ambos');
   };
 
