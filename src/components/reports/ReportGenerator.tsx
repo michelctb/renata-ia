@@ -1,9 +1,9 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { svgToImage, formatMetasDataForReport, formatCategoryDataForReport } from '@/lib/reports/chartExport';
 import { toast } from 'sonner';
+import { ReportButton } from './ReportButton';
+import { convertSvgsToImages, prepareReportData } from '@/lib/reports/reportUtils';
 
 interface ReportGeneratorProps {
   transactions: any[];
@@ -33,37 +33,19 @@ export const ReportGenerator: React.FC<ReportGeneratorProps> = ({
       
       // Encontre todas as SVGs dentro do container de gráficos
       const svgElements = chartsContainerRef.current.querySelectorAll('svg');
+      const images = await convertSvgsToImages(svgElements);
       
-      if (svgElements.length === 0) {
-        toast.error("Nenhum gráfico encontrado para exportar");
-        return;
-      }
-      
-      // Liste de promessas para converter cada SVG para imagem
-      const imagePromises = Array.from(svgElements).map((svg, index) => 
-        svgToImage(svg as SVGElement, 800, 500)
-          .then(base64 => ({
-            name: `grafico_${index + 1}.png`,
-            data: base64
-          }))
-      );
-      
-      // Aguarde todas as conversões
-      const images = await Promise.all(imagePromises);
+      if (images.length === 0) return;
       
       // Dados adicionais para o relatório
-      const reportData = {
-        geradoEm: new Date().toISOString(),
-        clientId: clientId || 'user-dashboard',
-        periodo: dateRange ? {
-          inicio: dateRange.from?.toISOString(),
-          fim: dateRange.to?.toISOString()
-        } : null,
-        totalTransacoes: transactions.length,
-        metas: formatMetasDataForReport(metasComProgresso),
-        categorias: formatCategoryDataForReport(categoryData),
-        images
-      };
+      const reportData = prepareReportData(
+        images,
+        transactions,
+        metasComProgresso,
+        categoryData,
+        dateRange,
+        clientId
+      );
       
       console.log("Dados do relatório prontos para envio:", reportData);
       toast.success("Relatório gerado com sucesso!");
@@ -72,90 +54,44 @@ export const ReportGenerator: React.FC<ReportGeneratorProps> = ({
     } catch (error) {
       console.error("Erro ao gerar relatório:", error);
       toast.error("Erro ao gerar relatório");
+      return null;
     }
   };
   
-  // Função específica para gerar apenas o relatório de categorias
-  const generateCategoryReport = async () => {
-    if (!chartsContainerRef.current) return;
-    
-    try {
-      // Encontre os SVGs específicos de categorias
-      const pieChartSvg = document.querySelector('.recharts-wrapper svg') as SVGElement;
-      const rankingSvg = document.querySelector('.ExpensesRanking svg') as SVGElement;
-      
-      if (!pieChartSvg || !rankingSvg) {
-        console.error("Não foi possível encontrar os gráficos de categoria");
-        return;
-      }
-      
-      // Converta os SVGs para imagens
-      const pieChartImage = await svgToImage(pieChartSvg, 800, 500);
-      const rankingImage = await svgToImage(rankingSvg, 800, 500);
-      
-      // Crie o objeto de resposta
-      const reportData = {
-        geradoEm: new Date().toISOString(),
-        clientId: clientId || 'user-dashboard',
-        periodo: dateRange ? {
-          inicio: dateRange.from?.toISOString(),
-          fim: dateRange.to?.toISOString()
-        } : null,
-        categorias: formatCategoryDataForReport(categoryData),
-        images: [
-          {
-            name: "grafico_categorias.png",
-            data: pieChartImage
-          },
-          {
-            name: "ranking_categorias.png",
-            data: rankingImage
-          }
-        ]
-      };
-      
-      return reportData;
-    } catch (error) {
-      console.error("Erro ao gerar relatório de categorias:", error);
-    }
-  };
-  
-  // Expor as funções de geração de relatório na janela global para acesso externo
-  useEffect(() => {
+  // Expor a função de geração de relatório na janela global para acesso externo
+  React.useEffect(() => {
     // Typescript: adicionando as propriedades ao objeto window
     (window as any).generateFinancialReport = async () => {
       const reportData = await generateFullReport();
       return reportData;
     };
     
-    (window as any).generateCategoryReport = async () => {
-      const reportData = await generateCategoryReport();
-      return reportData;
-    };
-    
     return () => {
       // Limpar ao desmontar
       delete (window as any).generateFinancialReport;
-      delete (window as any).generateCategoryReport;
     };
   }, [categoryData, metasComProgresso, transactions, dateRange]);
   
+  // Se não houver transações, não renderize o componente
+  if (transactions.length === 0) {
+    return null;
+  }
+  
   return (
     <div ref={chartsContainerRef}>
-      {/* Este componente atua como um wrapper para os gráficos que serão exportados */}
       <Card className="mt-4 shadow-sm">
         <CardHeader>
           <CardTitle className="text-sm font-medium">Exportar Relatório</CardTitle>
         </CardHeader>
         <CardContent>
-          <Button 
+          <ReportButton 
             onClick={generateFullReport}
             className="w-full"
             variant="outline"
             size="sm"
           >
             Gerar Relatório Completo
-          </Button>
+          </ReportButton>
         </CardContent>
       </Card>
     </div>
