@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,25 @@ import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { ReportGenerator } from '@/components/reports/ReportGenerator';
 import { DateRange } from 'react-day-picker';
+
+// Função auxiliar para normalizar o tipo de operação
+const normalizeOperationType = (operation: string): 'entrada' | 'saída' => {
+  const normalized = operation.toLowerCase().trim();
+  
+  // Verificar variações de "entrada"
+  if (normalized === 'entrada' || normalized === 'entrada' || normalized === 'receita') {
+    return 'entrada';
+  }
+  
+  // Verificar variações de "saída"
+  if (normalized === 'saída' || normalized === 'saida' || normalized === 'despesa') {
+    return 'saída';
+  }
+  
+  // Valor padrão se não for reconhecido
+  console.warn(`Tipo de operação não reconhecido: ${operation}, considerando como saída`);
+  return 'saída';
+};
 
 const ReportsTab: React.FC = () => {
   const { clients, isLoading } = useClientData();
@@ -39,8 +59,15 @@ const ReportsTab: React.FC = () => {
       setIsLoadingTransactions(true);
       try {
         const data = await fetchTransactions(selectedClient);
-        setTransactions(data);
-        processTransactionData(data);
+        
+        // Normalizar os tipos de operações antes de processar
+        const normalizedData = data.map(transaction => ({
+          ...transaction,
+          operação: normalizeOperationType(transaction.operação || '')
+        }));
+        
+        setTransactions(normalizedData);
+        processTransactionData(normalizedData);
       } catch (error) {
         console.error("Erro ao carregar transações:", error);
         toast.error("Não foi possível carregar as transações");
