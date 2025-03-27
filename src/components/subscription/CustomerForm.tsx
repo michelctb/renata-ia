@@ -15,7 +15,7 @@ import { submitToWebhook } from "./services";
 type CustomerFormProps = {
   plan: PlanType;
   onBack: () => void;
-  onComplete: () => void;
+  onComplete: (message?: string) => void;
 };
 
 const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
@@ -53,21 +53,16 @@ const CustomerForm = ({ plan, onBack, onComplete }: CustomerFormProps) => {
         toast.success(response.message);
         setSuccessMessage(response.message);
         
-        // Se for o plano de teste, apenas mostrar a mensagem
-        if (plan === 'teste') {
-          onComplete(); // Atualizar o estado da UI para mostrar tela de confirmação
-        } 
-        // Se for outro plano e tiver URL de redirecionamento, redirecionar
-        else if (response.redirectUrl) {
-          // Redirecionar para a URL recebida
+        // Se tiver URL de redirecionamento, redirecionar
+        if (response.redirectUrl) {
           console.log("Redirecting to:", response.redirectUrl);
           window.location.href = response.redirectUrl;
         } else {
-          // Se não tiver URL mas for sucesso, apenas mostrar a confirmação
-          onComplete();
+          // Se não tiver URL, exibir a tela de confirmação com a mensagem
+          onComplete(response.message);
         }
       } else {
-        // Exibir mensagem de erro
+        // Exibir mensagem de erro (sem redirecionamento)
         console.error("Error response:", response);
         setError(response.message);
         toast.error(response.message);

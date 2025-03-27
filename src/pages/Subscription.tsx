@@ -88,7 +88,7 @@ const SubscriptionPage = () => {
             <CustomerForm 
               plan={selectedPlan} 
               onBack={() => setSelectedPlan(null)} 
-              onComplete={() => handlePaymentComplete()}
+              onComplete={handlePaymentComplete}
             />
           ) : null}
         </div>
