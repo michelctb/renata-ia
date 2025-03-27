@@ -1,31 +1,33 @@
 
-import { Badge } from "@/components/ui/badge";
+import { formatCurrency } from '@/lib/utils';
 
-export interface PieChartLegendProps {
-  payload?: Array<{
-    value: string;
-    color: string;
-  }>;
-}
+export const PieChartLegend = ({ payload, selectedCategory }: any) => {
+  if (!payload || !payload.length) return null;
 
-export const PieChartLegend = ({ payload }: PieChartLegendProps) => {
-  if (!payload || payload.length === 0) return null;
-  
   return (
-    <div className="flex flex-wrap justify-center gap-2 pt-4">
-      {payload.map((entry, index) => (
-        <Badge 
-          key={`legend-${index}`}
-          className="font-medium text-xs text-white" 
-          style={{ 
-            backgroundColor: entry.color,
-            borderColor: entry.color
-          }}
-          title={entry.value}
-        >
-          {entry.value.length > 15 ? `${entry.value.substring(0, 15)}...` : entry.value}
-        </Badge>
-      ))}
-    </div>
+    <ul className="flex flex-wrap justify-center mt-2 gap-x-4 gap-y-1">
+      {payload.map((entry: any, index: number) => {
+        const isSelected = selectedCategory === entry.payload.name;
+        
+        return (
+          <li 
+            key={`item-${index}`} 
+            className={`flex items-center text-xs ${isSelected ? 'font-bold' : ''}`}
+            style={{ color: isSelected ? entry.color : 'inherit' }}
+          >
+            <span 
+              className="inline-block w-3 h-3 mr-1" 
+              style={{ 
+                backgroundColor: entry.color,
+                border: isSelected ? `2px solid ${entry.color}` : 'none',
+                boxShadow: isSelected ? '0 0 0 1px white' : 'none'
+              }}
+            />
+            <span className="mr-1">{entry.payload.name}:</span>
+            <span className="font-medium">{formatCurrency(entry.payload.value)}</span>
+          </li>
+        );
+      })}
+    </ul>
   );
 };

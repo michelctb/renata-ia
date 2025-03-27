@@ -11,12 +11,16 @@ interface CategoryChartsContainerProps {
   }>;
   transactionType: 'saída' | 'entrada';
   setTransactionType: (value: 'saída' | 'entrada') => void;
+  onCategoryClick?: (category: string) => void;
+  selectedCategory?: string | null;
 }
 
 export function CategoryChartsContainer({ 
   categoryData, 
   transactionType,
-  setTransactionType
+  setTransactionType,
+  onCategoryClick,
+  selectedCategory
 }: CategoryChartsContainerProps) {
   const chartTitle = transactionType === 'saída' ? 'Saídas por Categoria' : 'Entradas por Categoria';
   const rankingTitle = transactionType === 'saída' ? 'Ranking de Categorias (Saídas)' : 'Ranking de Categorias (Entradas)';
@@ -33,7 +37,10 @@ export function CategoryChartsContainer({
         <CardHeader className="pb-2 flex flex-row justify-between items-center">
           <div>
             <CardTitle>{chartTitle}</CardTitle>
-            <CardDescription>{chartDescription}</CardDescription>
+            <CardDescription>
+              {chartDescription}
+              {selectedCategory && <span className="ml-1 text-blue-500 font-medium">• Filtro: {selectedCategory}</span>}
+            </CardDescription>
           </div>
           <ChartSelector
             transactionType={transactionType}
@@ -41,17 +48,30 @@ export function CategoryChartsContainer({
           />
         </CardHeader>
         <CardContent className="h-[350px]">
-          <ExpensesPieChart data={categoryData} transactionType={transactionType} />
+          <ExpensesPieChart 
+            data={categoryData} 
+            transactionType={transactionType} 
+            onCategoryClick={onCategoryClick}
+            selectedCategory={selectedCategory}
+          />
         </CardContent>
       </Card>
 
       <Card className="border-none shadow-md animate-fade-up" style={{ animationDelay: '0.3s' }}>
         <CardHeader className="pb-2">
           <CardTitle>{rankingTitle}</CardTitle>
-          <CardDescription>{rankingDescription}</CardDescription>
+          <CardDescription>
+            {rankingDescription}
+            {selectedCategory && <span className="ml-1 text-blue-500 font-medium">• Filtro: {selectedCategory}</span>}
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <ExpensesRanking data={categoryData} transactionType={transactionType} />
+          <ExpensesRanking 
+            data={categoryData} 
+            transactionType={transactionType} 
+            onCategoryClick={onCategoryClick}
+            selectedCategory={selectedCategory}
+          />
         </CardContent>
       </Card>
     </>

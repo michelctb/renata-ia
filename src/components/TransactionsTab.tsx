@@ -99,6 +99,7 @@ const TransactionsTab = ({
         dateRange={dateRange}
         clientId={clientId}
         viewMode={viewMode}
+        setDateRange={setDateRange}
       />
       
       <TransactionsHeaderContainer 

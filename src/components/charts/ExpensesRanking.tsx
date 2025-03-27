@@ -11,9 +11,16 @@ interface ExpensesRankingProps {
     value: number;
   }>;
   transactionType: 'entrada' | 'saída';
+  onCategoryClick?: (category: string) => void;
+  selectedCategory?: string | null;
 }
 
-export function ExpensesRanking({ data, transactionType }: ExpensesRankingProps) {
+export function ExpensesRanking({ 
+  data, 
+  transactionType,
+  onCategoryClick,
+  selectedCategory
+}: ExpensesRankingProps) {
   const { 
     hasData, 
     dataToShow, 
@@ -41,6 +48,8 @@ export function ExpensesRanking({ data, transactionType }: ExpensesRankingProps)
               value={category.value}
               index={index}
               transactionType={transactionType}
+              onCategoryClick={onCategoryClick}
+              isSelected={selectedCategory === category.name}
             />
           ))}
           
@@ -56,7 +65,9 @@ export function ExpensesRanking({ data, transactionType }: ExpensesRankingProps)
       {/* Total sum row with a divider - always visible */}
       <div className="pt-2 mt-2 border-t-2 border-gray-300 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-card">
         <div className="flex items-center justify-between p-2">
-          <span className="font-bold text-sm">Total</span>
+          <span className="font-bold text-sm">
+            Total {selectedCategory ? `(${selectedCategory})` : ''}
+          </span>
           <span className={`font-bold ${valueTextColor}`}>
             {formatCurrency(totalValue)}
           </span>
