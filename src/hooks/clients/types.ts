@@ -6,3 +6,13 @@ export interface ClientDataHookResult {
   isLoading: boolean;
   loadClients: () => Promise<void>;
 }
+
+export interface ClientRecurrenceData {
+  totalRecurrence: number;
+  activePlans: {
+    plan: string;
+    count: number;
+    value: number;
+    totalValue: number;
+  }[];
+}

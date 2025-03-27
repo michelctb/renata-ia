@@ -1,8 +1,9 @@
 
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, TrendingUp, UserCheck, LineChart } from 'lucide-react';
+import { Users, TrendingUp, UserCheck, LineChart, CreditCard } from 'lucide-react';
 import { Cliente } from '@/lib/supabase/types';
+import { formatCurrency } from '@/lib/utils';
 
 interface UserStatsSummaryProps {
   clients: Cliente[];
@@ -50,18 +51,24 @@ export const UserStatsSummary = ({ clients }: UserStatsSummaryProps) => {
         percentage: ((count / totalUsers) * 100).toFixed(1)
       }))[0] || { plan: 'Nenhum', count: 0, percentage: '0' };
     
+    // Total de recorrência mensal
+    const monthlyRecurrence = clients
+      .filter(client => client.ativo === true)
+      .reduce((sum, client) => sum + (client.valor || 0), 0);
+      
     return {
       totalUsers,
       activeUsers,
       activePercentage,
       recentUsers,
       growthRate,
-      topPlan
+      topPlan,
+      monthlyRecurrence
     };
   }, [clients]);
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
       {/* Total de Usuários */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -114,6 +121,20 @@ export const UserStatsSummary = ({ clients }: UserStatsSummaryProps) => {
           <div className="text-2xl font-bold">{stats.topPlan.plan}</div>
           <p className="text-xs text-muted-foreground">
             {stats.topPlan.count} usuários ({stats.topPlan.percentage}%)
+          </p>
+        </CardContent>
+      </Card>
+      
+      {/* Recorrência Mensal */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Recorrência Mensal</CardTitle>
+          <CreditCard className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-income">{formatCurrency(stats.monthlyRecurrence)}</div>
+          <p className="text-xs text-muted-foreground">
+            Previsão de faturamento
           </p>
         </CardContent>
       </Card>

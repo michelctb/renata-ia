@@ -17,6 +17,7 @@ export type Cliente = {
   perfil?: 'user' | 'adm' | 'consultor' | string;
   consultor?: string;
   created_at?: string;
+  valor?: number;
 };
 
 // Fetch all clients

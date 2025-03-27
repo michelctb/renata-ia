@@ -67,6 +67,7 @@ export type Database = {
           perfil: string | null
           plano: string | null
           telefone: string | null
+          valor: number | null
         }
         Insert: {
           ativo?: boolean | null
@@ -80,6 +81,7 @@ export type Database = {
           perfil?: string | null
           plano?: string | null
           telefone?: string | null
+          valor?: number | null
         }
         Update: {
           ativo?: boolean | null
@@ -93,6 +95,7 @@ export type Database = {
           perfil?: string | null
           plano?: string | null
           telefone?: string | null
+          valor?: number | null
         }
         Relationships: []
       }
