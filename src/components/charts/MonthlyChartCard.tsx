@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MonthlyChart } from './MonthlyChart';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Transaction } from '@/lib/supabase/types';
 import { useMonthlyChartData } from './hooks/useChartData';
 
@@ -31,19 +31,19 @@ export function MonthlyChartCard({
   // Função de callback para clique com log de debug
   const handleMonthClick = (month: string) => {
     console.log('MonthlyChartCard - Mês clicado:', month);
-    console.log('MonthlyChartCard - Callback disponível:', !!onMonthClick);
     if (onMonthClick) {
       onMonthClick(month);
     }
   };
   
-  // Log para debug
+  // Log para debug apenas na primeira renderização
   useEffect(() => {
-    if (selectedMonth) {
-      console.log('MonthlyChartCard - Mês selecionado:', selectedMonth);
-    }
-    console.log('MonthlyChartCard - Callback disponível:', !!onMonthClick);
-  }, [selectedMonth, onMonthClick]);
+    console.log('MonthlyChartCard - Inicializado com:', {
+      selectedMonth,
+      hasMonthClickCallback: !!onMonthClick,
+      dataLength: chartData.length
+    });
+  }, []);
 
   return (
     <Card className="border-none shadow-md animate-fade-up col-span-1 lg:col-span-3" style={{ animationDelay: '0.1s' }}>

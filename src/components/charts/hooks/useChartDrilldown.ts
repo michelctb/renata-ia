@@ -23,11 +23,8 @@ export function useChartDrilldown({
    * Lida com clique em um mês no gráfico de barras
    */
   const handleMonthClick = useCallback((month: string) => {
-    console.log('useChartDrilldown - Mês clicado:', month);
-    
     // Se já está selecionado, desseleciona
     if (selectedMonth === month) {
-      console.log('useChartDrilldown - Removendo filtro de mês');
       setSelectedMonth(null);
       
       // Atualiza o dateRange para o mês atual
@@ -36,9 +33,6 @@ export function useChartDrilldown({
         const firstDayOfMonth = startOfMonth(today);
         const lastDayOfMonth = endOfMonth(today);
         
-        console.log('useChartDrilldown - Resetando dateRange para o mês atual:', 
-          { from: firstDayOfMonth.toISOString(), to: lastDayOfMonth.toISOString() });
-          
         onDateRangeChange({
           from: firstDayOfMonth,
           to: lastDayOfMonth
@@ -64,6 +58,7 @@ export function useChartDrilldown({
     
     try {
       // Criar uma data para o primeiro dia do mês
+      // Formato: "01 MMM yyyy", ex: "01 mar 2025"
       const monthDate = parse(`01 ${monthAbbr} ${year}`, 'dd MMM yyyy', new Date(), { locale: ptBR });
       
       if (isNaN(monthDate.getTime())) {
@@ -72,12 +67,6 @@ export function useChartDrilldown({
       
       const firstDay = startOfMonth(monthDate);
       const lastDay = endOfMonth(monthDate);
-      
-      console.log('useChartDrilldown - Atualizando dateRange para:', { 
-        month, 
-        firstDay: firstDay.toISOString(), 
-        lastDay: lastDay.toISOString() 
-      });
       
       // Atualizar o dateRange para o mês clicado
       if (onDateRangeChange) {
@@ -95,12 +84,8 @@ export function useChartDrilldown({
    * Lida com clique em uma categoria no gráfico de pizza
    */
   const handleCategoryClick = useCallback((category: string) => {
-    console.log('useChartDrilldown - Categoria clicada:', category);
-    console.log('useChartDrilldown - Categoria selecionada anteriormente:', selectedCategory);
-    
     // Se a categoria clicada já está selecionada, remove o filtro
     if (selectedCategory === category) {
-      console.log('useChartDrilldown - Removendo filtro de categoria');
       setSelectedCategory(null);
       if (onCategoryFilterChange) {
         onCategoryFilterChange(null);
@@ -109,7 +94,6 @@ export function useChartDrilldown({
     }
     
     // Caso contrário, aplica o filtro
-    console.log('useChartDrilldown - Aplicando filtro de categoria:', category);
     setSelectedCategory(category);
     
     // Notifica o componente pai sobre a mudança
@@ -139,15 +123,13 @@ export function useChartDrilldown({
     }
   }, [onDateRangeChange, onCategoryFilterChange]);
 
-  // Adicionando um efeito para log dos estados atuais
+  // Log inicial apenas na primeira renderização
   useEffect(() => {
-    console.log('useChartDrilldown - Estado atual:', { 
-      selectedMonth, 
-      selectedCategory,
+    console.log('useChartDrilldown - Inicializado com callbacks:', { 
       hasDateRangeCallback: !!onDateRangeChange,
       hasCategoryCallback: !!onCategoryFilterChange
     });
-  }, [selectedMonth, selectedCategory, onDateRangeChange, onCategoryFilterChange]);
+  }, []);
 
   return {
     selectedMonth,

@@ -12,32 +12,29 @@ export function useFilteredTransactions(
   dateRange?: DateRange | null
 ) {
   return useMemo(() => {
-    // Log para debug
-    console.log('useFilteredTransactions - transactions:', transactions.length);
-    console.log('useFilteredTransactions - dateRange:', dateRange);
-    
     // Se não houver dateRange, retorna todas as transações
     if (!dateRange) {
-      console.log('useFilteredTransactions - sem dateRange, retornando todas as transactions');
       return transactions;
     }
     
     // Verificar se o dateRange e sua propriedade from são válidos
     if (!dateRange.from || isNaN(dateRange.from.getTime())) {
-      console.log('useFilteredTransactions - dateRange inválido ou sem from, retornando todas as transactions');
       return transactions;
     }
     
     const fromDate = startOfDay(toZonedTime(dateRange.from, TIMEZONE));
     let toDate = dateRange.to ? endOfDay(toZonedTime(dateRange.to, TIMEZONE)) : endOfDay(toZonedTime(dateRange.from, TIMEZONE));
     
-    // Log de debug para ver o intervalo de datas
+    // Logar uma única vez o intervalo de datas filtrado
     console.log(`Filtrando transações com intervalo de datas:`, {
       de: fromDate.toISOString(),
       ate: toDate.toISOString()
     });
     
-    return transactions.filter(transaction => {
+    let transacoesFiltradas = 0;
+    let transacoesForaIntervalo = 0;
+    
+    const filtered = transactions.filter(transaction => {
       try {
         // Garantir que a string da data está em formato ISO
         const transactionDateStr = transaction.data;
@@ -55,8 +52,10 @@ export function useFilteredTransactions(
           end: toDate 
         });
         
-        if (!isInRange) {
-          console.log(`Transação fora do intervalo: ${transaction.data} (${transactionDate.toISOString()})`);
+        if (isInRange) {
+          transacoesFiltradas++;
+        } else {
+          transacoesForaIntervalo++;
         }
         
         return isInRange;
@@ -65,5 +64,9 @@ export function useFilteredTransactions(
         return false;
       }
     });
+    
+    console.log(`Resultado da filtragem: ${transacoesFiltradas} dentro do intervalo, ${transacoesForaIntervalo} fora.`);
+    
+    return filtered;
   }, [transactions, dateRange]);
 }

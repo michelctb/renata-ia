@@ -51,7 +51,7 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChart
 
   // Função para lidar com o clique em uma barra
   const handleBarClick = useCallback((data: any) => {
-    console.log('MonthlyChart - handleBarClick:', data);
+    console.log('MonthlyChart - Clique no mês:', data.name);
     if (onMonthClick) {
       onMonthClick(data.name);
     }
@@ -120,7 +120,9 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChart
         </BarChart>
       </ResponsiveContainer>
       <div className="absolute bottom-0 right-0 text-xs text-muted-foreground pr-2 pb-1">
-        Dados de todo período {selectedMonth ? `(clique novamente em ${selectedMonth} para remover o filtro)` : '(clique em um mês para filtrar)'}
+        {selectedMonth 
+          ? `Filtro aplicado: ${selectedMonth} (clique novamente para remover)` 
+          : 'Clique em um mês para filtrar'}
       </div>
     </div>
   );

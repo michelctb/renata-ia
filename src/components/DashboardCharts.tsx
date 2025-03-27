@@ -33,11 +33,9 @@ export default function DashboardCharts({
   
   // Log inicial para debug
   useEffect(() => {
-    console.log('DashboardCharts - Montado com props:', { 
+    console.log('DashboardCharts - Inicializado com:', { 
       hasTransactions: !!propTransactions?.length,
-      dateRange,
-      clientId,
-      viewMode,
+      hasDateRange: !!dateRange,
       hasSetDateRange: !!setDateRange,
       hasOnCategorySelect: !!onCategorySelect
     });
@@ -60,12 +58,14 @@ export default function DashboardCharts({
   
   // Função de callback para atualizar o DateRange
   const handleDateRangeChange = (newDateRange: DateRange) => {
-    console.log('DashboardCharts - handleDateRangeChange recebido:', newDateRange);
+    console.log('DashboardCharts - Nova seleção de datas:', {
+      de: newDateRange.from?.toISOString(),
+      ate: newDateRange.to?.toISOString()
+    });
+    
     if (setDateRange) {
       console.log('DashboardCharts - Propagando dateRange para componente pai');
       setDateRange(newDateRange);
-    } else {
-      console.log('DashboardCharts - Sem função setDateRange disponível');
     }
   };
   
@@ -106,20 +106,8 @@ export default function DashboardCharts({
     handleMonthClick,
     handleCategoryClick,
     clearAllDrilldownFilters,
-    setDateRange: handleDateRangeChange // Passando a função, não o objeto DateRange
+    setDateRange: handleDateRangeChange
   });
-  
-  // Logging para debug
-  useEffect(() => {
-    console.log('DashboardCharts - Estado atual:');
-    console.log('- Categoria selecionada:', selectedCategory);
-    console.log('- Mês selecionado:', selectedMonth);
-    console.log('- Transações filtradas:', filteredTransactions.length);
-    console.log('- DateRange válido:', validDateRange);
-    if (selectedCategory) {
-      console.log('- Transações filtradas por categoria:', filteredByCategory.length);
-    }
-  }, [selectedCategory, selectedMonth, filteredTransactions, filteredByCategory.length, validDateRange]);
 
   return (
     <div className={`grid grid-cols-1 ${isMobile ? '' : 'lg:grid-cols-3'} gap-6 mb-6`}>
@@ -129,7 +117,7 @@ export default function DashboardCharts({
       {/* Monthly Chart Card - Usando todas as transações sem filtro */}
       <MonthlyChartCard 
         transactions={transactions} 
-        onMonthClick={setDateRange ? handleMonthClick : undefined}
+        onMonthClick={handleMonthClick}
         selectedMonth={selectedMonth}
       />
       
