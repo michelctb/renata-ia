@@ -31,7 +31,12 @@ export function ExpensesPieChart({
 }: ExpensesPieChartProps) {
   const { hasData, processedData, renderColors } = useProcessPieChartData(data, transactionType);
   
-  if (!hasData) {
+  // Debug de dados
+  console.log('ExpensesPieChart - dados recebidos:', data);
+  console.log('ExpensesPieChart - hasData:', hasData);
+  console.log('ExpensesPieChart - dados processados:', processedData);
+  
+  if (!hasData || processedData.length === 0) {
     return <EmptyChartMessage transactionType={transactionType} />;
   }
 

@@ -1,120 +1,118 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { DateRange } from 'react-day-picker';
-import { parse, startOfMonth, endOfMonth, format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { startOfMonth, endOfMonth } from 'date-fns';
 
-interface ChartDrilldownProps {
+type UseChartDrilldownProps = {
   onDateRangeChange?: (dateRange: DateRange) => void;
   onCategoryFilterChange?: (category: string | null) => void;
-}
+};
 
-export function useChartDrilldown({ 
+/**
+ * Hook para gerenciar os filtros de drill-down nos gráficos
+ */
+export function useChartDrilldown({
   onDateRangeChange,
   onCategoryFilterChange
-}: ChartDrilldownProps) {
+}: UseChartDrilldownProps) {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
-  // Função para quando o usuário clica em uma barra no gráfico mensal
-  const handleMonthClick = (monthYear: string) => {
-    if (!onDateRangeChange) return;
+  
+  /**
+   * Lida com clique em um mês no gráfico de barras
+   */
+  const handleMonthClick = useCallback((month: string) => {
+    console.log('Mês clicado:', month);
     
-    try {
-      // Se já está selecionado, limpa o filtro
-      if (selectedMonth === monthYear) {
-        setSelectedMonth(null);
-        
-        // Reset dateRange to current month
+    // Se já está selecionado, desseleciona
+    if (selectedMonth === month) {
+      console.log('Removendo filtro de mês');
+      setSelectedMonth(null);
+      
+      // Atualiza o dateRange para o mês atual
+      if (onDateRangeChange) {
         const today = new Date();
         const firstDayOfMonth = startOfMonth(today);
         const lastDayOfMonth = endOfMonth(today);
-        
         onDateRangeChange({
           from: firstDayOfMonth,
           to: lastDayOfMonth
         });
-        
-        console.log('Filtro de mês removido');
-        return;
       }
-      
-      // Converte o formato "Mmm/yyyy" para uma data
-      // Ex: "Mai/2023" -> 01/05/2023
-      const dateParts = monthYear.split('/');
-      const monthStr = dateParts[0]; // Ex: "Mai"
-      const year = parseInt(dateParts[1], 10); // Ex: 2023
-      
-      // Encontrar índice do mês a partir da abreviação
-      const monthIndex = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 
-                         'jul', 'ago', 'set', 'out', 'nov', 'dez']
-                         .findIndex(m => monthStr.toLowerCase().startsWith(m));
-      
-      if (monthIndex === -1) throw new Error(`Mês inválido: ${monthStr}`);
-      
-      // Criar primeiro e último dia do mês
-      const firstDayOfMonth = startOfMonth(new Date(year, monthIndex));
-      const lastDayOfMonth = endOfMonth(new Date(year, monthIndex));
-      
-      // Verificar se as datas criadas são válidas
-      if (isNaN(firstDayOfMonth.getTime()) || isNaN(lastDayOfMonth.getTime())) {
-        throw new Error('Data inválida gerada');
-      }
-      
-      // Atualizar DateRange
-      onDateRangeChange({
-        from: firstDayOfMonth,
-        to: lastDayOfMonth
-      });
-      
-      // Atualizar estado para mostrar o mês selecionado
-      setSelectedMonth(monthYear);
-      
-      console.log(`Filtro aplicado: ${monthYear} (${format(firstDayOfMonth, 'dd/MM/yyyy')} - ${format(lastDayOfMonth, 'dd/MM/yyyy')})`);
-    } catch (error) {
-      console.error('Erro ao processar clique no mês:', error);
+      return;
     }
-  };
-  
-  // Função para quando o usuário clica em uma categoria
-  const handleCategoryClick = (category: string) => {
-    if (!onCategoryFilterChange) return;
     
-    // Se a categoria já está selecionada, limpa o filtro
+    setSelectedMonth(month);
+    
+    // Converter nome do mês para número
+    const monthMap: Record<string, number> = {
+      'Jan': 0, 'Fev': 1, 'Mar': 2, 'Abr': 3, 'Mai': 4, 'Jun': 5,
+      'Jul': 6, 'Ago': 7, 'Set': 8, 'Out': 9, 'Nov': 10, 'Dez': 11
+    };
+    
+    // Atualizar o dateRange para o mês clicado
+    if (onDateRangeChange && month in monthMap) {
+      const monthNumber = monthMap[month];
+      const year = new Date().getFullYear();
+      const firstDay = new Date(year, monthNumber, 1);
+      const lastDay = endOfMonth(firstDay);
+      
+      console.log('Atualizando dateRange para:', firstDay, 'até', lastDay);
+      onDateRangeChange({
+        from: firstDay,
+        to: lastDay
+      });
+    }
+  }, [selectedMonth, onDateRangeChange]);
+  
+  /**
+   * Lida com clique em uma categoria no gráfico de pizza
+   */
+  const handleCategoryClick = useCallback((category: string) => {
+    console.log('Categoria clicada:', category);
+    console.log('Categoria selecionada anteriormente:', selectedCategory);
+    
+    // Se a categoria clicada já está selecionada, remove o filtro
     if (selectedCategory === category) {
+      console.log('Removendo filtro de categoria');
       setSelectedCategory(null);
-      onCategoryFilterChange(null);
-      console.log('Filtro de categoria removido');
-    } else {
-      // Caso contrário, aplica o filtro
-      setSelectedCategory(category);
-      onCategoryFilterChange(category);
-      console.log(`Filtro aplicado: categoria ${category}`);
-    }
-  };
-  
-  // Limpar todos os filtros de drill-down
-  const clearAllDrilldownFilters = () => {
-    if (selectedMonth && onDateRangeChange) {
-      // Reset date range to default (current month)
-      const today = new Date();
-      const firstDayOfMonth = startOfMonth(today);
-      const lastDayOfMonth = endOfMonth(today);
-      
-      onDateRangeChange({
-        from: firstDayOfMonth,
-        to: lastDayOfMonth
-      });
-      
-      setSelectedMonth(null);
+      if (onCategoryFilterChange) {
+        onCategoryFilterChange(null);
+      }
+      return;
     }
     
-    if (selectedCategory && onCategoryFilterChange) {
-      onCategoryFilterChange(null);
-      setSelectedCategory(null);
+    // Caso contrário, aplica o filtro
+    console.log('Aplicando filtro de categoria:', category);
+    setSelectedCategory(category);
+    
+    // Notifica o componente pai sobre a mudança
+    if (onCategoryFilterChange) {
+      onCategoryFilterChange(category);
     }
-  };
+  }, [selectedCategory, onCategoryFilterChange]);
   
+  /**
+   * Limpar todos os filtros de drill-down
+   */
+  const clearAllDrilldownFilters = useCallback(() => {
+    setSelectedMonth(null);
+    setSelectedCategory(null);
+    
+    // Notificar os callbacks
+    if (onDateRangeChange) {
+      const today = new Date();
+      onDateRangeChange({
+        from: startOfMonth(today),
+        to: endOfMonth(today)
+      });
+    }
+    
+    if (onCategoryFilterChange) {
+      onCategoryFilterChange(null);
+    }
+  }, [onDateRangeChange, onCategoryFilterChange]);
+
   return {
     selectedMonth,
     selectedCategory,

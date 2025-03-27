@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Transaction } from '@/lib/supabase/types';
 import { DateRange } from 'react-day-picker';
 import { useTransactionsTabState } from './transactions/hooks/useTransactionsTabState';
@@ -20,6 +20,7 @@ type TransactionsTabProps = {
   viewMode?: 'user' | 'admin' | 'consultor';
   isFormOpen?: boolean;
   setIsFormOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+  selectedCategory?: string | null;  // Nova prop para receber a categoria selecionada
 };
 
 /**
@@ -33,7 +34,8 @@ const TransactionsTab = ({
   clientId,
   viewMode = 'user',
   isFormOpen: propIsFormOpen,
-  setIsFormOpen: propSetIsFormOpen
+  setIsFormOpen: propSetIsFormOpen,
+  selectedCategory: propSelectedCategory
 }: TransactionsTabProps) => {
   // Initialize local state if props weren't provided
   const [localTransactions, setLocalTransactions] = useState<Transaction[]>([]);
@@ -44,6 +46,7 @@ const TransactionsTab = ({
     return { from: startOfMonth, to: endOfMonth };
   });
   const [localIsFormOpen, setLocalIsFormOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(propSelectedCategory || null);
   
   // Use provided props or local state
   const transactions = propTransactions !== undefined ? propTransactions : localTransactions;
@@ -52,6 +55,13 @@ const TransactionsTab = ({
   const setDateRange = propSetDateRange || setLocalDateRange;
   const isFormOpen = propIsFormOpen !== undefined ? propIsFormOpen : localIsFormOpen;
   const setIsFormOpen = propSetIsFormOpen || setLocalIsFormOpen;
+  
+  // Sincronizar com a prop selectedCategory quando ela mudar
+  useEffect(() => {
+    if (propSelectedCategory !== undefined) {
+      setSelectedCategory(propSelectedCategory);
+    }
+  }, [propSelectedCategory]);
   
   // Use the custom hook for state and logic
   const {
@@ -85,7 +95,8 @@ const TransactionsTab = ({
     clientId,
     viewMode,
     isFormOpen,
-    setIsFormOpen
+    setIsFormOpen,
+    selectedCategory  // Passar a categoria selecionada para o hook
   });
   
   return (
@@ -110,6 +121,7 @@ const TransactionsTab = ({
         onAddNew={handleAddNew}
         isUserActive={isUserActive}
         viewMode={viewMode}
+        selectedCategory={selectedCategory} // Passar a categoria selecionada
       />
       
       <TransactionTableContainer
@@ -124,7 +136,8 @@ const TransactionsTab = ({
           filteredTransactions,
           hasFilters,
           totalReceived,
-          totalSpent
+          totalSpent,
+          selectedCategory // Adicionar a categoria selecionada aos dados de filtragem
         }}
         batchEdit={!isReadOnly ? batchEdit : undefined}
         categories={categories}

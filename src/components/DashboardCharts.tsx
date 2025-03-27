@@ -64,6 +64,11 @@ export default function DashboardCharts({
     onCategoryFilterChange: () => {} // Vamos usar o estado interno do hook
   });
   
+  // Certifique-se de que estamos passando o selectedCategory para o TransactionsTab
+  useEffect(() => {
+    console.log('Categoria selecionada mudou para:', selectedCategory);
+  }, [selectedCategory]);
+  
   // Load metas data
   const metas = useMetasData(validDateRange, clientId, viewMode);
   
@@ -109,6 +114,17 @@ export default function DashboardCharts({
       />
     );
   };
+
+  // Passar informações extras para o console para debug
+  useEffect(() => {
+    console.log('DashboardCharts - Estado atual:');
+    console.log('- Categoria selecionada:', selectedCategory);
+    console.log('- Mês selecionado:', selectedMonth);
+    console.log('- Transactions filtradas:', filteredTransactions.length);
+    if (selectedCategory) {
+      console.log('- Transações filtradas por categoria:', filteredByCategory.length);
+    }
+  }, [selectedCategory, selectedMonth, filteredTransactions, filteredByCategory.length]);
 
   return (
     <div className={`grid grid-cols-1 ${isMobile ? '' : 'lg:grid-cols-3'} gap-6 mb-6`}>

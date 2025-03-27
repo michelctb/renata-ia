@@ -30,12 +30,30 @@ export function useProcessPieChartData(data: CategoryData[], transactionType: 'e
       };
     }
 
+    // Certifique-se de que todos os valores são números válidos
+    const validData = data.filter(item => 
+      item && 
+      item.name && 
+      typeof item.value === 'number' && 
+      !isNaN(item.value) &&
+      item.value > 0
+    );
+
+    if (validData.length === 0) {
+      console.log(`Nenhum dado válido encontrado para o gráfico (${transactionType})`);
+      return {
+        hasData: false,
+        processedData: [],
+        renderColors: []
+      };
+    }
+
     // Process the data to group small categories as "Outros" if there are too many categories
     const processedData = (() => {
-      if (data.length <= 10) return data;
+      if (validData.length <= 10) return validData;
       
       // Sort by value (highest first)
-      const sortedData = [...data].sort((a, b) => b.value - a.value);
+      const sortedData = [...validData].sort((a, b) => b.value - a.value);
       
       // Take top 9 categories
       const topCategories = sortedData.slice(0, 9);

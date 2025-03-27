@@ -3,20 +3,22 @@ import { useState, useMemo } from 'react';
 import { Transaction } from '@/lib/supabase/types';
 import { DateRange } from 'react-day-picker';
 import { parseISO, startOfDay, endOfDay } from 'date-fns';
-import { toZonedTime, fromZonedTime } from 'date-fns-tz';
+import { toZonedTime } from 'date-fns-tz';
 
 const TIMEZONE = 'America/Sao_Paulo';
 
 /**
- * Custom hook for filtering transactions based on search term and date range
+ * Custom hook for filtering transactions based on search term, date range, and category
  * 
  * @param {Transaction[]} transactions - The list of transactions to filter
  * @param {DateRange | undefined} dateRange - The optional date range to filter by
+ * @param {string | null} selectedCategory - The optional category to filter by
  * @returns {Object} Object containing filtered transactions and filtering state
  */
 export function useTransactionFiltering(
   transactions: Transaction[],
-  dateRange?: DateRange | undefined
+  dateRange?: DateRange | undefined,
+  selectedCategory?: string | null
 ) {
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -60,6 +62,23 @@ export function useTransactionFiltering(
       });
     }
     
+    // Filter by category if selected
+    if (selectedCategory) {
+      console.log('Filtrando por categoria:', selectedCategory);
+      filtered = filtered.filter(transaction => {
+        const transactionCategory = transaction.categoria?.toLowerCase().trim() || '';
+        const categoryToMatch = selectedCategory.toLowerCase().trim();
+        
+        // Evitar filtrar por "Outros" pois é uma categoria agregada
+        if (categoryToMatch.startsWith('outros')) {
+          return true;
+        }
+        
+        return transactionCategory === categoryToMatch;
+      });
+      console.log('Após filtro de categoria, restaram:', filtered.length, 'transações');
+    }
+    
     // Filter by search term if provided
     if (searchTerm.trim()) {
       const normalizedSearchTerm = searchTerm.toLowerCase().trim();
@@ -77,10 +96,12 @@ export function useTransactionFiltering(
     }
     
     return filtered;
-  }, [transactions, searchTerm, dateRange]);
+  }, [transactions, searchTerm, dateRange, selectedCategory]);
 
   // Check if any filters are applied
-  const hasFilters = searchTerm.trim().length > 0 || (dateRange?.from !== undefined || dateRange?.to !== undefined);
+  const hasFilters = searchTerm.trim().length > 0 || 
+                    (dateRange?.from !== undefined || dateRange?.to !== undefined) ||
+                    !!selectedCategory;
 
   // Calculate totals for income and expense transactions
   const { totalReceived, totalSpent } = useMemo(() => {
@@ -106,6 +127,7 @@ export function useTransactionFiltering(
     filteredTransactions,
     hasFilters,
     totalReceived,
-    totalSpent
+    totalSpent,
+    selectedCategory
   };
 }
