@@ -41,27 +41,32 @@ export function MonthlyChart({ data }: MonthlyChartProps) {
   if (data.length === 0) {
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground">
-        Sem dados para exibir no período selecionado
+        Sem dados para exibir
       </div>
     );
   }
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      <BarChart
-        data={data}
-        margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
-      >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" />
-        <YAxis 
-          tickFormatter={(value) => formatCurrency(value).split(',')[0]} 
-        />
-        <Tooltip content={<CustomBarTooltip />} />
-        <Legend />
-        <Bar dataKey="entrada" name="Entradas" fill="#4ade80" />
-        <Bar dataKey="saída" name="Saídas" fill="#f87171" />
-      </BarChart>
-    </ResponsiveContainer>
+    <div className="relative h-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={data}
+          margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis 
+            tickFormatter={(value) => formatCurrency(value).split(',')[0]} 
+          />
+          <Tooltip content={<CustomBarTooltip />} />
+          <Legend />
+          <Bar dataKey="entrada" name="Entradas" fill="#4ade80" />
+          <Bar dataKey="saída" name="Saídas" fill="#f87171" />
+        </BarChart>
+      </ResponsiveContainer>
+      <div className="absolute bottom-0 right-0 text-xs text-muted-foreground pr-2 pb-1">
+        Dados de todo período
+      </div>
+    </div>
   );
 }

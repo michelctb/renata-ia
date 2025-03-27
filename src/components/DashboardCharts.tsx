@@ -42,11 +42,10 @@ export default function DashboardCharts({
   // Load metas data
   const metas = useMetasData(dateRange, clientId, viewMode);
   
-  // Filter transactions by date range
+  // Filter transactions by date range - apenas para graficos de categoria e metas
   const filteredTransactions = useFilteredTransactions(transactions, dateRange);
   
-  // Prepare data for monthly income/expense bar chart
-  const monthlyData = useMonthlyChartData(filteredTransactions);
+  // Para o gráfico mensal, usamos todas as transações, independente do filtro
   
   // Prepare data for expenses or income by category pie chart
   const categoryData = useCategoryChartData(filteredTransactions, transactionType);
@@ -56,8 +55,8 @@ export default function DashboardCharts({
 
   return (
     <div className={`grid grid-cols-1 ${isMobile ? '' : 'lg:grid-cols-3'} gap-6 mb-6`}>
-      {/* Monthly Chart Card */}
-      <MonthlyChartCard data={monthlyData} />
+      {/* Monthly Chart Card - Usando todas as transações sem filtro */}
+      <MonthlyChartCard transactions={transactions} />
       
       {/* Category Charts (Pie Chart and Ranking) */}
       <CategoryChartsContainer 
