@@ -18,6 +18,8 @@ export type Cliente = {
   consultor?: string;
   created_at?: string;
   valor?: number;
+  adesao?: number; // Nova propriedade adicionada
+  recorrencia?: number; // Nova propriedade adicionada
 };
 
 // Fetch all clients
@@ -119,7 +121,9 @@ export async function updateCliente(cliente: Cliente) {
       plano: cliente.plano,
       lembrete: cliente.lembrete,
       perfil: cliente.perfil,
-      consultor: cliente.consultor
+      consultor: cliente.consultor,
+      adesao: cliente.adesao, // Adicionado novo campo ao update
+      recorrencia: cliente.recorrencia // Adicionado novo campo ao update
     })
     .eq('id_cliente', cliente.id_cliente)
     .select();

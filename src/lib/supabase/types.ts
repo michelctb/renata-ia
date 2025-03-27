@@ -27,4 +27,6 @@ export type Cliente = {
   consultor?: string;
   created_at?: string;
   valor?: number;
+  adesao?: number; // Nova propriedade adicionada
+  recorrencia?: number; // Nova propriedade adicionada
 };
