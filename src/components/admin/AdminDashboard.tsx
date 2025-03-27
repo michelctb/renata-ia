@@ -7,6 +7,7 @@ import { UserStatsSummary } from './dashboard/UserStatsSummary';
 import { PlanConversionChart } from './dashboard/PlanConversionChart';
 import { RetentionRateChart } from './dashboard/RetentionRateChart';
 import { RecurrencePreview } from './dashboard/RecurrencePreview';
+import { RecurrencePreviewConsultor } from './dashboard/RecurrencePreviewConsultor';
 import { Cliente } from '@/lib/supabase/types';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,7 +36,7 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
       {/* Estatísticas resumidas */}
       <UserStatsSummary clients={clients} viewMode={viewMode} />
 
-      {/* Previsão de recorrência - só mostrar para administradores */}
+      {/* Previsão de recorrência - mostrar o componente apropriado para cada tipo de usuário */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className={`${viewMode === 'admin' ? 'md:col-span-2' : 'md:col-span-3'}`}>
           {/* Gráficos detalhados */}
@@ -87,11 +88,13 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
           </Card>
         </div>
         
-        {viewMode === 'admin' && (
-          <div>
+        <div>
+          {viewMode === 'admin' ? (
             <RecurrencePreview clients={clients} />
-          </div>
-        )}
+          ) : (
+            <RecurrencePreviewConsultor clients={clients} />
+          )}
+        </div>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, TrendingUp, UserCheck, LineChart, CreditCard } from 'lucide-react';
 import { Cliente } from '@/lib/supabase/types';
 import { formatCurrency } from '@/lib/utils';
+import { parseISO, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 
 interface UserStatsSummaryProps {
   clients: Cliente[];
@@ -12,6 +13,11 @@ interface UserStatsSummaryProps {
 
 export const UserStatsSummary = ({ clients, viewMode = 'admin' }: UserStatsSummaryProps) => {
   const stats = useMemo(() => {
+    // Data atual para cálculos do mês corrente
+    const today = new Date();
+    const currentMonthStart = startOfMonth(today);
+    const currentMonthEnd = endOfMonth(today);
+
     // Total de usuários
     const totalUsers = clients.length;
     
@@ -24,13 +30,21 @@ export const UserStatsSummary = ({ clients, viewMode = 'admin' }: UserStatsSumma
       : 0;
     
     // Crescimento do último mês
-    const today = new Date();
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(today.getMonth() - 1);
-    
     const recentUsers = clients.filter(client => {
-      const createdAt = client.created_at ? new Date(client.created_at) : null;
-      return createdAt && createdAt >= oneMonthAgo;
+      if (!client.created_at) return false;
+      
+      try {
+        const createdDate = parseISO(client.created_at);
+        
+        // Verificar se o cliente foi criado no mês atual
+        return isWithinInterval(createdDate, {
+          start: currentMonthStart,
+          end: currentMonthEnd
+        });
+      } catch (error) {
+        console.error('Erro ao processar data de criação:', error);
+        return false;
+      }
     }).length;
     
     const growthRate = totalUsers > 0 
@@ -52,10 +66,42 @@ export const UserStatsSummary = ({ clients, viewMode = 'admin' }: UserStatsSumma
         percentage: ((count / totalUsers) * 100).toFixed(1)
       }))[0] || { plan: 'Nenhum', count: 0, percentage: '0' };
     
-    // Total de recorrência mensal (apenas para admin)
-    const monthlyRecurrence = clients
-      .filter(client => client.ativo === true)
-      .reduce((sum, client) => sum + (client.valor || 0), 0);
+    // Cálculos financeiros para diferentes tipos de usuários (admin vs consultor)
+    let monthlyRecurrence = 0;
+    let currentMonthAdesao = 0;
+    
+    if (viewMode === 'admin') {
+      // Para administradores: usar o campo 'valor'
+      monthlyRecurrence = clients
+        .filter(client => client.ativo === true)
+        .reduce((sum, client) => sum + (client.valor || 0), 0);
+    } else {
+      // Para consultores: usar os campos 'recorrencia' e 'adesao'
+      monthlyRecurrence = clients
+        .filter(client => client.ativo === true)
+        .reduce((sum, client) => sum + (client.recorrencia || 0), 0);
+        
+      // Calcular adesões do mês atual
+      currentMonthAdesao = clients.reduce((sum, client) => {
+        if (!client.created_at) return sum;
+        
+        try {
+          const createdDate = parseISO(client.created_at);
+          
+          // Verificar se o cliente foi criado no mês atual
+          if (isWithinInterval(createdDate, {
+            start: currentMonthStart,
+            end: currentMonthEnd
+          })) {
+            return sum + (client.adesao || 0);
+          }
+        } catch (error) {
+          console.error('Erro ao processar data de criação:', error);
+        }
+        
+        return sum;
+      }, 0);
+    }
       
     return {
       totalUsers,
@@ -64,12 +110,14 @@ export const UserStatsSummary = ({ clients, viewMode = 'admin' }: UserStatsSumma
       recentUsers,
       growthRate,
       topPlan,
-      monthlyRecurrence
+      monthlyRecurrence,
+      currentMonthAdesao,
+      totalMonthlyRevenue: monthlyRecurrence + currentMonthAdesao
     };
-  }, [clients]);
+  }, [clients, viewMode]);
   
   // Determina o número de colunas com base no modo de visualização
-  const gridCols = viewMode === 'consultor' ? 'lg:grid-cols-3' : 'lg:grid-cols-5';
+  const gridCols = viewMode === 'consultor' ? 'lg:grid-cols-5' : 'lg:grid-cols-5';
 
   // Definir os termos baseado no viewMode
   const terms = viewMode === 'admin' 
@@ -120,38 +168,43 @@ export const UserStatsSummary = ({ clients, viewMode = 'admin' }: UserStatsSumma
         </CardContent>
       </Card>
 
-      {/* Apenas para administradores: Plano Mais Popular e Recorrência Mensal */}
+      {/* Apenas para administradores: Plano Mais Popular */}
       {viewMode === 'admin' && (
-        <>
-          {/* Plano Mais Popular */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Plano Mais Popular</CardTitle>
-              <LineChart className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.topPlan.plan}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.topPlan.count} usuários ({stats.topPlan.percentage}%)
-              </p>
-            </CardContent>
-          </Card>
-          
-          {/* Recorrência Mensal */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Recorrência Mensal</CardTitle>
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-income">{formatCurrency(stats.monthlyRecurrence)}</div>
-              <p className="text-xs text-muted-foreground">
-                Previsão de faturamento
-              </p>
-            </CardContent>
-          </Card>
-        </>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Plano Mais Popular</CardTitle>
+            <LineChart className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.topPlan.plan}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.topPlan.count} usuários ({stats.topPlan.percentage}%)
+            </p>
+          </CardContent>
+        </Card>
       )}
+      
+      {/* Para ambos os tipos: Recorrência/Faturamento Mensal */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">
+            {viewMode === 'admin' ? 'Recorrência Mensal' : 'Faturamento do Mês'}
+          </CardTitle>
+          <CreditCard className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-income">
+            {viewMode === 'admin' 
+              ? formatCurrency(stats.monthlyRecurrence)
+              : formatCurrency(stats.totalMonthlyRevenue)}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {viewMode === 'admin'
+              ? 'Previsão de faturamento'
+              : `Inclui ${formatCurrency(stats.currentMonthAdesao)} em adesões`}
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 };

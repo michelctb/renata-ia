@@ -31,7 +31,6 @@ export default function ConsultorClientView() {
     setIsFormOpen(true);
   };
   
-  // Define o mês atual como período padrão
   const today = new Date();
   const firstDayOfMonth = startOfMonth(today);
   firstDayOfMonth.setHours(0, 0, 0, 0);
@@ -75,11 +74,9 @@ export default function ConsultorClientView() {
     
     setIsLoading(true);
     try {
-      // Buscar dados do cliente
       const clientData = await fetchClienteById(clientId);
       setClient(clientData);
       
-      // Buscar transações do cliente
       const transactionData = await fetchTransactions(clientId);
       setTransactions(transactionData);
     } catch (error) {
@@ -120,9 +117,16 @@ export default function ConsultorClientView() {
               Visualização de Cliente
             </h1>
             {client && (
-              <p className="mt-1 text-gray-600 dark:text-gray-300">
-                Cliente: {client.nome} {client.telefone && `(${client.telefone})`}
-              </p>
+              <div className="mt-1">
+                <p className="text-gray-600 dark:text-gray-300">
+                  Cliente: {client.nome} {client.telefone && `(${client.telefone})`}
+                </p>
+                <div className="flex flex-wrap gap-x-6 mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  <p>Adesão: {formatCurrency(client.adesao || 0)}</p>
+                  <p>Recorrência: {formatCurrency(client.recorrencia || 0)}</p>
+                  <p>Status: {client.ativo ? 'Ativo' : 'Inativo'}</p>
+                </div>
+              </div>
             )}
           </div>
           

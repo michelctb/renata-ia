@@ -101,7 +101,9 @@ export async function updateCliente(cliente: Cliente) {
       plano: cliente.plano,
       lembrete: cliente.lembrete,
       perfil: cliente.perfil,
-      consultor: cliente.consultor
+      consultor: cliente.consultor,
+      adesao: cliente.adesao,
+      recorrencia: cliente.recorrencia
     })
     .eq('id_cliente', cliente.id_cliente)
     .select();
