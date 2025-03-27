@@ -1,4 +1,3 @@
-
 import { Transaction } from '@/lib/supabase/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { TransactionTableHeader } from './TransactionTableHeader';
@@ -8,7 +7,7 @@ import { Table, TableBody } from '@/components/ui/table';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { BatchEditButton } from './BatchEditButton';
 import { Category } from '@/lib/categories';
-import { BatchEditDialog } from './BatchEditDialog';
+import { BatchEditDialog } from './batch-edit/BatchEditDialog';
 
 interface TransactionTableContainerProps {
   transactions: Transaction[];

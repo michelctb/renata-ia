@@ -120,4 +120,5 @@ export function BatchEditForm({
   );
 }
 
-export { BatchEditFormValues };
+// Usando export type para re-exportar o tipo
+export type { BatchEditFormValues };
