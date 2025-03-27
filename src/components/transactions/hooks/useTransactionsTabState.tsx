@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Transaction } from '@/lib/supabase/types';
@@ -18,6 +17,7 @@ type UseTransactionsTabStateProps = {
   viewMode?: 'user' | 'admin' | 'consultor';
   isFormOpen?: boolean;
   setIsFormOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+  selectedCategory?: string | null;
 };
 
 /**
@@ -31,7 +31,8 @@ export function useTransactionsTabState({
   clientId,
   viewMode = 'user',
   isFormOpen: propIsFormOpen,
-  setIsFormOpen: propSetIsFormOpen
+  setIsFormOpen: propSetIsFormOpen,
+  selectedCategory
 }: UseTransactionsTabStateProps) {
   const { user } = useAuth();
   
@@ -66,7 +67,7 @@ export function useTransactionsTabState({
     hasFilters,
     totalReceived,
     totalSpent
-  } = useTransactionFiltering(transactions, dateRange);
+  } = useTransactionFiltering(transactions, dateRange, selectedCategory);
   
   const { 
     handleSubmitTransaction, 
@@ -181,6 +182,7 @@ export function useTransactionsTabState({
     hasFilters,
     totalReceived,
     totalSpent,
+    selectedCategory,
     
     // Handlers
     handleAddNew,

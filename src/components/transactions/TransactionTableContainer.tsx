@@ -1,3 +1,4 @@
+
 import { Transaction } from '@/lib/supabase/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { TransactionTableHeader } from './TransactionTableHeader';
@@ -22,6 +23,7 @@ interface TransactionTableContainerProps {
     hasFilters: boolean;
     totalReceived: number;
     totalSpent: number;
+    selectedCategory?: string | null; // Adicionando selectedCategory
   };
   batchEdit?: {
     selectedTransactions: Transaction[];
@@ -55,6 +57,7 @@ export function TransactionTableContainer({
   const {
     filteredTransactions,
     searchTerm,
+    selectedCategory
   } = filteringData;
   
   const isMobile = useIsMobile();
@@ -76,6 +79,11 @@ export function TransactionTableContainer({
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
           <div className="text-2xl font-bold text-gray-800 dark:text-white">
             Transações
+            {selectedCategory && (
+              <span className="ml-2 text-sm font-normal text-muted-foreground">
+                Filtrando por: {selectedCategory}
+              </span>
+            )}
           </div>
           
           {batchEdit && !isReadOnly && (

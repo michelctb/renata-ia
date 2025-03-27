@@ -20,7 +20,7 @@ type TransactionsTabProps = {
   viewMode?: 'user' | 'admin' | 'consultor';
   isFormOpen?: boolean;
   setIsFormOpen?: React.Dispatch<React.SetStateAction<boolean>>;
-  selectedCategory?: string | null;  // Nova prop para receber a categoria selecionada
+  selectedCategory?: string | null;  // Defina selectedCategory como prop opcional
 };
 
 /**
@@ -96,7 +96,7 @@ const TransactionsTab = ({
     viewMode,
     isFormOpen,
     setIsFormOpen,
-    selectedCategory  // Passar a categoria selecionada para o hook
+    selectedCategory  // Passando a categoria selecionada para o hook
   });
   
   return (
@@ -121,7 +121,7 @@ const TransactionsTab = ({
         onAddNew={handleAddNew}
         isUserActive={isUserActive}
         viewMode={viewMode}
-        selectedCategory={selectedCategory} // Passar a categoria selecionada
+        selectedCategory={selectedCategory} // Passando a categoria selecionada
       />
       
       <TransactionTableContainer
@@ -137,7 +137,7 @@ const TransactionsTab = ({
           hasFilters,
           totalReceived,
           totalSpent,
-          selectedCategory // Adicionar a categoria selecionada aos dados de filtragem
+          selectedCategory // Adicionando a categoria selecionada aos dados de filtragem
         }}
         batchEdit={!isReadOnly ? batchEdit : undefined}
         categories={categories}

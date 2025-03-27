@@ -10,6 +10,7 @@ interface TransactionsHeaderContainerProps {
   onAddNew: () => void;
   isUserActive: boolean;
   viewMode: 'user' | 'admin' | 'consultor';
+  selectedCategory?: string | null; // Adicionando selectedCategory
 }
 
 /**
@@ -24,6 +25,7 @@ export function TransactionsHeaderContainer({
   onAddNew,
   isUserActive,
   viewMode,
+  selectedCategory,
 }: TransactionsHeaderContainerProps) {
   return (
     <TransactionsHeader
@@ -32,6 +34,7 @@ export function TransactionsHeaderContainer({
       onAddNew={onAddNew}
       isUserActive={isUserActive}
       viewMode={viewMode}
+      selectedCategory={selectedCategory}
     />
   );
 }

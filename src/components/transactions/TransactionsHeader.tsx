@@ -7,6 +7,7 @@ interface TransactionsHeaderProps {
   onAddNew: () => void;
   isUserActive: boolean;
   viewMode?: 'user' | 'admin' | 'consultor';
+  selectedCategory?: string | null; // Adicionando selectedCategory
 }
 
 export function TransactionsHeader({
@@ -14,7 +15,8 @@ export function TransactionsHeader({
   searchTerm,
   onAddNew,
   isUserActive,
-  viewMode = 'user'
+  viewMode = 'user',
+  selectedCategory
 }: TransactionsHeaderProps) {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -27,6 +29,13 @@ export function TransactionsHeader({
           onChange={(e) => onSearch(e.target.value)}
         />
       </div>
+      
+      {/* Exibir a categoria selecionada, se houver */}
+      {selectedCategory && (
+        <div className="text-sm text-muted-foreground">
+          Filtrando por categoria: <span className="font-medium">{selectedCategory}</span>
+        </div>
+      )}
     </div>
   );
 }
