@@ -111,7 +111,10 @@ const AutoPlayCarousel = ({ images }: AutoPlayCarouselProps) => {
                 style={{ 
                   boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
                   aspectRatio: '16/9',
-                  objectFit: 'cover'
+                  objectFit: 'contain',
+                  height: '300px',
+                  width: '100%',
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)'
                 }}
               />
             </div>
