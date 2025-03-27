@@ -44,7 +44,12 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
               <CardTitle>
                 {viewMode === 'admin' ? 'Análise de Usuários' : 'Análise de Clientes'}
               </CardTitle>
-              <CardDescription>Visualize o crescimento e conversão de usuários ao longo do tempo</CardDescription>
+              <CardDescription>
+                {viewMode === 'admin' 
+                  ? 'Visualize o crescimento e conversão de usuários ao longo do tempo'
+                  : 'Visualize o crescimento e retenção de clientes ao longo do tempo'
+                }
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Tabs value={activeChart} onValueChange={setActiveChart} className="w-full">
