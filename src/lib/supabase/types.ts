@@ -10,6 +10,7 @@ export type Transaction = {
   descrição: string;
   categoria: string;
   valor: number;
+  selected?: boolean; // Novo campo para controlar seleção múltipla
 };
 
 // Type for client records

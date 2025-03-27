@@ -4,7 +4,8 @@ import { toast } from 'sonner';
 import { Transaction } from '@/lib/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTransactionFiltering } from '../useTransactionFiltering';
-import { useTransactionSubmit, useTransactionDelete, useTransactionReload } from './index';
+import { useTransactionSubmit, useTransactionDelete, useTransactionReload, useBatchEdit } from './index';
+import { useCategories } from '@/hooks/categories';
 
 type UseTransactionsTabStateProps = {
   transactions: Transaction[];
@@ -83,6 +84,23 @@ export function useTransactionsTabState({
     userId: userId || '',
     setTransactions
   });
+
+  // Batch edit functionality
+  const {
+    selectedTransactions,
+    isBatchEditOpen,
+    isUpdating,
+    handleSelectTransaction,
+    handleSelectAll,
+    openBatchEdit,
+    closeBatchEdit,
+    processBatchEdit
+  } = useBatchEdit({
+    setTransactions
+  });
+
+  // Carregar categorias para o formulário de edição em lote
+  const { categories, isLoading: isLoadingCategories } = useCategories(userId || '');
   
   // Reload when date range changes
   useEffect(() => {
@@ -155,7 +173,7 @@ export function useTransactionsTabState({
     setEditingTransaction(null);
   };
 
-  const isLoading = isSubmitting || isDeleting || isReloading;
+  const isLoading = isSubmitting || isDeleting || isReloading || isUpdating;
   
   return {
     // State
@@ -190,6 +208,22 @@ export function useTransactionsTabState({
     isUserActive: isUserActive(),
     
     // View state
-    isReadOnly: viewMode === 'consultor'
+    isReadOnly: viewMode === 'consultor',
+
+    // Batch edit
+    batchEdit: {
+      selectedTransactions,
+      isBatchEditOpen,
+      handleSelectTransaction,
+      handleSelectAll,
+      openBatchEdit,
+      closeBatchEdit,
+      processBatchEdit,
+      isUpdating
+    },
+
+    // Categories for batch edit form
+    categories,
+    isLoadingCategories
   };
 }

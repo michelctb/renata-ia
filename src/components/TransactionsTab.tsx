@@ -73,7 +73,10 @@ const TransactionsTab = ({
     handleSubmitTransaction,
     setDeleteDialogOpen,
     isUserActive,
-    isReadOnly
+    isReadOnly,
+    batchEdit,
+    categories,
+    isLoadingCategories
   } = useTransactionsTabState({
     transactions,
     setTransactions,
@@ -122,6 +125,9 @@ const TransactionsTab = ({
           totalReceived,
           totalSpent
         }}
+        batchEdit={!isReadOnly ? batchEdit : undefined}
+        categories={categories}
+        isLoadingCategories={isLoadingCategories}
       />
       
       {userId && (

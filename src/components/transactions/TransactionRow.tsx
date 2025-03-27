@@ -8,6 +8,8 @@ import { ptBR } from 'date-fns/locale';
 import { Transaction } from '@/lib/supabase/types';
 import { parseISO } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
+import { Checkbox } from '@/components/ui/checkbox';
+import { TableCell, TableRow } from '@/components/ui/table';
 
 const TIMEZONE = 'America/Sao_Paulo';
 
@@ -17,6 +19,8 @@ export interface TransactionRowProps {
   onDelete: () => void;
   isUserActive: boolean;
   isReadOnly?: boolean;
+  hasSelection?: boolean;
+  onSelectTransaction?: (id: number, selected: boolean) => void;
 }
 
 export function TransactionRow({ 
@@ -24,7 +28,9 @@ export function TransactionRow({
   onEdit, 
   onDelete,
   isUserActive,
-  isReadOnly = false
+  isReadOnly = false,
+  hasSelection = false,
+  onSelectTransaction
 }: TransactionRowProps) {
   // Support both new and legacy field names
   const description = transaction.descrição || '';
@@ -38,23 +44,39 @@ export function TransactionRow({
   const formattedDate = format(dateSaoPaulo, 'dd MMM yyyy', { locale: ptBR });
   const formattedValue = formatCurrency(transaction.valor);
 
+  const handleCheckboxChange = (checked: boolean) => {
+    if (onSelectTransaction && transaction.id) {
+      onSelectTransaction(transaction.id, checked);
+    }
+  };
+
   return (
-    <tr className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-      <td className="py-3 px-4 whitespace-nowrap">
+    <TableRow className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+      {hasSelection && !isReadOnly && (
+        <TableCell className="py-3 px-4">
+          <Checkbox 
+            checked={transaction.selected || false} 
+            onCheckedChange={handleCheckboxChange}
+            aria-label={`Selecionar transação ${transaction.id}`}
+          />
+        </TableCell>
+      )}
+      
+      <TableCell className="py-3 px-4 whitespace-nowrap">
         <div className="text-sm text-gray-900 dark:text-gray-200">{formattedDate}</div>
-      </td>
+      </TableCell>
       
-      <td className="py-3 px-4">
+      <TableCell className="py-3 px-4">
         <div className="text-sm font-medium text-gray-900 dark:text-gray-200">{description}</div>
-      </td>
+      </TableCell>
       
-      <td className="py-3 px-4">
+      <TableCell className="py-3 px-4">
         <div className="text-sm text-gray-700 dark:text-gray-300">
           {transaction.categoria}
         </div>
-      </td>
+      </TableCell>
       
-      <td className="py-3 px-4 text-right">
+      <TableCell className="py-3 px-4 text-right">
         <div className={cn(
           "text-sm font-medium",
           isIncome && "text-green-600 dark:text-green-400",
@@ -62,10 +84,10 @@ export function TransactionRow({
         )}>
           {formattedValue}
         </div>
-      </td>
+      </TableCell>
       
       {!isReadOnly && (
-        <td className="py-3 px-4 text-right">
+        <TableCell className="py-3 px-4 text-right">
           <div className="flex justify-end space-x-1">
             <Button
               variant="ghost"
@@ -106,8 +128,8 @@ export function TransactionRow({
               <span className="sr-only">Excluir</span>
             </Button>
           </div>
-        </td>
+        </TableCell>
       )}
-    </tr>
+    </TableRow>
   );
 }
