@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,7 @@ import { subMonths } from 'date-fns';
 import { toast } from 'sonner';
 import { ReportGenerator } from '@/components/reports/ReportGenerator';
 import { DateRange } from 'react-day-picker';
-import { useReportData } from '@/hooks/useReportData';
+import { useReportData } from '@/hooks/reports/useReportData';
 import ReportFilters from './reports/ReportFilters';
 import ReportSummary from './reports/ReportSummary';
 import ReportDetailed from './reports/ReportDetailed';
