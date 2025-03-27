@@ -121,13 +121,19 @@ const UsersTab: React.FC<UsersTabProps> = ({
                         <TableHead>Perfil</TableHead>
                       </>
                     )}
+                    {!isAdmin() && (
+                      <>
+                        <TableHead>Adesão</TableHead>
+                        <TableHead>Recorrência</TableHead>
+                      </>
+                    )}
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {clients.length === 0 ? <TableRow>
-                      <TableCell colSpan={isConsultorView ? 4 : 8} className="text-center py-6 text-muted-foreground">
+                      <TableCell colSpan={isConsultorView ? 6 : 8} className="text-center py-6 text-muted-foreground">
                         Nenhum {isAdmin() ? 'usuário' : 'cliente'} encontrado
                       </TableCell>
                     </TableRow> : clients.map(client => <TableRow key={client.id_cliente}>
@@ -139,6 +145,12 @@ const UsersTab: React.FC<UsersTabProps> = ({
                           <>
                             <TableCell>{client.plano || '-'}</TableCell>
                             <TableCell>{client.perfil || 'user'}</TableCell>
+                          </>
+                        )}
+                        {!isAdmin() && (
+                          <>
+                            <TableCell>R$ {client.adesao ? client.adesao.toFixed(2) : '0.00'}</TableCell>
+                            <TableCell>R$ {client.recorrencia ? client.recorrencia.toFixed(2) : '0.00'}</TableCell>
                           </>
                         )}
                         <TableCell>

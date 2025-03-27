@@ -132,6 +132,8 @@ export const userFormSchema = z.object({
   ativo: z.boolean().default(true),
   plano: z.string().optional().nullable(),
   perfil: z.union([z.enum(['user', 'adm', 'consultor']), z.string()]).default('user'),
+  adesao: z.number().min(0).optional().default(0),
+  recorrencia: z.number().min(0).optional().default(0),
 });
 
 export type UserFormValues = z.infer<typeof userFormSchema>;
@@ -177,5 +179,7 @@ export const formatUserDataForSaving = (values: UserFormValues, userToEdit: any)
     ativo: values.ativo,
     plano: values.plano || null,
     perfil: values.perfil,
+    adesao: values.adesao || 0,
+    recorrencia: values.recorrencia || 0,
   };
 };

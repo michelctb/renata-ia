@@ -56,6 +56,7 @@ export type Database = {
       }
       Clientes: {
         Row: {
+          adesao: number | null
           ativo: boolean | null
           consultor: string | null
           cpf: number | null
@@ -66,10 +67,12 @@ export type Database = {
           nome: string | null
           perfil: string | null
           plano: string | null
+          recorrencia: number | null
           telefone: string | null
           valor: number | null
         }
         Insert: {
+          adesao?: number | null
           ativo?: boolean | null
           consultor?: string | null
           cpf?: number | null
@@ -80,10 +83,12 @@ export type Database = {
           nome?: string | null
           perfil?: string | null
           plano?: string | null
+          recorrencia?: number | null
           telefone?: string | null
           valor?: number | null
         }
         Update: {
+          adesao?: number | null
           ativo?: boolean | null
           consultor?: string | null
           cpf?: number | null
@@ -94,6 +99,7 @@ export type Database = {
           nome?: string | null
           perfil?: string | null
           plano?: string | null
+          recorrencia?: number | null
           telefone?: string | null
           valor?: number | null
         }

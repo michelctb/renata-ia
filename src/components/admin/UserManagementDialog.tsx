@@ -35,6 +35,8 @@ const UserManagementDialog: React.FC<UserManagementDialogProps> = ({
       ativo: true,
       plano: 'Mensal',
       perfil: 'user',
+      adesao: 0,
+      recorrencia: 0,
     },
   });
 
@@ -52,6 +54,8 @@ const UserManagementDialog: React.FC<UserManagementDialogProps> = ({
         ativo: userToEdit.ativo !== undefined ? userToEdit.ativo : true,
         plano: userToEdit.plano || 'Mensal',
         perfil: userToEdit.perfil || 'user',
+        adesao: userToEdit.adesao !== undefined ? Number(userToEdit.adesao) : 0,
+        recorrencia: userToEdit.recorrencia !== undefined ? Number(userToEdit.recorrencia) : 0,
       });
     } else {
       form.reset({
@@ -63,6 +67,8 @@ const UserManagementDialog: React.FC<UserManagementDialogProps> = ({
         ativo: true,
         plano: 'Mensal',
         perfil: 'user',
+        adesao: 0,
+        recorrencia: 0,
       });
     }
   }, [userToEdit, form]);
