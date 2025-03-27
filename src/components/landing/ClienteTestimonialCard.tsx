@@ -34,9 +34,14 @@ const ClienteTestimonialCard = ({ quote, author }: TestimonialCardProps) => {
     : '';
 
   return (
-    <div className="p-6 bg-slate-50 border border-slate-200 rounded-lg">
-      <p className="italic text-slate-700 mb-4">"{quote}"</p>
-      <div className="flex items-center">
+    <div className="p-6 bg-slate-50 border border-slate-200 rounded-lg flex flex-col h-full relative">
+      {/* Conteúdo do depoimento */}
+      <div className="flex-grow mb-14">
+        <p className="italic text-slate-700">"{quote}"</p>
+      </div>
+      
+      {/* Autor do depoimento (fixado na parte inferior) */}
+      <div className="absolute bottom-6 left-6 right-6 flex items-center">
         <Avatar className="h-10 w-10">
           <AvatarImage src={imageUrl} alt={author} />
           <AvatarFallback className="bg-primary text-white">
