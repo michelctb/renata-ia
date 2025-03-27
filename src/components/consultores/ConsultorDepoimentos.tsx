@@ -17,17 +17,17 @@ const ConsultorDepoimentos = () => {
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           <ConsultorTestimonialCard
-            quote="A Renata.ia revolucionou minha consultoria. Consigo acompanhar todos os meus clientes de forma muito mais eficiente."
+            quote="A Renata.ia revolucionou minha consultoria financeira. Antes, eu passava horas organizando planilhas e tentando visualizar os dados dos meus clientes. Agora, consigo acompanhar todos os meus clientes de forma muito mais eficiente, com dashboards personalizados e relatórios detalhados que me permitem identificar rapidamente áreas de melhoria. A automação me economiza pelo menos 10 horas por semana, tempo que agora dedico ao atendimento personalizado. Meus clientes notaram a diferença e minha retenção aumentou significativamente."
             author="Carlos Silva"
             role="Consultor Financeiro"
           />
           <ConsultorTestimonialCard
-            quote="O dashboard personalizado para cada cliente facilita muito meu trabalho. Economizo horas de análise toda semana."
+            quote="Como planejadora financeira, sempre enfrentei o desafio de manter meus clientes engajados com o planejamento. O dashboard personalizado da Renata.ia para cada cliente mudou completamente essa realidade. Economizo horas de análise toda semana e consigo focar no que realmente importa: estratégias personalizadas. A visualização clara dos dados facilita as conversas difíceis sobre cortes de gastos e meus clientes finalmente conseguem entender para onde vai o dinheiro deles. A ferramenta transformou minha prática profissional."
             author="Ana Oliveira"
             role="Planejadora Financeira"
           />
           <ConsultorTestimonialCard
-            quote="Meus clientes adoram a integração com WhatsApp. A facilidade de registro aumentou significativamente a adesão ao planejamento."
+            quote="A integração da Renata.ia com WhatsApp foi um divisor de águas para meu negócio de consultoria de investimentos. Meus clientes adoram a facilidade de registro de despesas e a forma como podem visualizar seus progressos. A adesão ao planejamento aumentou significativamente, o que antes era um grande desafio. As notificações automáticas de metas e limites de gastos reduziram drasticamente o número de clientes que abandonam o planejamento financeiro no meio do caminho. Como resultado, consegui triplicar minha base de clientes no último ano, com resultados muito mais consistentes."
             author="Paulo Santos"
             role="Consultor de Investimentos"
           />
