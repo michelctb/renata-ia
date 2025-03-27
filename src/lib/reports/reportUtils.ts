@@ -1,6 +1,6 @@
 
 import { toast } from 'sonner';
-import { svgToImage } from './chartExport';
+import { svgToImage, formatMetasDataForReport, formatCategoryDataForReport } from './chartExport';
 
 /**
  * Converte elementos SVG para imagens
