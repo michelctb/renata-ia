@@ -36,11 +36,11 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
       {/* Estatísticas resumidas */}
       <UserStatsSummary clients={clients} viewMode={viewMode} />
 
-      {/* Previsão de recorrência - mostrar o componente apropriado para cada tipo de usuário */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className={`${viewMode === 'admin' ? 'md:col-span-2' : 'md:col-span-3'}`}>
-          {/* Gráficos detalhados */}
-          <Card className="bg-white dark:bg-gray-800">
+      {/* Grid responsivo para gráficos e previsão */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Gráficos detalhados - ajustados para ocupar espaço adequado */}
+        <div className={`${viewMode === 'consultor' ? 'lg:col-span-2' : 'lg:col-span-2'}`}>
+          <Card className="bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-all duration-300">
             <CardHeader>
               <CardTitle>
                 {viewMode === 'admin' ? 'Análise de Usuários' : 'Análise de Clientes'}
@@ -67,17 +67,17 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
                   </TabsList>
                 )}
                 
-                <TabsContent value="growth" className="h-80">
+                <TabsContent value="growth" className="min-h-[350px]">
                   <UserGrowthChart clients={clients} />
                 </TabsContent>
                 
                 {viewMode === 'admin' && (
-                  <TabsContent value="conversion" className="h-80">
+                  <TabsContent value="conversion" className="min-h-[350px]">
                     <PlanConversionChart clients={clients} />
                   </TabsContent>
                 )}
                 
-                <TabsContent value="retention" className="h-80">
+                <TabsContent value="retention" className="min-h-[350px]">
                   <RetentionRateChart clients={clients} />
                 </TabsContent>
               </Tabs>
@@ -88,7 +88,8 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
           </Card>
         </div>
         
-        <div>
+        {/* Card de previsão de recorrência melhorado */}
+        <div className="h-full">
           {viewMode === 'admin' ? (
             <RecurrencePreview clients={clients} />
           ) : (
