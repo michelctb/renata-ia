@@ -6,6 +6,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTransactionFiltering } from '../useTransactionFiltering';
 import { useTransactionSubmit, useTransactionDelete, useTransactionReload, useBatchEdit } from './index';
 import { useCategories } from '@/hooks/categories';
+import { useTransactionSelection } from './useTransactionSelection';
+import { useTransactionDialogs } from './useTransactionDialogs';
 
 type UseTransactionsTabStateProps = {
   transactions: Transaction[];
@@ -31,15 +33,27 @@ export function useTransactionsTabState({
   isFormOpen: propIsFormOpen,
   setIsFormOpen: propSetIsFormOpen
 }: UseTransactionsTabStateProps) {
-  const { user, isUserActive } = useAuth();
-  const [localIsFormOpen, setLocalIsFormOpen] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
-  const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const { user } = useAuth();
+  
+  // Use hooks específicos
+  const {
+    editingTransaction, 
+    setEditingTransaction,
+    transactionToDelete,
+    setTransactionToDelete,
+    deleteDialogOpen,
+    setDeleteDialogOpen,
+    handleAddNew: selectionHandleAddNew,
+    handleEdit: selectionHandleEdit,
+    handleDeleteRequest: selectionHandleDeleteRequest,
+    isUserActive
+  } = useTransactionSelection(viewMode);
+  
+  const localDialogs = useTransactionDialogs();
   
   // Use provided props or local state for form open state
-  const isFormOpen = propIsFormOpen !== undefined ? propIsFormOpen : localIsFormOpen;
-  const setIsFormOpen = propSetIsFormOpen || setLocalIsFormOpen;
+  const isFormOpen = propIsFormOpen !== undefined ? propIsFormOpen : localDialogs.isFormOpen;
+  const setIsFormOpen = propSetIsFormOpen || localDialogs.setIsFormOpen;
   
   // Get the correct user ID based on view mode
   const userId = (viewMode === 'consultor' && clientId) ? clientId : user?.id;
@@ -109,54 +123,29 @@ export function useTransactionsTabState({
     }
   }, [userId, dateRange]);
   
-  // Open form for new transaction
+  // Adaptadores para manter a mesma interface dos métodos originais
   const handleAddNew = () => {
-    if (!isUserActive()) {
-      toast.error('Sua conta está inativa. Por favor, atualize seu plano para continuar.');
-      return;
+    const result = selectionHandleAddNew();
+    if (result) {
+      setIsFormOpen(true);
     }
-    
-    // Disable adding in consultor view
-    if (viewMode === 'consultor') {
-      return;
-    }
-    
-    setEditingTransaction(null);
-    setIsFormOpen(true);
   };
   
-  // Open form to edit transaction
   const handleEdit = (transaction: Transaction) => {
-    if (!isUserActive()) {
-      toast.error('Sua conta está inativa. Por favor, atualize seu plano para continuar.');
-      return;
+    const result = selectionHandleEdit(transaction);
+    if (result) {
+      setIsFormOpen(true);
     }
-    
-    // Disable editing in consultor view
-    if (viewMode === 'consultor') {
-      return;
-    }
-    
-    setEditingTransaction(transaction);
-    setIsFormOpen(true);
   };
   
-  // Request to delete transaction
   const handleDeleteRequest = (id: number) => {
-    if (!isUserActive()) {
-      toast.error('Sua conta está inativa. Por favor, atualize seu plano para continuar.');
-      return;
-    }
-    
-    // Disable deleting in consultor view
-    if (viewMode === 'consultor') {
-      return;
-    }
-    
-    const transaction = transactions.find(t => t.id === id);
-    if (transaction) {
-      setTransactionToDelete(transaction);
-      setDeleteDialogOpen(true);
+    const transactionId = selectionHandleDeleteRequest(id);
+    if (transactionId) {
+      const transaction = transactions.find(t => t.id === id);
+      if (transaction) {
+        setTransactionToDelete(transaction);
+        setDeleteDialogOpen(true);
+      }
     }
   };
   
@@ -169,6 +158,7 @@ export function useTransactionsTabState({
   
   // Close form
   const handleCloseForm = () => {
+    localDialogs.handleCloseForm();
     setIsFormOpen(false);
     setEditingTransaction(null);
   };
@@ -205,7 +195,7 @@ export function useTransactionsTabState({
     setIsFormOpen,
     
     // User state
-    isUserActive: isUserActive(),
+    isUserActive,
     
     // View state
     isReadOnly: viewMode === 'consultor',

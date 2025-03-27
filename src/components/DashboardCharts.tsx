@@ -53,11 +53,8 @@ export default function DashboardCharts({
     clearAllDrilldownFilters
   } = useChartDrilldown({
     onDateRangeChange: setDateRange,
-    onCategoryFilterChange: (category) => setSelectedCategory(category)
+    onCategoryFilterChange: () => {} // Vamos usar o estado interno do hook
   });
-  
-  // Estado local para armazenar categoria selecionada quando não temos setDateRange (consultor view)
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   
   // Load metas data
   const metas = useMetasData(dateRange, clientId, viewMode);
