@@ -41,8 +41,8 @@ export function ExpensesPieChart({
   }
 
   // Função para lidar com o clique em uma fatia do gráfico
-  const handlePieClick = (data: any, index: number) => {
-    console.log('Clique no gráfico de pizza:', data, 'index:', index);
+  const handlePieClick = (data: any) => {
+    console.log('Clique no gráfico de pizza:', data);
     if (onCategoryClick && data && data.name) {
       onCategoryClick(data.name);
     }
@@ -73,15 +73,6 @@ export function ExpensesPieChart({
             dataKey="value"
             onClick={onCategoryClick ? handlePieClick : undefined}
             cursor={onCategoryClick ? "pointer" : "default"}
-            // Destacar a fatia selecionada
-            activeIndex={selectedCategory ? processedData.findIndex(item => item.name === selectedCategory) : undefined}
-            activeShape={(props) => {
-              return {
-                ...props,
-                innerRadius: 5,
-                opacity: 0.8
-              };
-            }}
           >
             {processedData.map((entry, index) => (
               <Cell 
