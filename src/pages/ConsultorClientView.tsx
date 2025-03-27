@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DateRange } from 'react-day-picker';
@@ -7,6 +8,7 @@ import { fetchClienteById } from '@/lib/supabase';
 import { Transaction } from '@/lib/supabase/types';
 import { fetchTransactions } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { formatCurrency } from '@/lib/utils'; // Importando a função formatCurrency
 import DashboardHeader from '@/components/DashboardHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TransactionsTab from '@/components/TransactionsTab';
