@@ -57,7 +57,37 @@ export async function submitToWebhook(formData: CustomerFormValues, plan: PlanTy
       const data = await response.json();
       console.log("Webhook response data:", data);
       
-      // Verificar se a resposta contém URL de redirecionamento
+      // Verificar o formato da resposta do webhook
+      if (Array.isArray(data) && data.length > 0) {
+        const responseItem = data[0];
+        
+        // Caso 1: URL de redirecionamento
+        if (responseItem.url) {
+          return {
+            status: 'success',
+            message: 'Redirecionando para o checkout...',
+            redirectUrl: responseItem.url
+          };
+        }
+        
+        // Caso 2: Mensagem de erro
+        if (responseItem.erro) {
+          return {
+            status: 'error',
+            message: responseItem.erro
+          };
+        }
+        
+        // Caso 3: Mensagem de sucesso
+        if (responseItem.sucesso) {
+          return {
+            status: 'success',
+            message: responseItem.sucesso
+          };
+        }
+      }
+      
+      // Formato não reconhecido, tentar extrair informações do objeto
       if (data.redirectUrl || data.url) {
         return {
           status: 'success',
@@ -66,10 +96,26 @@ export async function submitToWebhook(formData: CustomerFormValues, plan: PlanTy
         };
       }
       
-      // Se não tiver URL de redirecionamento, retornar apenas a mensagem de sucesso
+      // Verificar se há mensagem de erro explícita
+      if (data.erro || data.error) {
+        return {
+          status: 'error',
+          message: data.erro || data.error || 'Ocorreu um erro desconhecido'
+        };
+      }
+      
+      // Verificar se há mensagem de sucesso explícita
+      if (data.sucesso || data.success) {
+        return {
+          status: 'success',
+          message: data.sucesso || data.success || 'Operação concluída com sucesso!'
+        };
+      }
+      
+      // Fallback para formato desconhecido
       return {
         status: 'success',
-        message: data.message || 'Operação concluída com sucesso!'
+        message: 'Operação concluída com sucesso!'
       };
       
     } catch (err) {
