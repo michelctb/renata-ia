@@ -1,9 +1,7 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
-
 const ConsultorHero = () => {
   return <section className="py-20 md:py-28 bg-gradient-to-b from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-800">
       <div className="container px-4 md:px-6 mx-auto">
@@ -19,10 +17,14 @@ const ConsultorHero = () => {
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
+            <Button variant="outline" size="lg" asChild>
+              <a href="#beneficios">
+                Saiba mais
+              </a>
+            </Button>
           </div>
         </div>
       </div>
     </section>;
 };
-
 export default ConsultorHero;
