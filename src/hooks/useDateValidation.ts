@@ -33,7 +33,7 @@ export function useDateValidation() {
   const getSafeDateRange = (range: DateRange | undefined | null): DateRange | undefined => {
     if (!range) return undefined;
     
-    const result: DateRange = {};
+    const result: Partial<DateRange> = {};
     
     if (isValidDate(range.from)) {
       result.from = range.from;
@@ -45,7 +45,7 @@ export function useDateValidation() {
     
     // Se ao menos uma data for válida, retorna o intervalo
     if (result.from || result.to) {
-      return result;
+      return result as DateRange;
     }
     
     return undefined;
