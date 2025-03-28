@@ -51,17 +51,17 @@ export const RecurrencePreview = ({ clients }: RecurrencePreviewProps) => {
   }, [clients]);
 
   return (
-    <div className="w-full h-full flex flex-col justify-between p-4">
-      <div className="text-2xl font-bold text-income mb-4">
+    <div className="w-full h-full flex flex-col p-3">
+      <div className="text-xl font-bold text-income mb-3">
         {formatCurrency(recurrenceData.totalRecurrence)}
         <span className="text-xs font-normal text-muted-foreground ml-2">/ mês</span>
       </div>
       
-      <div className="flex-grow overflow-auto space-y-3 my-2">
-        <div className="text-sm font-medium">Detalhamento por plano:</div>
+      <div className="flex-grow overflow-auto space-y-2 my-2">
+        <div className="text-xs font-medium">Detalhamento por plano:</div>
         
         {recurrenceData.activePlans.map((planData, index) => (
-          <div key={index} className="flex justify-between items-center text-sm bg-gray-50 dark:bg-gray-700/20 p-2 rounded-md">
+          <div key={index} className="flex justify-between items-center text-xs bg-gray-50 dark:bg-gray-700/20 p-2 rounded-md">
             <div className="flex items-center">
               <span className="font-medium">{planData.plan}</span>
               <span className="ml-2 text-muted-foreground">
@@ -78,13 +78,13 @@ export const RecurrencePreview = ({ clients }: RecurrencePreviewProps) => {
         ))}
       </div>
       
-      <div className="mt-auto pt-4 border-t">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center text-sm">
-            <CreditCard className="h-4 w-4 mr-1 text-muted-foreground" />
+      <div className="mt-1 pt-2 border-t">
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center">
+            <CreditCard className="h-3 w-3 mr-1 text-muted-foreground" />
             <span>Total de recorrência</span>
           </div>
-          <span className="text-xl font-semibold text-income">
+          <span className="text-base font-semibold text-income">
             {formatCurrency(recurrenceData.totalRecurrence)}
           </span>
         </div>

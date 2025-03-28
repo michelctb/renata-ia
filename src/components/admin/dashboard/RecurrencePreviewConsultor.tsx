@@ -81,48 +81,48 @@ export const RecurrencePreviewConsultor = ({ clients }: RecurrencePreviewConsult
   }, [clients]);
 
   return (
-    <div className="w-full h-full flex flex-col justify-between p-4">
-      <div className="text-2xl font-bold text-income mb-4">
+    <div className="w-full h-full flex flex-col p-3">
+      <div className="text-xl font-bold text-income mb-3">
         {formatCurrency(financialData.totalMonthlyRevenue)}
         <span className="text-xs font-normal text-muted-foreground ml-2">
           este mês ({financialData.currentMonth})
         </span>
       </div>
       
-      <div className="flex-grow space-y-4 my-2">
-        <div className="flex justify-between items-center text-sm bg-gray-50 dark:bg-gray-700/20 p-3 rounded-md">
+      <div className="flex-grow grid gap-2 my-2 overflow-hidden">
+        <div className="flex justify-between items-center text-xs bg-gray-50 dark:bg-gray-700/20 p-2 rounded-md">
           <div className="flex items-center">
-            <TrendingUp className="mr-2 h-5 w-5 text-green-500" />
+            <TrendingUp className="mr-1 h-4 w-4 text-green-500" />
             <span className="font-medium">Adesões do mês</span>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-lg font-semibold">{formatCurrency(financialData.currentMonthAdesao)}</span>
+            <span className="text-sm font-semibold">{formatCurrency(financialData.currentMonthAdesao)}</span>
             <span className="text-xs text-muted-foreground">
               {financialData.newClientsCount} novos clientes
             </span>
           </div>
         </div>
         
-        <div className="flex justify-between items-center text-sm bg-gray-50 dark:bg-gray-700/20 p-3 rounded-md">
+        <div className="flex justify-between items-center text-xs bg-gray-50 dark:bg-gray-700/20 p-2 rounded-md">
           <div className="flex items-center">
-            <CalendarClock className="mr-2 h-5 w-5 text-blue-500" />
+            <CalendarClock className="mr-1 h-4 w-4 text-blue-500" />
             <span className="font-medium">Recorrência mensal</span>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-lg font-semibold">{formatCurrency(financialData.totalRecurrence)}</span>
+            <span className="text-sm font-semibold">{formatCurrency(financialData.totalRecurrence)}</span>
             <span className="text-xs text-muted-foreground">
               {financialData.totalActiveClients} clientes ativos
             </span>
           </div>
         </div>
         
-        <div className="flex justify-between items-center text-sm bg-gray-50 dark:bg-gray-700/20 p-3 rounded-md">
+        <div className="flex justify-between items-center text-xs bg-gray-50 dark:bg-gray-700/20 p-2 rounded-md">
           <div className="flex items-center">
-            <CreditCard className="mr-2 h-5 w-5 text-purple-500" />
+            <CreditCard className="mr-1 h-4 w-4 text-purple-500" />
             <span className="font-medium">Estimativa anual</span>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-lg font-semibold text-income">
+            <span className="text-sm font-semibold text-income">
               {formatCurrency(financialData.totalRecurrence * 12 + financialData.currentMonthAdesao)}
             </span>
             <span className="text-xs text-muted-foreground">
@@ -132,13 +132,13 @@ export const RecurrencePreviewConsultor = ({ clients }: RecurrencePreviewConsult
         </div>
       </div>
       
-      <div className="mt-auto pt-4 border-t">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center text-sm">
-            <Users className="h-4 w-4 mr-1 text-muted-foreground" />
+      <div className="mt-1 pt-2 border-t">
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center">
+            <Users className="h-3 w-3 mr-1 text-muted-foreground" />
             <span>Total de clientes ativos</span>
           </div>
-          <span className="text-lg font-medium">
+          <span className="text-base font-medium">
             {financialData.totalActiveClients}
           </span>
         </div>
