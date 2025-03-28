@@ -53,12 +53,12 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChart
   }
 
   // Função para lidar com o clique em uma barra
-  const handleBarClick = useCallback((data: any) => {
+  const handleBarClick = (data: any) => {
     console.log('MonthlyChart - Clique no mês:', data.name);
     if (onMonthClick) {
       onMonthClick(data.name);
     }
-  }, [onMonthClick]);
+  };
 
   return (
     <div className="relative h-full">
