@@ -1,6 +1,6 @@
 
 import { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { Cliente } from '@/lib/clientes';
 import { format, parseISO, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths, isAfter, isSameMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -104,8 +104,10 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
   }
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
+    <div className="w-full h-full">
       <BarChart
+        width={window.innerWidth > 768 ? 700 : 300}
+        height={350}
         data={chartData}
         margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
         barGap={0}
@@ -127,6 +129,6 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
         <Bar dataKey="recorrencia" name="Recorrências" fill="#3b82f6" />
         <Bar dataKey="total" name="Total" fill="#10b981" />
       </BarChart>
-    </ResponsiveContainer>
+    </div>
   );
 };

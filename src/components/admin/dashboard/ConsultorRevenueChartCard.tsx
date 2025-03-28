@@ -18,10 +18,9 @@ export const ConsultorRevenueChartCard = ({ clients }: ConsultorRevenueChartCard
         </div>
         <ChartBar className="h-5 w-5 text-muted-foreground" />
       </CardHeader>
-      <CardContent className="min-h-[350px]">
+      <CardContent className="flex justify-center min-h-[350px]">
         <ConsultorRevenueChart clients={clients} />
       </CardContent>
     </Card>
   );
 };
-

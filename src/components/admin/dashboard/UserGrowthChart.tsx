@@ -1,9 +1,8 @@
 
 import { useMemo } from 'react';
 import { Cliente } from '@/lib/supabase/types';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
-import { format, subMonths, setMonth, getMonth, startOfMonth, endOfMonth, isBefore } from 'date-fns';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { format, subMonths, startOfMonth, endOfMonth, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 interface UserGrowthChartProps {
@@ -78,45 +77,50 @@ export const UserGrowthChart = ({ clients }: UserGrowthChartProps) => {
     return data;
   }, [clients]);
 
-  const growthConfig = {
-    novos: {
-      label: "Novos Usuários",
-      theme: {
-        light: "#4f46e5",
-        dark: "#818cf8"
-      }
-    },
-    total: {
-      label: "Total Acumulado",
-      theme: {
-        light: "#10b981",
-        dark: "#34d399"
-      }
+  // Função personalizada para formatar o tooltip
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-3 shadow-md rounded-md border text-sm">
+          <p className="font-medium">{payload[0]?.payload?.fullName || label}</p>
+          <p className="text-indigo-600">{`Novos Usuários: ${payload[0]?.value}`}</p>
+          <p className="text-emerald-600">{`Total Acumulado: ${payload[1]?.value}`}</p>
+        </div>
+      );
     }
+    return null;
   };
 
+  if (!clients || clients.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <p className="text-muted-foreground">Sem dados para exibir</p>
+      </div>
+    );
+  }
+
   return (
-    <ChartContainer className="h-full w-full" config={growthConfig}>
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={chartData}
-          margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis 
-            dataKey="name" 
-            angle={-45} 
-            textAnchor="end" 
-            height={70}
-            tick={{ fontSize: 12 }}
-          />
-          <YAxis />
-          <Tooltip content={<ChartTooltipContent />} />
-          <Legend />
-          <Bar dataKey="novos" fill="var(--color-novos)" name="Novos Usuários" />
-          <Bar dataKey="total" fill="var(--color-total)" name="Total Acumulado" />
-        </BarChart>
-      </ResponsiveContainer>
-    </ChartContainer>
+    <div className="w-full h-full">
+      <BarChart
+        width={window.innerWidth > 768 ? 700 : 300}
+        height={350}
+        data={chartData}
+        margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis 
+          dataKey="name" 
+          angle={-45} 
+          textAnchor="end" 
+          height={70}
+          tick={{ fontSize: 12 }}
+        />
+        <YAxis />
+        <Tooltip content={<CustomTooltip />} />
+        <Legend />
+        <Bar dataKey="novos" fill="#4f46e5" name="Novos Usuários" />
+        <Bar dataKey="total" fill="#10b981" name="Total Acumulado" />
+      </BarChart>
+    </div>
   );
 };

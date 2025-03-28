@@ -9,7 +9,6 @@ import { RetentionRateChart } from './dashboard/RetentionRateChart';
 import { RecurrencePreview } from './dashboard/RecurrencePreview';
 import { RecurrencePreviewConsultor } from './dashboard/RecurrencePreviewConsultor';
 import { ConsultorRevenueChartCard } from './dashboard/ConsultorRevenueChartCard';
-import { ConsultorRevenueChart } from './dashboard/ConsultorRevenueChart';
 import { Cliente } from '@/lib/supabase/types';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -70,23 +69,23 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
                   </TabsList>
                 )}
                 
-                <TabsContent value="growth" className="min-h-[350px]">
+                <TabsContent value="growth" className="min-h-[350px] flex justify-center">
                   <UserGrowthChart clients={clients} />
                 </TabsContent>
                 
                 {viewMode === 'admin' && (
-                  <TabsContent value="conversion" className="min-h-[350px]">
+                  <TabsContent value="conversion" className="min-h-[350px] flex justify-center">
                     <PlanConversionChart clients={clients} />
                   </TabsContent>
                 )}
                 
-                <TabsContent value="retention" className="min-h-[350px]">
+                <TabsContent value="retention" className="min-h-[350px] flex justify-center">
                   <RetentionRateChart clients={clients} />
                 </TabsContent>
 
                 {viewMode === 'consultor' && (
-                  <TabsContent value="revenue" className="min-h-[350px]">
-                    <ConsultorRevenueChart clients={clients} />
+                  <TabsContent value="revenue" className="min-h-[350px] flex justify-center">
+                    <ConsultorRevenueChartCard clients={clients} />
                   </TabsContent>
                 )}
               </Tabs>
@@ -106,8 +105,6 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
           )}
         </div>
       </div>
-
-      {/* Removido o gráfico de faturamento mensal independente, pois agora está integrado nas abas */}
     </div>
   );
 };
