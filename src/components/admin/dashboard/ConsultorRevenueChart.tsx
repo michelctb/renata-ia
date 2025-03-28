@@ -1,6 +1,6 @@
 
 import { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Cliente } from '@/lib/clientes';
 import { format, parseISO, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths, isAfter, isSameMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -104,36 +104,36 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
   }
 
   return (
-    <div className="w-full h-full flex justify-center items-center">
-      <BarChart
-        width={700}
-        height={320}
-        data={chartData}
-        margin={{ top: 20, right: 30, left: 30, bottom: 20 }}
-        barGap={0}
-        barCategoryGap="20%"
-      >
-        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-        <XAxis 
-          dataKey="name"
-          tick={{ fontSize: 12 }}
-          height={40}
-        />
-        <YAxis 
-          tickFormatter={(value) => `${value.toLocaleString('pt-BR', { 
-            style: 'currency', 
-            currency: 'BRL',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0 
-          })}`}
-          width={80}
-        />
-        <Tooltip content={<CustomTooltip />} />
-        <Legend wrapperStyle={{ paddingTop: 10 }} />
-        <Bar dataKey="adesao" name="Adesões" fill="#ef4444" />
-        <Bar dataKey="recorrencia" name="Recorrências" fill="#3b82f6" />
-        <Bar dataKey="total" name="Total" fill="#10b981" />
-      </BarChart>
+    <div className="w-full h-full">
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart
+          data={chartData}
+          margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
+          barGap={0}
+          barCategoryGap="20%"
+        >
+          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <XAxis 
+            dataKey="name"
+            tick={{ fontSize: 12 }}
+            height={40}
+          />
+          <YAxis 
+            tickFormatter={(value) => `${value.toLocaleString('pt-BR', { 
+              style: 'currency', 
+              currency: 'BRL',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0 
+            })}`}
+            width={80}
+          />
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }} />
+          <Legend wrapperStyle={{ paddingTop: 10 }} />
+          <Bar dataKey="adesao" name="Adesões" fill="#ef4444" isAnimationActive={false} />
+          <Bar dataKey="recorrencia" name="Recorrências" fill="#3b82f6" isAnimationActive={false} />
+          <Bar dataKey="total" name="Total" fill="#10b981" isAnimationActive={false} />
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   );
 };

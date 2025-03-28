@@ -46,15 +46,15 @@ export function MonthlyChartCard({
   }, []);
 
   return (
-    <Card className="border-none shadow-md hover:shadow-lg transition-all duration-300 animate-fade-up col-span-1 lg:col-span-3" style={{ animationDelay: '0.1s' }}>
+    <Card className="border shadow-sm col-span-1 lg:col-span-3">
       <CardHeader className="pb-2">
-        <CardTitle>Entradas e Saídas por Mês</CardTitle>
+        <CardTitle className="text-lg">Entradas e Saídas por Mês</CardTitle>
         <CardDescription>
           Visualização mensal de valores recebidos e pagos (todos os períodos)
           {selectedMonth && <span className="ml-1 text-blue-500 font-medium">• Filtro: {selectedMonth}</span>}
         </CardDescription>
       </CardHeader>
-      <CardContent className="min-h-[350px] h-auto">
+      <CardContent className="min-h-[300px] pb-4">
         <MonthlyChart 
           data={chartData} 
           onMonthClick={onMonthClick ? handleMonthClick : undefined}

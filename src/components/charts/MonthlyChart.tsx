@@ -24,11 +24,11 @@ interface MonthlyChartProps {
 }
 
 // Custom tooltip for bar chart
-const CustomBarTooltip = ({ active, payload }: TooltipProps<number, string>) => {
+const CustomBarTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white p-2 border border-gray-200 rounded shadow-md">
-        <p className="font-medium">{payload[0].payload.name}</p>
+        <p className="font-medium">{label}</p>
         {payload.map((entry, index) => (
           <p key={index} style={{ color: entry.color }}>
             {entry.name}: {formatCurrency(entry.value as number)}
@@ -62,7 +62,8 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChart
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={data}
-          margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+          margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
+          barGap={0}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis 
@@ -87,16 +88,15 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChart
           <YAxis 
             tickFormatter={(value) => formatCurrency(value).split(',')[0]} 
           />
-          <Tooltip content={<CustomBarTooltip />} />
+          <Tooltip content={<CustomBarTooltip />} cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }} />
           <Legend />
           <Bar 
             dataKey="entrada" 
             name="Entradas" 
             fill="#4ade80" 
             onClick={handleBarClick}
-            // Adicionar cursor pointer para indicar que é clicável
-            cursor="pointer" 
-            // Estilizar a barra quando estiver sobre ela
+            cursor="pointer"
+            isAnimationActive={false}
             onMouseOver={() => {
               document.body.style.cursor = 'pointer';
             }}
@@ -110,6 +110,7 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChart
             fill="#f87171" 
             onClick={handleBarClick}
             cursor="pointer"
+            isAnimationActive={false}
             onMouseOver={() => {
               document.body.style.cursor = 'pointer';
             }}
