@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, TrendingUp, UserCheck, LineChart, CreditCard } from 'lucide-react';
@@ -116,17 +115,13 @@ export const UserStatsSummary = ({ clients, viewMode = 'admin' }: UserStatsSumma
     };
   }, [clients, viewMode]);
   
-  // Determina o número de colunas com base no modo de visualização
-  // Usando grid-cols-5 de forma consistente para melhor preenchimento da tela
-  const gridCols = 'md:grid-cols-2 lg:grid-cols-5';
-
-  // Definir os termos baseado no viewMode
+  // Termos adaptados conforme o viewMode (admin ou consultor)
   const terms = viewMode === 'admin' 
     ? { users: 'Usuários', newUsers: 'Novos Usuários', activeUsers: 'Usuários Ativos' }
     : { users: 'Clientes', newUsers: 'Novos Clientes', activeUsers: 'Clientes Ativos' };
 
   return (
-    <div className={`grid gap-4 grid-cols-1 ${gridCols}`}>
+    <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {/* Total de Usuários/Clientes */}
       <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -169,8 +164,8 @@ export const UserStatsSummary = ({ clients, viewMode = 'admin' }: UserStatsSumma
         </CardContent>
       </Card>
 
-      {/* Apenas para administradores: Plano Mais Popular */}
-      {viewMode === 'admin' && (
+      {/* Condicional baseado no viewMode */}
+      {viewMode === 'admin' ? (
         <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Plano Mais Popular</CardTitle>
@@ -183,29 +178,22 @@ export const UserStatsSummary = ({ clients, viewMode = 'admin' }: UserStatsSumma
             </p>
           </CardContent>
         </Card>
+      ) : (
+        <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Faturamento do Mês</CardTitle>
+            <CreditCard className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-income">
+              {formatCurrency(stats.totalMonthlyRevenue)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Inclui {formatCurrency(stats.currentMonthAdesao)} em adesões
+            </p>
+          </CardContent>
+        </Card>
       )}
-      
-      {/* Para ambos os tipos: Recorrência/Faturamento Mensal */}
-      <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            {viewMode === 'admin' ? 'Recorrência Mensal' : 'Faturamento do Mês'}
-          </CardTitle>
-          <CreditCard className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-income">
-            {viewMode === 'admin' 
-              ? formatCurrency(stats.monthlyRecurrence)
-              : formatCurrency(stats.totalMonthlyRevenue)}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {viewMode === 'admin'
-              ? 'Previsão de faturamento'
-              : `Inclui ${formatCurrency(stats.currentMonthAdesao)} em adesões`}
-          </p>
-        </CardContent>
-      </Card>
     </div>
   );
 };

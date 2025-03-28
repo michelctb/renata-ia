@@ -51,7 +51,7 @@ export const RecurrencePreview = ({ clients }: RecurrencePreviewProps) => {
   }, [clients]);
 
   return (
-    <div className="w-full h-full flex flex-col justify-between p-2">
+    <div className="w-full h-full flex flex-col justify-between p-4">
       <div className="text-2xl font-bold text-income mb-4">
         {formatCurrency(recurrenceData.totalRecurrence)}
         <span className="text-xs font-normal text-muted-foreground ml-2">/ mês</span>
