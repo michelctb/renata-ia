@@ -2,7 +2,7 @@
 import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Cliente } from '@/lib/clientes';
-import { format, parseISO, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths, isWithinInterval, isAfter, isSameMonth, addMonths } from 'date-fns';
+import { format, parseISO, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths, isAfter, isSameMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency } from '@/lib/utils';
 
@@ -48,13 +48,13 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
         
         // Se o cliente foi criado neste mês exato, adicionar a adesão
         if (isSameMonth(createdDate, monthDate)) {
-          adhesionRevenue += client.adesao || 0;
+          adhesionRevenue += Number(client.adesao) || 0;
         }
         
         // Se o cliente já existia neste mês, adicionar a recorrência
         // (ou seja, se foi criado neste mês ou antes)
         if (!isAfter(createdDate, monthEnd)) {
-          recurrenceRevenue += client.recorrencia || 0;
+          recurrenceRevenue += Number(client.recorrencia) || 0;
         }
       });
       
@@ -63,8 +63,8 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
         name: format(monthDate, 'MMM', { locale: ptBR }),
         month: format(monthDate, 'MM/yyyy'),
         adesao: adhesionRevenue,
-        recorrencia: recurrenceRevenue,
-        total: adhesionRevenue + recurrenceRevenue
+        recorrencia: recorrenceRevenue,
+        total: adhesionRevenue + recorrenceRevenue
       };
     });
   }, [clients]);
@@ -88,6 +88,17 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
     return (
       <div className="flex justify-center items-center h-full">
         <p className="text-muted-foreground">Sem dados para exibir</p>
+      </div>
+    );
+  }
+
+  // Verificar se temos dados para exibir depois dos cálculos
+  const hasData = chartData.some(data => data.adesao > 0 || data.recorrencia > 0);
+  
+  if (!hasData) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <p className="text-muted-foreground">Sem dados de faturamento para exibir</p>
       </div>
     );
   }
