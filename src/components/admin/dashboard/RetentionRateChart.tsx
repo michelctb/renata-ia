@@ -136,8 +136,8 @@ export const RetentionRateChart = ({ clients }: RetentionRateChartProps) => {
           <YAxis />
           <Tooltip 
             content={<CustomTooltip />} 
-            cursor={{fill: 'rgba(0, 0, 0, 0.05)'}}
-            position={{x: 0, y: 0}}
+            cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
+            position={{ y: -70 }}
           />
           <Legend />
           <Area 

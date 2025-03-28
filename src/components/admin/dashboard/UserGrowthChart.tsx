@@ -80,9 +80,11 @@ export const UserGrowthChart = ({ clients }: UserGrowthChartProps) => {
   // Função personalizada para formatar o tooltip
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
+      const dataPoint = chartData.find(item => item.name === label);
+      
       return (
         <div className="bg-white p-3 shadow-md rounded-md border text-sm">
-          <p className="font-medium">{payload[0]?.payload?.fullName || label}</p>
+          <p className="font-medium">{dataPoint?.fullName || label}</p>
           <p className="text-indigo-600">{`Novos Usuários: ${payload[0]?.value}`}</p>
           <p className="text-emerald-600">{`Total Acumulado: ${payload[1]?.value}`}</p>
         </div>
@@ -117,9 +119,9 @@ export const UserGrowthChart = ({ clients }: UserGrowthChartProps) => {
         />
         <YAxis />
         <Tooltip 
-          content={<CustomTooltip />} 
-          position={{x: 0, y: 0}} 
-          cursor={{fill: 'rgba(0, 0, 0, 0.05)'}}
+          content={<CustomTooltip />}
+          cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
+          position={{ y: -70 }}
         />
         <Legend wrapperStyle={{ paddingTop: 10 }} />
         <Bar 

@@ -72,12 +72,14 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
   // Personalização do tooltip para mostrar valores formatados
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
+      const dataPoint = chartData.find(item => item.name === label);
+      
       return (
         <div className="bg-white p-3 shadow-md rounded-md border text-sm">
-          <p className="font-medium">{`${label} (${payload[0]?.payload?.month})`}</p>
-          <p className="text-red-500">{`Adesões: ${formatCurrency(payload[0].value)}`}</p>
-          <p className="text-blue-500">{`Recorrências: ${formatCurrency(payload[1].value)}`}</p>
-          <p className="font-medium">{`Total: ${formatCurrency(payload[2].value)}`}</p>
+          <p className="font-medium">{`${label} (${dataPoint?.month || ''})`}</p>
+          <p className="text-red-500">{`Adesões: ${formatCurrency(payload[0]?.value || 0)}`}</p>
+          <p className="text-blue-500">{`Recorrências: ${formatCurrency(payload[1]?.value || 0)}`}</p>
+          <p className="font-medium">{`Total: ${formatCurrency(payload[2]?.value || 0)}`}</p>
         </div>
       );
     }
@@ -127,7 +129,11 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
             })}`}
             width={80}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }} />
+          <Tooltip 
+            content={<CustomTooltip />} 
+            cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
+            position={{ y: -70 }}
+          />
           <Legend wrapperStyle={{ paddingTop: 10 }} />
           <Bar dataKey="adesao" name="Adesões" fill="#ef4444" isAnimationActive={false} />
           <Bar dataKey="recorrencia" name="Recorrências" fill="#3b82f6" isAnimationActive={false} />
