@@ -63,8 +63,8 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
         name: format(monthDate, 'MMM', { locale: ptBR }),
         month: format(monthDate, 'MM/yyyy'),
         adesao: adhesionRevenue,
-        recorrencia: recurrenceRevenue,
-        total: adhesionRevenue + recurrenceRevenue
+        recorrencia: recorrenceRevenue,
+        total: adhesionRevenue + recorrenceRevenue
       };
     });
   }, [clients]);
@@ -88,7 +88,7 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
 
   if (!clients || clients.length === 0) {
     return (
-      <div className="flex justify-center items-center h-full w-full">
+      <div className="flex justify-center items-center h-[300px]">
         <p className="text-muted-foreground">Sem dados para exibir</p>
       </div>
     );
@@ -99,18 +99,18 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
   
   if (!hasData) {
     return (
-      <div className="flex justify-center items-center h-full w-full">
+      <div className="flex justify-center items-center h-[300px]">
         <p className="text-muted-foreground">Sem dados de faturamento para exibir</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full">
       <ResponsiveContainer width="100%" height={300}>
         <BarChart
           data={chartData}
-          margin={{ top: 5, right: 20, left: 20, bottom: 40 }}
+          margin={{ top: 10, right: 10, left: 10, bottom: 20 }}
           barGap={0}
           barCategoryGap="20%"
         >
@@ -125,14 +125,13 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
               minimumFractionDigits: 0,
               maximumFractionDigits: 0 
             })}`}
-            width={80}
+            width={60}
           />
           <Tooltip 
-            content={<CustomTooltip />} 
+            content={<CustomTooltip />}
             cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
           />
           <Legend 
-            wrapperStyle={{ paddingTop: 20 }}
             verticalAlign="bottom"
             align="center"
           />
