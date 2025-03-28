@@ -1,5 +1,5 @@
 
-import { useMemo, useRef, useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { Cliente } from '@/lib/supabase/types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { format, subMonths, startOfMonth, endOfMonth, isBefore } from 'date-fns';
@@ -10,28 +10,6 @@ interface UserGrowthChartProps {
 }
 
 export const UserGrowthChart = ({ clients }: UserGrowthChartProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 700, height: 350 });
-
-  // Função para atualizar dimensões com base no container
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const updateDimensions = () => {
-      const width = containerRef.current?.clientWidth || 700;
-      // Definir uma altura mínima para garantir visibilidade adequada
-      const height = Math.max(containerRef.current?.clientHeight || 350, 350);
-      setDimensions({ width, height });
-    };
-
-    updateDimensions();
-    window.addEventListener('resize', updateDimensions);
-    
-    return () => {
-      window.removeEventListener('resize', updateDimensions);
-    };
-  }, []);
-
   const chartData = useMemo(() => {
     // Últimos 12 meses
     const today = new Date();
@@ -122,10 +100,10 @@ export const UserGrowthChart = ({ clients }: UserGrowthChartProps) => {
   }
 
   return (
-    <div ref={containerRef} className="w-full h-full flex justify-center items-center">
+    <div className="w-full h-full flex justify-center items-center">
       <BarChart
-        width={dimensions.width}
-        height={dimensions.height}
+        width={700}
+        height={320}
         data={chartData}
         margin={{ top: 20, right: 30, left: 30, bottom: 20 }}
       >

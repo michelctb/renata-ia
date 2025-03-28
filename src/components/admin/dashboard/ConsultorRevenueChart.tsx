@@ -1,4 +1,5 @@
-import { useMemo, useRef, useEffect, useState } from 'react';
+
+import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { Cliente } from '@/lib/clientes';
 import { format, parseISO, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths, isAfter, isSameMonth } from 'date-fns';
@@ -10,28 +11,6 @@ interface ConsultorRevenueChartProps {
 }
 
 export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 700, height: 350 });
-
-  // Função para atualizar dimensões com base no container
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const updateDimensions = () => {
-      const width = containerRef.current?.clientWidth || 700;
-      // Definir uma altura mínima para garantir visibilidade adequada
-      const height = Math.max(containerRef.current?.clientHeight || 350, 350);
-      setDimensions({ width, height });
-    };
-
-    updateDimensions();
-    window.addEventListener('resize', updateDimensions);
-    
-    return () => {
-      window.removeEventListener('resize', updateDimensions);
-    };
-  }, []);
-
   // Calcular dados do gráfico baseado nos clientes
   const chartData = useMemo(() => {
     // Se não houver clientes, retornar array vazio
@@ -125,10 +104,10 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
   }
 
   return (
-    <div ref={containerRef} className="w-full h-full flex justify-center items-center">
+    <div className="w-full h-full flex justify-center items-center">
       <BarChart
-        width={dimensions.width}
-        height={dimensions.height}
+        width={700}
+        height={320}
         data={chartData}
         margin={{ top: 20, right: 30, left: 30, bottom: 20 }}
         barGap={0}

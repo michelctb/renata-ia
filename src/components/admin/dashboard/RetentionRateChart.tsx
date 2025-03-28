@@ -1,8 +1,9 @@
-import { useMemo, useRef, useEffect, useState } from 'react';
+
+import { useMemo } from 'react';
 import { Cliente } from '@/lib/supabase/types';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
-import { format, subMonths, startOfMonth, endOfMonth, differenceInMonths } from 'date-fns';
+import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 interface RetentionRateChartProps {
@@ -10,28 +11,6 @@ interface RetentionRateChartProps {
 }
 
 export const RetentionRateChart = ({ clients }: RetentionRateChartProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 700, height: 350 });
-
-  // Função para atualizar dimensões com base no container
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const updateDimensions = () => {
-      const width = containerRef.current?.clientWidth || 700;
-      // Definir uma altura mínima para garantir visibilidade adequada
-      const height = Math.max(containerRef.current?.clientHeight || 350, 350);
-      setDimensions({ width, height });
-    };
-
-    updateDimensions();
-    window.addEventListener('resize', updateDimensions);
-    
-    return () => {
-      window.removeEventListener('resize', updateDimensions);
-    };
-  }, []);
-
   const chartData = useMemo(() => {
     // Últimos 12 meses
     const today = new Date();
@@ -117,8 +96,10 @@ export const RetentionRateChart = ({ clients }: RetentionRateChartProps) => {
 
   return (
     <ChartContainer className="h-full w-full" config={retentionConfig}>
-      <ResponsiveContainer width="100%" height="100%">
+      <div className="w-full h-full flex justify-center items-center">
         <AreaChart
+          width={700}
+          height={320}
           data={chartData}
           margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
         >
@@ -158,7 +139,7 @@ export const RetentionRateChart = ({ clients }: RetentionRateChartProps) => {
             name="Total de Usuários"
           />
         </AreaChart>
-      </ResponsiveContainer>
+      </div>
     </ChartContainer>
   );
 };
