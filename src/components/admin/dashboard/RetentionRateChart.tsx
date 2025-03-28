@@ -1,5 +1,4 @@
-
-import { useMemo } from 'react';
+import { useMemo, useRef, useEffect, useState } from 'react';
 import { Cliente } from '@/lib/supabase/types';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
@@ -11,6 +10,28 @@ interface RetentionRateChartProps {
 }
 
 export const RetentionRateChart = ({ clients }: RetentionRateChartProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 700, height: 350 });
+
+  // Função para atualizar dimensões com base no container
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const updateDimensions = () => {
+      const width = containerRef.current?.clientWidth || 700;
+      // Definir uma altura mínima para garantir visibilidade adequada
+      const height = Math.max(containerRef.current?.clientHeight || 350, 350);
+      setDimensions({ width, height });
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    
+    return () => {
+      window.removeEventListener('resize', updateDimensions);
+    };
+  }, []);
+
   const chartData = useMemo(() => {
     // Últimos 12 meses
     const today = new Date();

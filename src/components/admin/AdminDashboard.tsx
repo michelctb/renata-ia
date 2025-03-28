@@ -79,15 +79,13 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
                   </TabsContent>
                 )}
                 
-                <TabsContent value="retention" className="min-h-[350px] flex justify-center">
+                <TabsContent value="retention" className="min-h-[350px] h-[350px] flex justify-center">
                   <RetentionRateChart clients={clients} />
                 </TabsContent>
 
                 {viewMode === 'consultor' && (
-                  <TabsContent value="revenue" className="min-h-[350px] flex justify-center w-full">
-                    <div className="w-full h-full">
-                      <ConsultorRevenueChartCard clients={clients} />
-                    </div>
+                  <TabsContent value="revenue" className="min-h-[350px] h-[350px] flex justify-center w-full">
+                    <ConsultorRevenueChartCard clients={clients} />
                   </TabsContent>
                 )}
               </Tabs>

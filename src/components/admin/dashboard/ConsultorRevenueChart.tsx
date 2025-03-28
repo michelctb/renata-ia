@@ -1,11 +1,9 @@
-
-import { useMemo } from 'react';
+import { useMemo, useRef, useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { Cliente } from '@/lib/clientes';
 import { format, parseISO, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths, isAfter, isSameMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency } from '@/lib/utils';
-import { useRef, useEffect, useState } from 'react';
 
 interface ConsultorRevenueChartProps {
   clients: Cliente[];
