@@ -124,7 +124,6 @@ export const RetentionRateChart = ({ clients }: RetentionRateChartProps) => {
           height={320}
           data={chartData}
           margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
-          cursor={{fill: 'rgba(0, 0, 0, 0.05)'}}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis 
@@ -135,7 +134,11 @@ export const RetentionRateChart = ({ clients }: RetentionRateChartProps) => {
             tick={{ fontSize: 12 }}
           />
           <YAxis />
-          <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(0, 0, 0, 0.05)'}} />
+          <Tooltip 
+            content={<CustomTooltip />} 
+            cursor={{fill: 'rgba(0, 0, 0, 0.05)'}}
+            position={{x: 0, y: 0}}
+          />
           <Legend />
           <Area 
             type="monotone" 

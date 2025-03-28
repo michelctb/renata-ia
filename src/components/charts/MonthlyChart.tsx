@@ -64,7 +64,6 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChart
           data={data}
           margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
           barGap={0}
-          cursor={{fill: 'rgba(0, 0, 0, 0.05)'}}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis 

@@ -106,7 +106,6 @@ export const UserGrowthChart = ({ clients }: UserGrowthChartProps) => {
         height={320}
         data={chartData}
         margin={{ top: 20, right: 30, left: 30, bottom: 20 }}
-        cursor={{fill: 'rgba(0, 0, 0, 0.05)'}}
       >
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis 
@@ -117,7 +116,11 @@ export const UserGrowthChart = ({ clients }: UserGrowthChartProps) => {
           tick={{ fontSize: 12 }}
         />
         <YAxis />
-        <Tooltip content={<CustomTooltip />} position={{x: 0, y: 0}} cursor={{fill: 'rgba(0, 0, 0, 0.05)'}} />
+        <Tooltip 
+          content={<CustomTooltip />} 
+          position={{x: 0, y: 0}} 
+          cursor={{fill: 'rgba(0, 0, 0, 0.05)'}}
+        />
         <Legend wrapperStyle={{ paddingTop: 10 }} />
         <Bar 
           dataKey="novos" 
