@@ -1,7 +1,7 @@
 
 import { useMemo } from 'react';
 import { Cliente } from '@/lib/supabase/types';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, subMonths, startOfMonth, endOfMonth, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -103,40 +103,41 @@ export const UserGrowthChart = ({ clients }: UserGrowthChartProps) => {
 
   return (
     <div className="w-full h-full flex justify-center items-center">
-      <BarChart
-        width={700}
-        height={320}
-        data={chartData}
-        margin={{ top: 20, right: 30, left: 30, bottom: 20 }}
-      >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis 
-          dataKey="name" 
-          angle={-45} 
-          textAnchor="end" 
-          height={70}
-          tick={{ fontSize: 12 }}
-        />
-        <YAxis />
-        <Tooltip 
-          content={<CustomTooltip />}
-          cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
-          position={{ y: -70 }}
-        />
-        <Legend wrapperStyle={{ paddingTop: 10 }} />
-        <Bar 
-          dataKey="novos" 
-          fill="#4f46e5" 
-          name="Novos Usuários"
-          isAnimationActive={false}
-        />
-        <Bar 
-          dataKey="total" 
-          fill="#10b981" 
-          name="Total Acumulado"
-          isAnimationActive={false}
-        />
-      </BarChart>
+      <ResponsiveContainer width="100%" height={320}>
+        <BarChart
+          width={700}
+          height={320}
+          data={chartData}
+          margin={{ top: 20, right: 30, left: 30, bottom: 20 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis 
+            dataKey="name" 
+            angle={-45} 
+            textAnchor="end" 
+            height={70}
+            tick={{ fontSize: 12 }}
+          />
+          <YAxis />
+          <Tooltip 
+            content={<CustomTooltip />}
+            cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
+          />
+          <Legend wrapperStyle={{ paddingTop: 10 }} />
+          <Bar 
+            dataKey="novos" 
+            fill="#4f46e5" 
+            name="Novos Usuários"
+            isAnimationActive={false}
+          />
+          <Bar 
+            dataKey="total" 
+            fill="#10b981" 
+            name="Total Acumulado"
+            isAnimationActive={false}
+          />
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   );
 };

@@ -110,7 +110,7 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
       <ResponsiveContainer width="100%" height={300}>
         <BarChart
           data={chartData}
-          margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
+          margin={{ top: 5, right: 20, left: 20, bottom: 40 }}
           barGap={0}
           barCategoryGap="20%"
         >
@@ -121,9 +121,7 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
             height={40}
           />
           <YAxis 
-            tickFormatter={(value) => `${value.toLocaleString('pt-BR', { 
-              style: 'currency', 
-              currency: 'BRL',
+            tickFormatter={(value) => `R$ ${value.toLocaleString('pt-BR', { 
               minimumFractionDigits: 0,
               maximumFractionDigits: 0 
             })}`}
@@ -132,9 +130,12 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
           <Tooltip 
             content={<CustomTooltip />} 
             cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
-            position={{ y: -70 }}
           />
-          <Legend wrapperStyle={{ paddingTop: 10 }} />
+          <Legend 
+            wrapperStyle={{ paddingTop: 20 }}
+            verticalAlign="bottom"
+            align="center"
+          />
           <Bar dataKey="adesao" name="Adesões" fill="#ef4444" isAnimationActive={false} />
           <Bar dataKey="recorrencia" name="Recorrências" fill="#3b82f6" isAnimationActive={false} />
           <Bar dataKey="total" name="Total" fill="#10b981" isAnimationActive={false} />

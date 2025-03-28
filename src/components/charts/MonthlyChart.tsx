@@ -91,7 +91,6 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChart
           <Tooltip 
             content={<CustomBarTooltip />} 
             cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
-            position={{ y: 0 }}
           />
           <Legend />
           <Bar 
