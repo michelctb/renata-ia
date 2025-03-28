@@ -36,6 +36,7 @@ export default function DashboardCharts({
     console.log('DashboardCharts - Inicializado com:', { 
       hasTransactions: !!propTransactions?.length,
       hasDateRange: !!dateRange,
+      isMobile: isMobile,
       hasSetDateRange: !!setDateRange,
       hasOnCategorySelect: !!onCategorySelect
     });
@@ -110,7 +111,7 @@ export default function DashboardCharts({
   });
 
   return (
-    <div className={`grid grid-cols-1 ${isMobile ? '' : 'lg:grid-cols-3'} gap-6 mb-6`}>
+    <div className="grid grid-cols-1 gap-4 md:gap-6 mb-6">
       {/* Mostrar filtros ativos */}
       {renderActiveFilters()}
       

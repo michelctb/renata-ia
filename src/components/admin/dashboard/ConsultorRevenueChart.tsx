@@ -8,9 +8,10 @@ import { formatCurrency } from '@/lib/utils';
 
 interface ConsultorRevenueChartProps {
   clients: Cliente[];
+  isMobile?: boolean;
 }
 
-export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) => {
+export const ConsultorRevenueChart = ({ clients, isMobile = false }: ConsultorRevenueChartProps) => {
   // Calcular dados do gráfico baseado nos clientes
   const chartData = useMemo(() => {
     // Se não houver clientes, retornar array vazio
@@ -20,7 +21,8 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
 
     // Definir intervalo de datas (de 12 meses atrás até o mês atual)
     const endDate = new Date();
-    const startDate = subMonths(endDate, 11); // 12 meses incluindo o atual
+    // Para mobile, reduzimos para 6 meses para melhor visualização
+    const startDate = subMonths(endDate, isMobile ? 5 : 11);
     
     // Cria um array com todos os meses no intervalo
     const monthsInRange = eachMonthOfInterval({ start: startDate, end: endDate });
@@ -67,7 +69,7 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
         total: adhesionRevenue + recurrenceRevenue
       };
     });
-  }, [clients]);
+  }, [clients, isMobile]);
 
   // Personalização do tooltip para mostrar valores formatados
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -75,7 +77,7 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
       const dataPoint = chartData.find(item => item.name === label);
       
       return (
-        <div className="bg-white p-3 shadow-md rounded-md border text-sm">
+        <div className="bg-white p-2 shadow-md rounded-md border text-xs">
           <p className="font-medium">{`${label} (${dataPoint?.month || ''})`}</p>
           <p className="text-red-500">{`Adesões: ${formatCurrency(payload[0]?.value || 0)}`}</p>
           <p className="text-blue-500">{`Recorrências: ${formatCurrency(payload[1]?.value || 0)}`}</p>
@@ -107,25 +109,32 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
 
   return (
     <div className="w-full">
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
         <BarChart
           data={chartData}
-          margin={{ top: 10, right: 10, left: 10, bottom: 20 }}
+          margin={isMobile ? 
+            { top: 10, right: 5, left: 0, bottom: 20 } : 
+            { top: 10, right: 10, left: 10, bottom: 20 }}
           barGap={0}
-          barCategoryGap="20%"
+          barCategoryGap={isMobile ? "10%" : "20%"}
         >
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis 
             dataKey="name"
-            tick={{ fontSize: 12 }}
+            tick={{ fontSize: isMobile ? 10 : 12 }}
             height={40}
+            interval={isMobile ? 1 : 0}
           />
           <YAxis 
-            tickFormatter={(value) => `R$ ${value.toLocaleString('pt-BR', { 
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0 
-            })}`}
-            width={60}
+            tickFormatter={(value) => isMobile ? 
+              `${value / 1000}k` : 
+              `R$ ${value.toLocaleString('pt-BR', { 
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0 
+              })}`
+            }
+            width={isMobile ? 30 : 60}
+            fontSize={isMobile ? 10 : 12}
           />
           <Tooltip 
             content={<CustomTooltip />}
@@ -134,6 +143,7 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
           <Legend 
             verticalAlign="bottom"
             align="center"
+            wrapperStyle={isMobile ? { fontSize: '10px' } : undefined}
           />
           <Bar dataKey="adesao" name="Adesões" fill="#ef4444" isAnimationActive={false} />
           <Bar dataKey="recorrencia" name="Recorrências" fill="#3b82f6" isAnimationActive={false} />

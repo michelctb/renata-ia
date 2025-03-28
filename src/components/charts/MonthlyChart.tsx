@@ -12,6 +12,7 @@ import {
   TooltipProps,
 } from 'recharts';
 import { useCallback } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MonthlyChartProps {
   data: Array<{
@@ -41,6 +42,8 @@ const CustomBarTooltip = ({ active, payload, label }: TooltipProps<number, strin
 };
 
 export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChartProps) {
+  const isMobile = useIsMobile();
+  
   if (data.length === 0) {
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground">
@@ -62,7 +65,9 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChart
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={data}
-          margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
+          margin={isMobile ? 
+            { top: 10, right: 5, left: 0, bottom: 10 } : 
+            { top: 20, right: 20, left: 20, bottom: 10 }}
           barGap={0}
         >
           <CartesianGrid strokeDasharray="3 3" />
@@ -79,20 +84,28 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChart
                   textAnchor="middle"
                   fill={isSelected ? '#3b82f6' : 'currentColor'}
                   fontWeight={isSelected ? 'bold' : 'normal'}
+                  fontSize={isMobile ? 10 : 12}
                 >
                   {props.payload.value}
                 </text>
               );
             }}
+            interval={isMobile ? 1 : 0}
           />
           <YAxis 
-            tickFormatter={(value) => formatCurrency(value).split(',')[0]} 
+            tickFormatter={(value) => isMobile ? 
+              `${value/1000}k` : 
+              formatCurrency(value).split(',')[0]} 
+            width={isMobile ? 30 : undefined}
+            fontSize={isMobile ? 10 : 12}
           />
           <Tooltip 
             content={<CustomBarTooltip />} 
             cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
           />
-          <Legend />
+          <Legend 
+            wrapperStyle={isMobile ? { fontSize: '10px' } : undefined}
+          />
           <Bar 
             dataKey="entrada" 
             name="Entradas" 
@@ -126,7 +139,7 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChart
       <div className="absolute bottom-0 right-0 text-xs text-muted-foreground pr-2 pb-1">
         {selectedMonth 
           ? `Filtro aplicado: ${selectedMonth} (clique novamente para remover)` 
-          : 'Clique em um mês para filtrar'}
+          : isMobile ? 'Toque para filtrar' : 'Clique em um mês para filtrar'}
       </div>
     </div>
   );
