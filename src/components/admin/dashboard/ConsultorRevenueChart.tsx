@@ -63,8 +63,8 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
         name: format(monthDate, 'MMM', { locale: ptBR }),
         month: format(monthDate, 'MM/yyyy'),
         adesao: adhesionRevenue,
-        recorrencia: recorrenceRevenue,
-        total: adhesionRevenue + recorrenceRevenue
+        recorrencia: recurrenceRevenue,
+        total: adhesionRevenue + recurrenceRevenue
       };
     });
   }, [clients]);
