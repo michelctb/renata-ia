@@ -1,6 +1,5 @@
 
 import { useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreditCard, Users, CalendarClock, TrendingUp } from 'lucide-react';
 import { Cliente } from '@/lib/supabase/types';
 import { formatCurrency } from '@/lib/utils';
@@ -82,56 +81,68 @@ export const RecurrencePreviewConsultor = ({ clients }: RecurrencePreviewConsult
   }, [clients]);
 
   return (
-    <Card className="bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-all duration-300 h-full">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">Faturamento do Consultor</CardTitle>
-        <CreditCard className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold text-income">
-          {formatCurrency(financialData.totalMonthlyRevenue)}
-          <span className="text-xs font-normal text-muted-foreground ml-2">
-            este mês ({financialData.currentMonth})
-          </span>
-        </div>
-        
-        <div className="mt-4 space-y-3">
-          <div className="flex justify-between items-center text-sm">
-            <div className="flex items-center">
-              <TrendingUp className="mr-1 h-4 w-4 text-income" />
-              <span className="font-medium">Adesões do mês</span>
-            </div>
-            <div className="flex flex-col items-end">
-              <span>{formatCurrency(financialData.currentMonthAdesao)}</span>
-              <span className="text-xs text-muted-foreground">
-                {financialData.newClientsCount} novos clientes
-              </span>
-            </div>
+    <div className="w-full h-full flex flex-col justify-between p-2">
+      <div className="text-2xl font-bold text-income mb-4">
+        {formatCurrency(financialData.totalMonthlyRevenue)}
+        <span className="text-xs font-normal text-muted-foreground ml-2">
+          este mês ({financialData.currentMonth})
+        </span>
+      </div>
+      
+      <div className="flex-grow space-y-4 my-2">
+        <div className="flex justify-between items-center text-sm bg-gray-50 dark:bg-gray-700/20 p-3 rounded-md">
+          <div className="flex items-center">
+            <TrendingUp className="mr-2 h-5 w-5 text-green-500" />
+            <span className="font-medium">Adesões do mês</span>
           </div>
-          
-          <div className="flex justify-between items-center text-sm">
-            <div className="flex items-center">
-              <CalendarClock className="mr-1 h-4 w-4 text-income" />
-              <span className="font-medium">Recorrência mensal</span>
-            </div>
-            <div className="flex flex-col items-end">
-              <span>{formatCurrency(financialData.totalRecurrence)}</span>
-              <span className="text-xs text-muted-foreground">
-                {financialData.totalActiveClients} clientes ativos
-              </span>
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-4 pt-3 border-t">
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">Estimativa anual</span>
-            <span className="text-lg font-semibold text-income">
-              {formatCurrency(financialData.totalRecurrence * 12 + financialData.currentMonthAdesao)}
+          <div className="flex flex-col items-end">
+            <span className="text-lg font-semibold">{formatCurrency(financialData.currentMonthAdesao)}</span>
+            <span className="text-xs text-muted-foreground">
+              {financialData.newClientsCount} novos clientes
             </span>
           </div>
         </div>
-      </CardContent>
-    </Card>
+        
+        <div className="flex justify-between items-center text-sm bg-gray-50 dark:bg-gray-700/20 p-3 rounded-md">
+          <div className="flex items-center">
+            <CalendarClock className="mr-2 h-5 w-5 text-blue-500" />
+            <span className="font-medium">Recorrência mensal</span>
+          </div>
+          <div className="flex flex-col items-end">
+            <span className="text-lg font-semibold">{formatCurrency(financialData.totalRecurrence)}</span>
+            <span className="text-xs text-muted-foreground">
+              {financialData.totalActiveClients} clientes ativos
+            </span>
+          </div>
+        </div>
+        
+        <div className="flex justify-between items-center text-sm bg-gray-50 dark:bg-gray-700/20 p-3 rounded-md">
+          <div className="flex items-center">
+            <CreditCard className="mr-2 h-5 w-5 text-purple-500" />
+            <span className="font-medium">Estimativa anual</span>
+          </div>
+          <div className="flex flex-col items-end">
+            <span className="text-lg font-semibold text-income">
+              {formatCurrency(financialData.totalRecurrence * 12 + financialData.currentMonthAdesao)}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              Projeção para 12 meses
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <div className="mt-auto pt-4 border-t">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center text-sm">
+            <Users className="h-4 w-4 mr-1 text-muted-foreground" />
+            <span>Total de clientes ativos</span>
+          </div>
+          <span className="text-lg font-medium">
+            {financialData.totalActiveClients}
+          </span>
+        </div>
+      </div>
+    </div>
   );
 };

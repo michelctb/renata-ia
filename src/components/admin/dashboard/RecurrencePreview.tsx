@@ -1,6 +1,5 @@
 
 import { useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreditCard, Users, CalendarClock } from 'lucide-react';
 import { Cliente } from '@/lib/supabase/types';
 import { formatCurrency } from '@/lib/utils';
@@ -52,38 +51,44 @@ export const RecurrencePreview = ({ clients }: RecurrencePreviewProps) => {
   }, [clients]);
 
   return (
-    <Card className="bg-white dark:bg-gray-800">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">Previsão de Recorrência</CardTitle>
-        <CreditCard className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold text-income">
-          {formatCurrency(recurrenceData.totalRecurrence)}
-          <span className="text-xs font-normal text-muted-foreground ml-2">/ mês</span>
-        </div>
+    <div className="w-full h-full flex flex-col justify-between p-2">
+      <div className="text-2xl font-bold text-income mb-4">
+        {formatCurrency(recurrenceData.totalRecurrence)}
+        <span className="text-xs font-normal text-muted-foreground ml-2">/ mês</span>
+      </div>
+      
+      <div className="flex-grow overflow-auto space-y-3 my-2">
+        <div className="text-sm font-medium">Detalhamento por plano:</div>
         
-        <div className="mt-4 space-y-2">
-          <div className="text-sm font-medium">Detalhamento por plano:</div>
-          
-          {recurrenceData.activePlans.map((planData, index) => (
-            <div key={index} className="flex justify-between items-center text-sm">
-              <div className="flex items-center">
-                <span className="font-medium">{planData.plan}</span>
-                <span className="ml-2 text-muted-foreground">
-                  ({planData.count} {planData.count === 1 ? 'cliente' : 'clientes'})
-                </span>
-              </div>
-              <div className="flex flex-col items-end">
-                <span>{formatCurrency(planData.totalValue)}</span>
-                <span className="text-xs text-muted-foreground">
-                  {formatCurrency(planData.value)} / cliente
-                </span>
-              </div>
+        {recurrenceData.activePlans.map((planData, index) => (
+          <div key={index} className="flex justify-between items-center text-sm bg-gray-50 dark:bg-gray-700/20 p-2 rounded-md">
+            <div className="flex items-center">
+              <span className="font-medium">{planData.plan}</span>
+              <span className="ml-2 text-muted-foreground">
+                ({planData.count} {planData.count === 1 ? 'cliente' : 'clientes'})
+              </span>
             </div>
-          ))}
+            <div className="flex flex-col items-end">
+              <span>{formatCurrency(planData.totalValue)}</span>
+              <span className="text-xs text-muted-foreground">
+                {formatCurrency(planData.value)} / cliente
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      <div className="mt-auto pt-4 border-t">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center text-sm">
+            <CreditCard className="h-4 w-4 mr-1 text-muted-foreground" />
+            <span>Total de recorrência</span>
+          </div>
+          <span className="text-xl font-semibold text-income">
+            {formatCurrency(recurrenceData.totalRecurrence)}
+          </span>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

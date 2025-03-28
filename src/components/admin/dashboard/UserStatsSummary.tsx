@@ -117,7 +117,8 @@ export const UserStatsSummary = ({ clients, viewMode = 'admin' }: UserStatsSumma
   }, [clients, viewMode]);
   
   // Determina o número de colunas com base no modo de visualização
-  const gridCols = viewMode === 'consultor' ? 'lg:grid-cols-5' : 'lg:grid-cols-5';
+  // Usando grid-cols-5 de forma consistente para melhor preenchimento da tela
+  const gridCols = 'md:grid-cols-2 lg:grid-cols-5';
 
   // Definir os termos baseado no viewMode
   const terms = viewMode === 'admin' 
@@ -125,9 +126,9 @@ export const UserStatsSummary = ({ clients, viewMode = 'admin' }: UserStatsSumma
     : { users: 'Clientes', newUsers: 'Novos Clientes', activeUsers: 'Clientes Ativos' };
 
   return (
-    <div className={`grid gap-4 md:grid-cols-2 ${gridCols}`}>
+    <div className={`grid gap-4 grid-cols-1 ${gridCols}`}>
       {/* Total de Usuários/Clientes */}
-      <Card>
+      <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total de {terms.users}</CardTitle>
           <Users className="h-4 w-4 text-muted-foreground" />
@@ -141,7 +142,7 @@ export const UserStatsSummary = ({ clients, viewMode = 'admin' }: UserStatsSumma
       </Card>
 
       {/* Novos Usuários/Clientes */}
-      <Card>
+      <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">{terms.newUsers} (30 dias)</CardTitle>
           <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -155,7 +156,7 @@ export const UserStatsSummary = ({ clients, viewMode = 'admin' }: UserStatsSumma
       </Card>
 
       {/* Usuários/Clientes Ativos */}
-      <Card>
+      <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">{terms.activeUsers}</CardTitle>
           <UserCheck className="h-4 w-4 text-muted-foreground" />
@@ -170,7 +171,7 @@ export const UserStatsSummary = ({ clients, viewMode = 'admin' }: UserStatsSumma
 
       {/* Apenas para administradores: Plano Mais Popular */}
       {viewMode === 'admin' && (
-        <Card>
+        <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Plano Mais Popular</CardTitle>
             <LineChart className="h-4 w-4 text-muted-foreground" />
@@ -185,7 +186,7 @@ export const UserStatsSummary = ({ clients, viewMode = 'admin' }: UserStatsSumma
       )}
       
       {/* Para ambos os tipos: Recorrência/Faturamento Mensal */}
-      <Card>
+      <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
             {viewMode === 'admin' ? 'Recorrência Mensal' : 'Faturamento do Mês'}

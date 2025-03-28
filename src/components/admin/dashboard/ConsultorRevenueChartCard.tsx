@@ -8,7 +8,7 @@ interface ConsultorRevenueChartCardProps {
 
 export const ConsultorRevenueChartCard = ({ clients }: ConsultorRevenueChartCardProps) => {
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full flex justify-center items-center">
       <ConsultorRevenueChart clients={clients} />
     </div>
   );

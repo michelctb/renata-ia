@@ -32,11 +32,13 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Estatísticas resumidas */}
-      <UserStatsSummary clients={clients} viewMode={viewMode} />
+      {/* Estatísticas resumidas - expandido para preencher a largura */}
+      <div className="w-full">
+        <UserStatsSummary clients={clients} viewMode={viewMode} />
+      </div>
 
-      {/* Grid responsivo para gráficos */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Grid responsivo para gráficos - usando 2 colunas em telas médias e grandes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Gráfico de Crescimento */}
         <Card className="bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -46,12 +48,9 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
             </div>
             <TrendingUp className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="min-h-[350px] h-[350px]">
+          <CardContent className="h-[350px]">
             <UserGrowthChart clients={clients} />
           </CardContent>
-          <CardFooter className="text-sm text-muted-foreground">
-            O gráfico mostra novos usuários por mês e o total acumulado.
-          </CardFooter>
         </Card>
 
         {/* Gráfico de Retenção */}
@@ -63,15 +62,12 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
             </div>
             <LineChart className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="min-h-[350px] h-[350px]">
+          <CardContent className="h-[350px]">
             <RetentionRateChart clients={clients} />
           </CardContent>
-          <CardFooter className="text-sm text-muted-foreground">
-            O gráfico mostra a taxa de retenção (%) e total de usuários ativos por mês.
-          </CardFooter>
         </Card>
 
-        {/* Gráficos específicos para cada tipo de usuário */}
+        {/* Gráficos específicos para cada tipo de usuário - ocupando uma coluna inteira cada */}
         {viewMode === 'admin' ? (
           <>
             {/* Gráfico de Conversão de Planos (Admin) */}
@@ -83,16 +79,24 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
                 </div>
                 <PieChart className="h-5 w-5 text-muted-foreground" />
               </CardHeader>
-              <CardContent className="min-h-[350px] h-[350px]">
+              <CardContent className="h-[350px]">
                 <PlanConversionChart clients={clients} />
               </CardContent>
-              <CardFooter className="text-sm text-muted-foreground">
-                O gráfico mostra a distribuição de usuários entre os diferentes planos.
-              </CardFooter>
             </Card>
             
             {/* Card de Previsão de Recorrência (Admin) */}
-            <RecurrencePreview clients={clients} />
+            <Card className="bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-all duration-300">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div>
+                  <CardTitle className="text-xl font-semibold">Previsão de Recorrência</CardTitle>
+                  <CardDescription>Detalhamento por plano</CardDescription>
+                </div>
+                <BarChart3 className="h-5 w-5 text-muted-foreground" />
+              </CardHeader>
+              <CardContent className="h-[350px]">
+                <RecurrencePreview clients={clients} />
+              </CardContent>
+            </Card>
           </>
         ) : (
           <>
@@ -105,16 +109,24 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
                 </div>
                 <BarChart3 className="h-5 w-5 text-muted-foreground" />
               </CardHeader>
-              <CardContent className="min-h-[350px] h-[350px]">
+              <CardContent className="h-[350px]">
                 <ConsultorRevenueChartCard clients={clients} />
               </CardContent>
-              <CardFooter className="text-sm text-muted-foreground">
-                O gráfico mostra a evolução do faturamento mensal dividido em adesões e recorrências.
-              </CardFooter>
             </Card>
             
             {/* Card de Previsão de Recorrência (Consultor) */}
-            <RecurrencePreviewConsultor clients={clients} />
+            <Card className="bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-all duration-300">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div>
+                  <CardTitle className="text-xl font-semibold">Faturamento do Consultor</CardTitle>
+                  <CardDescription>Detalhamento mensal e projeção anual</CardDescription>
+                </div>
+                <BarChart3 className="h-5 w-5 text-muted-foreground" />
+              </CardHeader>
+              <CardContent className="h-[350px]">
+                <RecurrencePreviewConsultor clients={clients} />
+              </CardContent>
+            </Card>
           </>
         )}
       </div>
