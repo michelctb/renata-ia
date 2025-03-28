@@ -64,6 +64,7 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChart
           data={data}
           margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
           barGap={0}
+          cursor={{fill: 'rgba(0, 0, 0, 0.05)'}}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis 
@@ -88,7 +89,11 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChart
           <YAxis 
             tickFormatter={(value) => formatCurrency(value).split(',')[0]} 
           />
-          <Tooltip content={<CustomBarTooltip />} cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }} />
+          <Tooltip 
+            content={<CustomBarTooltip />} 
+            cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
+            position={{x: 0, y: 0}}
+          />
           <Legend />
           <Bar 
             dataKey="entrada" 

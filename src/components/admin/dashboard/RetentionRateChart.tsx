@@ -1,7 +1,7 @@
 
 import { useMemo } from 'react';
 import { Cliente } from '@/lib/supabase/types';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, TooltipProps } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -94,6 +94,28 @@ export const RetentionRateChart = ({ clients }: RetentionRateChartProps) => {
     }
   };
 
+  // Custom tooltip para melhorar a precisão das informações
+  const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+    if (active && payload && payload.length) {
+      // Encontrar dados completos para este ponto
+      const dataPoint = chartData.find(item => item.name === label);
+      
+      return (
+        <div className="bg-white p-3 shadow-md rounded-md border text-sm">
+          <p className="font-medium">{dataPoint?.fullName || label}</p>
+          {payload.map((entry, index) => (
+            <p key={index} style={{ color: entry.color }}>
+              {entry.name}: {entry.name === "Taxa de Retenção (%)" 
+                ? `${entry.value}%` 
+                : entry.value}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <ChartContainer className="h-full w-full" config={retentionConfig}>
       <div className="w-full h-full flex justify-center items-center">
@@ -102,6 +124,7 @@ export const RetentionRateChart = ({ clients }: RetentionRateChartProps) => {
           height={320}
           data={chartData}
           margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
+          cursor={{fill: 'rgba(0, 0, 0, 0.05)'}}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis 
@@ -112,7 +135,7 @@ export const RetentionRateChart = ({ clients }: RetentionRateChartProps) => {
             tick={{ fontSize: 12 }}
           />
           <YAxis />
-          <Tooltip content={<ChartTooltipContent />} />
+          <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(0, 0, 0, 0.05)'}} />
           <Legend />
           <Area 
             type="monotone" 
@@ -121,6 +144,7 @@ export const RetentionRateChart = ({ clients }: RetentionRateChartProps) => {
             fill="var(--color-taxaRetencao)" 
             fillOpacity={0.3}
             name="Taxa de Retenção (%)"
+            isAnimationActive={false}
           />
           <Area 
             type="monotone" 
@@ -129,6 +153,7 @@ export const RetentionRateChart = ({ clients }: RetentionRateChartProps) => {
             fill="var(--color-usuariosAtivos)" 
             fillOpacity={0.3}
             name="Usuários Ativos"
+            isAnimationActive={false}
           />
           <Area 
             type="monotone" 
@@ -137,6 +162,7 @@ export const RetentionRateChart = ({ clients }: RetentionRateChartProps) => {
             fill="var(--color-totalUsuarios)" 
             fillOpacity={0.3}
             name="Total de Usuários"
+            isAnimationActive={false}
           />
         </AreaChart>
       </div>
