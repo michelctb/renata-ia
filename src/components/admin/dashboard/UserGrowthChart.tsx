@@ -1,5 +1,5 @@
 
-import { useMemo } from 'react';
+import { useMemo, useRef, useEffect, useState } from 'react';
 import { Cliente } from '@/lib/supabase/types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { format, subMonths, startOfMonth, endOfMonth, isBefore } from 'date-fns';
@@ -10,6 +10,28 @@ interface UserGrowthChartProps {
 }
 
 export const UserGrowthChart = ({ clients }: UserGrowthChartProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 700, height: 350 });
+
+  // Função para atualizar dimensões com base no container
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const updateDimensions = () => {
+      const width = containerRef.current?.clientWidth || 700;
+      // Definir uma altura mínima para garantir visibilidade adequada
+      const height = Math.max(containerRef.current?.clientHeight || 350, 350);
+      setDimensions({ width, height });
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    
+    return () => {
+      window.removeEventListener('resize', updateDimensions);
+    };
+  }, []);
+
   const chartData = useMemo(() => {
     // Últimos 12 meses
     const today = new Date();
@@ -93,19 +115,19 @@ export const UserGrowthChart = ({ clients }: UserGrowthChartProps) => {
 
   if (!clients || clients.length === 0) {
     return (
-      <div className="flex justify-center items-center h-full">
+      <div className="flex justify-center items-center h-full w-full">
         <p className="text-muted-foreground">Sem dados para exibir</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full">
+    <div ref={containerRef} className="w-full h-full flex justify-center items-center">
       <BarChart
-        width={window.innerWidth > 768 ? 700 : 300}
-        height={350}
+        width={dimensions.width}
+        height={dimensions.height}
         data={chartData}
-        margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
+        margin={{ top: 20, right: 30, left: 30, bottom: 20 }}
       >
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis 
@@ -117,7 +139,7 @@ export const UserGrowthChart = ({ clients }: UserGrowthChartProps) => {
         />
         <YAxis />
         <Tooltip content={<CustomTooltip />} />
-        <Legend />
+        <Legend wrapperStyle={{ paddingTop: 10 }} />
         <Bar dataKey="novos" fill="#4f46e5" name="Novos Usuários" />
         <Bar dataKey="total" fill="#10b981" name="Total Acumulado" />
       </BarChart>

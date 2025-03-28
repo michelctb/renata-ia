@@ -5,12 +5,35 @@ import { Cliente } from '@/lib/clientes';
 import { format, parseISO, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths, isAfter, isSameMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatCurrency } from '@/lib/utils';
+import { useRef, useEffect, useState } from 'react';
 
 interface ConsultorRevenueChartProps {
   clients: Cliente[];
 }
 
 export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 700, height: 350 });
+
+  // Função para atualizar dimensões com base no container
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const updateDimensions = () => {
+      const width = containerRef.current?.clientWidth || 700;
+      // Definir uma altura mínima para garantir visibilidade adequada
+      const height = Math.max(containerRef.current?.clientHeight || 350, 350);
+      setDimensions({ width, height });
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    
+    return () => {
+      window.removeEventListener('resize', updateDimensions);
+    };
+  }, []);
+
   // Calcular dados do gráfico baseado nos clientes
   const chartData = useMemo(() => {
     // Se não houver clientes, retornar array vazio
@@ -86,7 +109,7 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
 
   if (!clients || clients.length === 0) {
     return (
-      <div className="flex justify-center items-center h-full">
+      <div className="flex justify-center items-center h-full w-full">
         <p className="text-muted-foreground">Sem dados para exibir</p>
       </div>
     );
@@ -97,34 +120,39 @@ export const ConsultorRevenueChart = ({ clients }: ConsultorRevenueChartProps) =
   
   if (!hasData) {
     return (
-      <div className="flex justify-center items-center h-full">
+      <div className="flex justify-center items-center h-full w-full">
         <p className="text-muted-foreground">Sem dados de faturamento para exibir</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full">
+    <div ref={containerRef} className="w-full h-full flex justify-center items-center">
       <BarChart
-        width={window.innerWidth > 768 ? 700 : 300}
-        height={350}
+        width={dimensions.width}
+        height={dimensions.height}
         data={chartData}
-        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+        margin={{ top: 20, right: 30, left: 30, bottom: 20 }}
         barGap={0}
         barCategoryGap="20%"
       >
         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-        <XAxis dataKey="name" />
+        <XAxis 
+          dataKey="name"
+          tick={{ fontSize: 12 }}
+          height={40}
+        />
         <YAxis 
           tickFormatter={(value) => `${value.toLocaleString('pt-BR', { 
             style: 'currency', 
             currency: 'BRL',
             minimumFractionDigits: 0,
             maximumFractionDigits: 0 
-          })}`} 
+          })}`}
+          width={80}
         />
         <Tooltip content={<CustomTooltip />} />
-        <Legend />
+        <Legend wrapperStyle={{ paddingTop: 10 }} />
         <Bar dataKey="adesao" name="Adesões" fill="#ef4444" />
         <Bar dataKey="recorrencia" name="Recorrências" fill="#3b82f6" />
         <Bar dataKey="total" name="Total" fill="#10b981" />

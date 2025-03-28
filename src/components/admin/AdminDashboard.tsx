@@ -84,8 +84,10 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
                 </TabsContent>
 
                 {viewMode === 'consultor' && (
-                  <TabsContent value="revenue" className="min-h-[350px] flex justify-center">
-                    <ConsultorRevenueChartCard clients={clients} />
+                  <TabsContent value="revenue" className="min-h-[350px] flex justify-center w-full">
+                    <div className="w-full h-full">
+                      <ConsultorRevenueChartCard clients={clients} />
+                    </div>
                   </TabsContent>
                 )}
               </Tabs>
