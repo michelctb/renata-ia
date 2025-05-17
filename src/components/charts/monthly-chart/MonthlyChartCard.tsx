@@ -6,7 +6,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Transaction } from '@/lib/supabase/types';
 import { ChartFilterToggle } from './ChartFilterToggle';
 import { ChartErrorDisplay } from './ChartErrorDisplay';
-import { useMonthlyChartCardData } from '../hooks/useMonthlyChartCardData';
+import { useMonthlyChartCardData } from '../hooks/monthlyChart';
 
 interface MonthlyChartCardProps {
   data?: Array<{
@@ -37,40 +37,27 @@ export function MonthlyChartCard({
     return Array.isArray(data) ? data : [];
   }, [data]);
   
-  const safeTransactions = useMemo(() => {
-    return Array.isArray(transactions) ? transactions : [];
-  }, [transactions]);
-  
-  const safeFilteredTransactions = useMemo(() => {
-    return Array.isArray(filteredTransactions) ? filteredTransactions : [];
-  }, [filteredTransactions]);
-  
   // Log para debug dos dados recebidos
   console.log("MonthlyChartCard - dados recebidos:", {
-    hasDirectData: Array.isArray(safeData) && safeData.length > 0,
-    hasTransactions: safeTransactions.length > 0,
-    transactionsCount: safeTransactions.length,
-    hasFilteredTransactions: safeFilteredTransactions.length > 0,
-    filteredTransactionsCount: safeFilteredTransactions.length,
+    hasDirectData: safeData.length > 0,
+    hasTransactions: transactions?.length > 0,
+    transactionsCount: transactions?.length,
+    hasFilteredTransactions: filteredTransactions?.length > 0,
+    filteredTransactionsCount: filteredTransactions?.length,
     respectingFilter: respectDateFilter
   });
   
-  // Uso do hook para processamento de dados com verificações de tipo
+  // Uso do hook refatorado para processamento de dados
   const {
     chartData,
     hasError,
     errorMessage,
   } = useMonthlyChartCardData({
     data: safeData,
-    transactions: safeTransactions,
-    filteredTransactions: safeFilteredTransactions,
+    transactions,
+    filteredTransactions,
     respectDateFilter
   });
-
-  // Garantir que chartData é sempre um array válido
-  const safeChartData = useMemo(() => {
-    return Array.isArray(chartData) ? chartData : [];
-  }, [chartData]);
   
   return (
     <Card className="border shadow-sm col-span-1 lg:col-span-3">
@@ -95,8 +82,8 @@ export function MonthlyChartCard({
           <ChartErrorDisplay errorMessage={errorMessage} />
         ) : (
           <MonthlyChart 
-            data={safeChartData}
-            isEmpty={!safeChartData.length}
+            data={chartData}
+            isEmpty={!chartData.length}
             mode={respectDateFilter ? 'filtered' : 'all'}
           />
         )}

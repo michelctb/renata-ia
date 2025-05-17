@@ -1,8 +1,7 @@
 
 import { useMemo } from 'react';
 import { Transaction } from '@/lib/supabase/types';
-import { useMonthlyChartDataProcessor } from './useMonthlyChartDataProcessor';
-import { useFilteredTransactionsByDate } from './useFilteredTransactionsByDate';
+import { useMonthlyChartDataProcessor } from './monthlyChart';
 import { useCategoryChartDataProcessor } from './useCategoryChartDataProcessor';
 
 /**
