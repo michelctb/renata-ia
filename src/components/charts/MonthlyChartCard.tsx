@@ -39,6 +39,28 @@ export function MonthlyChartCard({
     });
   }, [data, transactions]);
   
+  // Efeito para mostrar toast apenas uma vez em caso de erro
+  useEffect(() => {
+    if (hasError) {
+      toast({
+        title: "Erro no gráfico mensal",
+        description: "Não foi possível processar os dados para o gráfico",
+        variant: "destructive"
+      });
+    }
+  }, [hasError]);
+  
+  // Log para debug na primeira renderização
+  useEffect(() => {
+    console.log('MonthlyChartCard - Inicializado com:', {
+      selectedMonth,
+      hasMonthClickCallback: !!onMonthClick,
+      hasDirectData: !!data,
+      hasTransactions: !!transactions?.length,
+      transactionsCount: transactions?.length || 0
+    });
+  }, [selectedMonth, onMonthClick, data, transactions]);
+  
   // Se os dados forem fornecidos diretamente, use-os
   // Caso contrário, processe os dados de todas as transações
   let chartData: any[] = [];
@@ -65,15 +87,6 @@ export function MonthlyChartCard({
     console.error('Erro geral no MonthlyChartCard:', error);
     setHasError(true);
     setErrorMessage(error instanceof Error ? error.message : "Erro desconhecido");
-    
-    // Mostrar toast apenas uma vez
-    useEffect(() => {
-      toast({
-        title: "Erro no gráfico mensal",
-        description: "Não foi possível processar os dados para o gráfico",
-        variant: "destructive"
-      });
-    }, []);
   }
   
   // Função de callback para clique com log de debug
@@ -83,18 +96,6 @@ export function MonthlyChartCard({
       onMonthClick(month);
     }
   };
-  
-  // Log para debug na primeira renderização
-  useEffect(() => {
-    console.log('MonthlyChartCard - Inicializado com:', {
-      selectedMonth,
-      hasMonthClickCallback: !!onMonthClick,
-      dataLength: chartData?.length || 0,
-      hasDirectData: !!data,
-      hasTransactions: !!transactions?.length,
-      transactionsCount: transactions?.length || 0
-    });
-  }, []);
 
   return (
     <Card className="border shadow-sm col-span-1 lg:col-span-3">
