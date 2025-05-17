@@ -1,15 +1,12 @@
 
-interface MonthlyChartFooterProps {
-  selectedMonth: string | null;
-  isMobile: boolean;
-}
+import { useIsMobile } from '@/hooks/use-mobile';
 
-export function MonthlyChartFooter({ selectedMonth, isMobile }: MonthlyChartFooterProps) {
+export function MonthlyChartFooter() {
+  const isMobile = useIsMobile();
+  
   return (
     <div className="text-xs text-muted-foreground text-right pr-2 mt-2 absolute bottom-2 right-2">
-      {selectedMonth 
-        ? `Filtro aplicado: ${selectedMonth} (clique novamente para remover)` 
-        : isMobile ? 'Toque para filtrar' : 'Clique em um mês para filtrar'}
+      {isMobile ? 'Visão geral por mês' : 'Visão geral de entradas e saídas por mês'}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { Transaction } from '@/lib/supabase';
 import { DateRange } from 'react-day-picker';
@@ -68,28 +69,12 @@ export default function DashboardCharts({
     setDateRange
   });
   
-  // Função de callback para atualizar o DateRange
-  const handleDateRangeChange = (newDateRange: DateRange) => {
-    console.log('DashboardCharts - Nova seleção de datas:', {
-      de: newDateRange.from?.toISOString(),
-      ate: newDateRange.to?.toISOString()
-    });
-    
-    if (setDateRange) {
-      console.log('DashboardCharts - Propagando dateRange para componente pai');
-      setDateRange(newDateRange);
-    }
-  };
-  
   // Integração com drill-down e outros componentes
   const {
-    selectedMonth,
     selectedCategory,
-    handleMonthClick,
     handleCategoryClick,
     clearAllDrilldownFilters
   } = useDashboardIntegration({
-    setDateRange: handleDateRangeChange,
     onCategoryFilterChange: onCategorySelect
   });
   
@@ -113,12 +98,9 @@ export default function DashboardCharts({
   const {
     renderActiveFilters
   } = useDashboardUI({
-    selectedMonth,
     selectedCategory,
-    handleMonthClick,
     handleCategoryClick,
-    clearAllDrilldownFilters,
-    setDateRange: handleDateRangeChange
+    clearAllDrilldownFilters
   });
 
   // Criar descrição do filtro de data para exibição
@@ -148,8 +130,6 @@ export default function DashboardCharts({
       <MonthlyChartCard 
         transactions={safeAllTransactions}
         filteredTransactions={safeFilteredTransactions}
-        onMonthClick={handleMonthClick}
-        selectedMonth={selectedMonth}
         dateFilterDescription={dateFilterDescription}
       />
       

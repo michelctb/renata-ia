@@ -17,8 +17,6 @@ interface MonthlyChartCardProps {
   transactions?: Transaction[];
   filteredTransactions?: Transaction[];
   clientId?: string;
-  onMonthClick?: (month: string) => void;
-  selectedMonth?: string | null;
   dateFilterDescription?: string;
 }
 
@@ -27,8 +25,6 @@ export function MonthlyChartCard({
   transactions = [], 
   filteredTransactions = [], 
   clientId,
-  onMonthClick,
-  selectedMonth,
   dateFilterDescription
 }: MonthlyChartCardProps) {
   const isMobile = useIsMobile();
@@ -57,14 +53,6 @@ export function MonthlyChartCard({
     filteredTransactions: filteredTransactions || [],
     respectDateFilter
   });
-  
-  // Função de callback para clique com log de debug
-  const handleMonthClick = (month: string) => {
-    console.log('MonthlyChartCard - Mês clicado:', month);
-    if (onMonthClick) {
-      onMonthClick(month);
-    }
-  };
 
   return (
     <Card className="border shadow-sm col-span-1 lg:col-span-3">
@@ -82,7 +70,6 @@ export function MonthlyChartCard({
           {respectDateFilter ? 
             `Visualização de valores por mês (período filtrado${dateFilterDescription ? `: ${dateFilterDescription}` : ''})` : 
             'Visualização mensal de valores recebidos e pagos (todos os períodos)'}
-          {selectedMonth && <span className="ml-1 text-blue-500 font-medium">• Filtro: {selectedMonth}</span>}
         </CardDescription>
       </CardHeader>
       <CardContent className="h-[320px] pb-2">
@@ -91,8 +78,6 @@ export function MonthlyChartCard({
         ) : (
           <MonthlyChart 
             data={chartData || []} 
-            onMonthClick={onMonthClick ? handleMonthClick : undefined}
-            selectedMonth={selectedMonth}
             isEmpty={!Array.isArray(chartData) || chartData.length === 0}
             mode={respectDateFilter ? 'filtered' : 'all'}
           />

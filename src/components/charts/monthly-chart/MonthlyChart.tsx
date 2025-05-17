@@ -20,16 +20,12 @@ interface MonthlyChartProps {
     entrada: number;
     saída: number;
   }>;
-  onMonthClick?: (month: string) => void;
-  selectedMonth?: string | null;
   isEmpty?: boolean;
   mode?: 'all' | 'filtered';
 }
 
 export function MonthlyChart({ 
   data = [], 
-  onMonthClick, 
-  selectedMonth, 
   isEmpty = false, 
   mode = 'all' 
 }: MonthlyChartProps) {
@@ -61,10 +57,7 @@ export function MonthlyChart({
           barGap={0}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <MonthlyChartAxes 
-            selectedMonth={selectedMonth}
-            isMobile={isMobile}
-          />
+          <MonthlyChartAxes isMobile={isMobile} />
           <Tooltip 
             content={<MonthlyChartTooltip />} 
             cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
@@ -72,13 +65,10 @@ export function MonthlyChart({
           <Legend 
             wrapperStyle={isMobile ? { fontSize: '10px', marginTop: '10px' } : { marginTop: '10px' }}
           />
-          <MonthlyChartBars onMonthClick={onMonthClick} />
+          <MonthlyChartBars />
         </BarChart>
       </div>
-      <MonthlyChartFooter 
-        selectedMonth={selectedMonth}
-        isMobile={isMobile}
-      />
+      <MonthlyChartFooter />
     </div>
   );
 }
