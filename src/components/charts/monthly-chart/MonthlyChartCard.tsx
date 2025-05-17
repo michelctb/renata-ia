@@ -77,7 +77,7 @@ export function MonthlyChartCard({
           <ChartErrorDisplay errorMessage={errorMessage} />
         ) : (
           <MonthlyChart 
-            data={chartData || []} 
+            data={Array.isArray(chartData) ? chartData : []}
             isEmpty={!Array.isArray(chartData) || chartData.length === 0}
             mode={respectDateFilter ? 'filtered' : 'all'}
           />

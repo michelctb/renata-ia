@@ -9,10 +9,11 @@ const TIMEZONE = 'America/Sao_Paulo';
 /**
  * Hook para processar dados para o gráfico mensal
  */
-export function useMonthlyChartDataProcessor(transactions: any[]): Array<{name: string; entrada: number; saída: number}> {
+export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{name: string; entrada: number; saída: number}> {
   return useMemo(() => {
-    // Primeiro, garanta que as transações são um array válido
+    // Primeiro, garantimos que as transações são um array válido
     if (!Array.isArray(transactions) || transactions.length === 0) {
+      console.log('useMonthlyChartData - Array vazio ou inválido recebido');
       return [];
     }
 
@@ -20,11 +21,6 @@ export function useMonthlyChartDataProcessor(transactions: any[]): Array<{name: 
       console.log('useMonthlyChartData - Iniciando processamento de', transactions.length, 'transações');
       
       const months = new Map();
-      
-      if (!transactions || transactions.length === 0) {
-        console.log('useMonthlyChartData - Nenhuma transação para processar');
-        return [];
-      }
       
       let successCount = 0;
       let errorCount = 0;

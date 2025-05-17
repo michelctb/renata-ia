@@ -33,9 +33,11 @@ export function useMonthlyChartCardData({
         return [];
       }
       
+      // Usando o hook, que retorna undefined ou um array
       const processed = useMonthlyChartData(safeTransactions);
       console.log("MonthlyChartCard - processamento geral completo:", processed);
-      return processed || []; // Garantir que retornamos um array mesmo se processed for undefined
+      // Verificação de segurança para garantir que retornamos um array
+      return Array.isArray(processed) ? processed : [];
     } catch (error) {
       console.error("Erro no processamento geral:", error);
       setHasError(true);
@@ -51,9 +53,11 @@ export function useMonthlyChartCardData({
         return [];
       }
       
+      // Mesma proteção aqui
       const processed = useMonthlyChartData(safeFilteredTransactions);
       console.log("MonthlyChartCard - processamento filtrado completo:", processed);
-      return processed || []; // Garantir que retornamos um array mesmo se processed for undefined
+      // Garantia de retornar um array
+      return Array.isArray(processed) ? processed : [];
     } catch (error) {
       console.error("Erro no processamento filtrado:", error);
       setHasError(true);
