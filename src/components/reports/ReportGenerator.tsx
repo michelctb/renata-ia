@@ -16,6 +16,13 @@ interface ReportGeneratorProps {
   clientId?: string;
 }
 
+// Adicionar declaração de tipo para Window
+declare global {
+  interface Window {
+    generateFinancialReport?: () => Promise<any>;
+  }
+}
+
 export const ReportGenerator: React.FC<ReportGeneratorProps> = ({
   transactions,
   monthlyData,
@@ -126,15 +133,15 @@ export const ReportGenerator: React.FC<ReportGeneratorProps> = ({
   
   // Expor a função de geração de relatório na janela global para acesso externo
   React.useEffect(() => {
-    // Typescript: adicionando as propriedades ao objeto window
-    (window as any).generateFinancialReport = async () => {
+    // Definindo a função no escopo global
+    window.generateFinancialReport = async () => {
       const reportData = await generateFullReport();
       return reportData;
     };
     
     return () => {
       // Limpar ao desmontar
-      delete (window as any).generateFinancialReport;
+      delete window.generateFinancialReport;
     };
   }, [categoryData, metasComProgresso, transactions, dateRange]);
   

@@ -9,12 +9,19 @@ import { formatMetasDataForReport, formatCategoryDataForReport } from './chartEx
 
 const TIMEZONE = 'America/Sao_Paulo';
 
+// Interface para o retorno da função de conversão SVG para imagem
+interface ImageResult {
+  name: string;
+  data: string;
+  error?: boolean;
+}
+
 /**
  * Converte elementos SVG para imagens
  * @param svgElements - Lista de elementos SVG para converter
  * @returns Promise com as imagens convertidas
  */
-export const convertSvgsToImages = async (svgElements: NodeListOf<Element>): Promise<Array<{name: string, data: string}>> => {
+export const convertSvgsToImages = async (svgElements: NodeListOf<Element>): Promise<ImageResult[]> => {
   if (svgElements.length === 0) {
     toast.error("Nenhum gráfico encontrado para exportar");
     return [];
@@ -88,7 +95,7 @@ export const formatDateForReport = (isoDate: string | Date | null | undefined): 
  * Prepara os dados do relatório
  */
 export const prepareReportData = (
-  images: Array<{name: string, data: string}>,
+  images: ImageResult[],
   transactions: any[],
   metasComProgresso: any[],
   categoryData: any[],

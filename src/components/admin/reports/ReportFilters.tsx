@@ -4,7 +4,7 @@ import DateRangePicker from '@/components/DateRangePicker';
 import { DateFilterButtons } from '@/components/DateFilterButtons';
 import { DateRange } from 'react-day-picker';
 import { Cliente } from '@/lib/clientes';
-import { InfoCircle } from 'lucide-react';
+import { Info } from 'lucide-react';
 
 interface ReportFiltersProps {
   dateRange: DateRange;
@@ -24,7 +24,7 @@ const ReportFilters: React.FC<ReportFiltersProps> = ({
   return (
     <div className="space-y-4">
       <div className="bg-muted/20 p-3 rounded-lg border border-dashed flex items-start gap-2">
-        <InfoCircle className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+        <Info className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
         <div className="text-sm">
           <p className="font-medium text-blue-600 dark:text-blue-400">Como selecionar períodos para análise:</p>
           <p className="text-muted-foreground">Utilize os botões de período rápido ou selecione manualmente um intervalo de datas específico.</p>
