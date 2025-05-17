@@ -1,6 +1,6 @@
 
 import { useMemo } from 'react';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, eachMonthOfInterval, min, max, isValid, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toZonedTime } from 'date-fns-tz';
 
@@ -24,12 +24,12 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
 
       console.log('useMonthlyChartDataProcessor - Iniciando processamento de', safeTransactions.length, 'transações');
       
-      const months = new Map<string, {name: string; entrada: number; saída: number}>();
-      
+      // Inicializar valores para rastrear o intervalo de datas
+      let validDates: Date[] = [];
       let successCount = 0;
       let errorCount = 0;
       
-      // Iterar sobre as transações com verificações de segurança
+      // Primeiro passo: extrair todas as datas válidas das transações
       for (let index = 0; index < safeTransactions.length; index++) {
         try {
           const transaction = safeTransactions[index];
@@ -37,6 +37,79 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
           // Verificar se a transação tem uma data válida
           if (!transaction || !transaction.data) {
             console.warn(`useMonthlyChartDataProcessor - Transação #${index} sem data válida`);
+            continue;
+          }
+          
+          // Parse the date string safely
+          const dateStr = String(transaction.data || '');
+          
+          if (!dateStr || dateStr.trim() === '') {
+            continue;
+          }
+          
+          try {
+            // Parse a data com tratamento de erro
+            const dateUTC = parseISO(dateStr);
+            
+            // Verificar se a data foi parseada corretamente
+            if (!isValid(dateUTC)) {
+              console.warn(`useMonthlyChartDataProcessor - Data inválida na transação #${index}: ${dateStr}`);
+              continue;
+            }
+            
+            // Converter para o fuso horário correto
+            const date = toZonedTime(dateUTC, TIMEZONE);
+            validDates.push(date);
+          } catch (dateError) {
+            console.error(`useMonthlyChartDataProcessor - Erro processando data da transação #${index}: ${dateStr}`, dateError);
+          }
+        } catch (transactionError) {
+          console.error(`useMonthlyChartDataProcessor - Erro processando transação #${index}:`, transactionError);
+        }
+      }
+      
+      // Se não temos datas válidas, retornar array vazio
+      if (validDates.length === 0) {
+        console.log('useMonthlyChartDataProcessor - Nenhuma data válida encontrada nas transações');
+        return [];
+      }
+      
+      // Encontrar a data mais antiga e mais recente
+      const minDate = min(validDates);
+      const maxDate = max(validDates);
+      
+      console.log(`useMonthlyChartDataProcessor - Intervalo de datas: ${minDate.toISOString()} a ${maxDate.toISOString()}`);
+      
+      // Garantir que estamos trabalhando com o primeiro dia do mês para minDate
+      // e o último dia do mês para maxDate para ter meses completos
+      const minMonthDate = startOfMonth(minDate);
+      const maxMonthDate = endOfMonth(maxDate);
+      
+      // Gerar todos os meses entre a data mais antiga e mais recente
+      const allMonths = eachMonthOfInterval({
+        start: minMonthDate,
+        end: maxMonthDate
+      });
+      
+      console.log(`useMonthlyChartDataProcessor - Gerando ${allMonths.length} meses no intervalo`);
+      
+      // Inicializar o mapa com todos os meses no intervalo, com valores zerados
+      const months = new Map<string, {name: string; entrada: number; saída: number}>();
+      
+      // Preencher o mapa com todos os meses do intervalo inicializados com zeros
+      allMonths.forEach(monthDate => {
+        const monthKey = format(monthDate, 'yyyy-MM');
+        const monthLabel = format(monthDate, 'MMM yyyy', { locale: ptBR });
+        months.set(monthKey, { name: monthLabel, entrada: 0, saída: 0 });
+      });
+      
+      // Agora processar as transações para preencher os valores reais
+      for (let index = 0; index < safeTransactions.length; index++) {
+        try {
+          const transaction = safeTransactions[index];
+          
+          // Verificar se a transação tem uma data válida
+          if (!transaction || !transaction.data) {
             errorCount++;
             continue;
           }
@@ -52,7 +125,6 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
           try {
             // Parse a data com tratamento de erro
             if (!dateStr || dateStr.trim() === '') {
-              console.warn(`useMonthlyChartDataProcessor - Data vazia na transação #${index}`);
               errorCount++;
               continue;
             }
@@ -60,7 +132,7 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
             const dateUTC = parseISO(dateStr);
             
             // Verificar se a data foi parseada corretamente
-            if (isNaN(dateUTC.getTime())) {
+            if (!isValid(dateUTC)) {
               console.warn(`useMonthlyChartDataProcessor - Data inválida na transação #${index}: ${dateStr}`);
               errorCount++;
               continue;
@@ -71,7 +143,6 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
             
             // Extrair mês e ano formatados para exibição
             const monthKey = format(date, 'yyyy-MM');
-            const monthLabel = format(date, 'MMM yyyy', { locale: ptBR });
             
             // Garantir que temos um valor válido para o tipo de operação
             let operationType = '';
@@ -80,19 +151,16 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
             }
             
             if (shouldLog) {
-              console.log(`useMonthlyChartDataProcessor - Data processada para transação #${index}: ${monthKey} (${monthLabel}), operação: ${operationType}`);
+              console.log(`useMonthlyChartDataProcessor - Data processada para transação #${index}: ${monthKey}, operação: ${operationType}`);
             }
             
-            // Inicializar o contador do mês se não existir
-            if (!months.has(monthKey)) {
-              months.set(monthKey, { 
-                name: monthLabel, 
-                entrada: 0, 
-                saída: 0 
-              });
-            }
+            // O mês já deve existir no mapa a partir da inicialização anterior
+            const monthData = months.get(monthKey);
             
-            const monthData = months.get(monthKey)!;
+            if (!monthData) {
+              console.warn(`useMonthlyChartDataProcessor - Mês não encontrado no mapa: ${monthKey}`);
+              continue;
+            }
             
             // Converter valor para número com validação
             let valor = 0;
