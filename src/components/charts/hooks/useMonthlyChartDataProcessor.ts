@@ -17,8 +17,8 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
   return useMemo(() => {
     try {
       // Primeiro, garantir que as transações são um array válido
-      if (!safeTransactions || safeTransactions.length === 0) {
-        console.log('useMonthlyChartDataProcessor - Array vazio recebido');
+      if (!Array.isArray(safeTransactions) || safeTransactions.length === 0) {
+        console.log('useMonthlyChartDataProcessor - Array vazio ou inválido recebido');
         return [];
       }
 

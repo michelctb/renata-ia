@@ -33,9 +33,17 @@ export function MonthlyChartCard({
   const [respectDateFilter, setRespectDateFilter] = useState<boolean>(false);
   
   // Garantir arrays seguros antes de passar para o hook
-  const safeData = useMemo(() => Array.isArray(data) ? data : undefined, [data]);
-  const safeTransactions = useMemo(() => Array.isArray(transactions) ? transactions : [], [transactions]);
-  const safeFilteredTransactions = useMemo(() => Array.isArray(filteredTransactions) ? filteredTransactions : [], [filteredTransactions]);
+  const safeData = useMemo(() => {
+    return Array.isArray(data) ? data : [];
+  }, [data]);
+  
+  const safeTransactions = useMemo(() => {
+    return Array.isArray(transactions) ? transactions : [];
+  }, [transactions]);
+  
+  const safeFilteredTransactions = useMemo(() => {
+    return Array.isArray(filteredTransactions) ? filteredTransactions : [];
+  }, [filteredTransactions]);
   
   // Log para debug dos dados recebidos
   console.log("MonthlyChartCard - dados recebidos:", {
@@ -59,6 +67,9 @@ export function MonthlyChartCard({
     respectDateFilter
   });
 
+  // Garantir que chartData é sempre um array válido
+  const safeChartData = Array.isArray(chartData) ? chartData : [];
+  
   return (
     <Card className="border shadow-sm col-span-1 lg:col-span-3">
       <CardHeader className="pb-2">
@@ -82,8 +93,8 @@ export function MonthlyChartCard({
           <ChartErrorDisplay errorMessage={errorMessage} />
         ) : (
           <MonthlyChart 
-            data={chartData}
-            isEmpty={!Array.isArray(chartData) || chartData.length === 0}
+            data={safeChartData}
+            isEmpty={!safeChartData.length}
             mode={respectDateFilter ? 'filtered' : 'all'}
           />
         )}
