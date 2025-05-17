@@ -1,12 +1,10 @@
 
 import React, { useState } from 'react';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { BarChart3, PieChart, FileBarChart, Download, FileText, AlertCircle } from 'lucide-react';
+import { BarChart3, PieChart, FileBarChart, AlertCircle } from 'lucide-react';
 import { useClientData } from '@/hooks/useClientData';
 import { subMonths } from 'date-fns';
-import { toast } from 'sonner';
 import { ReportGenerator } from '@/components/reports/ReportGenerator';
 import { DateRange } from 'react-day-picker';
 import { useReportData } from '@/hooks/reports/useReportData';
@@ -38,26 +36,6 @@ const ReportsTab: React.FC = () => {
     metasComProgresso,
     isLoading: isLoadingTransactions
   } = useReportData(selectedClient, validDateRange as DateRange);
-
-  // Gerar relatório em formato tabular
-  const generateTableReport = async () => {
-    if (!transactions.length) {
-      toast.error("Não há dados para gerar o relatório");
-      return;
-    }
-
-    // Se a função estiver disponível no escopo global (implementada pelo ReportGenerator)
-    if (typeof (window as any).generateFinancialReport === 'function') {
-      try {
-        await (window as any).generateFinancialReport();
-      } catch (error) {
-        console.error("Erro ao gerar relatório:", error);
-        toast.error("Erro ao gerar relatório. Verifique o console para mais detalhes.");
-      }
-    } else {
-      toast.error("Funcionalidade de geração de relatório não está disponível");
-    }
-  };
 
   // Função para lidar com mudanças no intervalo de datas
   const handleDateRangeChange = (range: DateRange) => {
@@ -129,27 +107,6 @@ const ReportsTab: React.FC = () => {
                   Tente ajustar o intervalo de datas ou selecione outro cliente.
                 </p>
               </div>
-            </div>
-          )}
-          
-          {transactions.length > 0 && (
-            <div className="flex justify-end space-x-2">
-              <Button
-                onClick={generateTableReport}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <FileText className="h-4 w-4" />
-                Gerar Tabela de Transações
-              </Button>
-              
-              <Button
-                onClick={generateTableReport}
-                className="flex items-center gap-2"
-              >
-                <Download className="h-4 w-4" />
-                Exportar Relatório Completo
-              </Button>
             </div>
           )}
           
