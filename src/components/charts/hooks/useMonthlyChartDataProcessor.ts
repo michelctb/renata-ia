@@ -92,9 +92,9 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
         }];
       }
       
-      // Encontrar a data mais antiga e mais recente
-      const minDate = min(validDates);
-      const maxDate = max(validDates);
+      // Encontrar a data mais antiga e mais recente com proteção contra arrays vazios
+      const minDate = validDates.length ? min(validDates) : new Date();
+      const maxDate = validDates.length ? max(validDates) : new Date();
       
       console.log(`useMonthlyChartDataProcessor - Intervalo de datas: ${minDate.toISOString()} a ${maxDate.toISOString()}`);
       
@@ -116,10 +116,18 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
       }
       
       // Gerar todos os meses entre a data mais antiga e mais recente
-      const allMonths = eachMonthOfInterval({
-        start: startDateForRange,
-        end: maxMonthDate
-      });
+      // com proteção contra intervalos inválidos
+      let allMonths: Date[] = [];
+      try {
+        allMonths = eachMonthOfInterval({
+          start: startDateForRange,
+          end: maxMonthDate
+        });
+      } catch (intervalError) {
+        console.error('Erro ao gerar intervalo de meses:', intervalError);
+        // Fallback para apenas o mês atual em caso de erro
+        allMonths = [startOfMonth(new Date())];
+      }
       
       console.log(`useMonthlyChartDataProcessor - Gerando ${allMonths.length} meses no intervalo`);
       
@@ -230,30 +238,35 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
       
       const result = Array.from(months.values())
         .sort((a, b) => {
-          // Função para extrair mês e ano do nome do mês
-          const getMonthYear = (monthName: string) => {
-            const parts = monthName.split(' ');
-            if (parts.length !== 2) return { month: 0, year: 0 };
-            
-            const monthMap: Record<string, number> = {
-              'jan': 1, 'fev': 2, 'mar': 3, 'abr': 4, 'mai': 5, 'jun': 6,
-              'jul': 7, 'ago': 8, 'set': 9, 'out': 10, 'nov': 11, 'dez': 12
+          try {
+            // Função para extrair mês e ano do nome do mês
+            const getMonthYear = (monthName: string) => {
+              const parts = monthName.split(' ');
+              if (parts.length !== 2) return { month: 0, year: 0 };
+              
+              const monthMap: Record<string, number> = {
+                'jan': 1, 'fev': 2, 'mar': 3, 'abr': 4, 'mai': 5, 'jun': 6,
+                'jul': 7, 'ago': 8, 'set': 9, 'out': 10, 'nov': 11, 'dez': 12
+              };
+              
+              const monthIdx = monthMap[parts[0].toLowerCase()] || 0;
+              const year = parseInt(parts[1]) || 0;
+              
+              return { month: monthIdx, year };
             };
             
-            const monthIdx = monthMap[parts[0].toLowerCase()] || 0;
-            const year = parseInt(parts[1]) || 0;
+            const dateA = getMonthYear(a.name);
+            const dateB = getMonthYear(b.name);
             
-            return { month: monthIdx, year };
-          };
-          
-          const dateA = getMonthYear(a.name);
-          const dateB = getMonthYear(b.name);
-          
-          if (dateA.year !== dateB.year) {
-            return dateA.year - dateB.year;
+            if (dateA.year !== dateB.year) {
+              return dateA.year - dateB.year;
+            }
+            
+            return dateA.month - dateB.month;
+          } catch (sortError) {
+            console.error('Erro ao ordenar dados:', sortError);
+            return 0;
           }
-          
-          return dateA.month - dateB.month;
         });
       
       console.log('useMonthlyChartDataProcessor - Dados finais:', result);

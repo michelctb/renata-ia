@@ -113,10 +113,14 @@ export function useMonthlyChartCardData({
   }, [data, respectDateFilter, allDataProcessed, filteredDataProcessed]);
   
   // Verificar se há dados disponíveis para o modo filtrado
-  const hasFilteredData = Array.isArray(filteredDataProcessed) && filteredDataProcessed.length > 0;
+  const hasFilteredData = useMemo(() => {
+    return Array.isArray(filteredDataProcessed) && filteredDataProcessed.length > 0;
+  }, [filteredDataProcessed]);
   
   // Sempre retornar um array válido
-  const safeChartData = Array.isArray(chartData) ? chartData : [];
+  const safeChartData = useMemo(() => {
+    return Array.isArray(chartData) ? chartData : [];
+  }, [chartData]);
   
   return {
     chartData: safeChartData,

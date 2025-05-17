@@ -47,7 +47,7 @@ export function MonthlyChartCard({
   
   // Log para debug dos dados recebidos
   console.log("MonthlyChartCard - dados recebidos:", {
-    hasDirectData: Array.isArray(safeData) && safeData?.length > 0,
+    hasDirectData: Array.isArray(safeData) && safeData.length > 0,
     hasTransactions: safeTransactions.length > 0,
     transactionsCount: safeTransactions.length,
     hasFilteredTransactions: safeFilteredTransactions.length > 0,
