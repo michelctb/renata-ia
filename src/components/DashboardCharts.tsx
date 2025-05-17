@@ -10,6 +10,7 @@ import { useDashboardState } from './charts/hooks/useDashboardState';
 import { useDashboardIntegration } from './charts/hooks/useDashboardIntegration';
 import { useDashboardData } from './charts/hooks/useDashboardData';
 import { useDashboardUI } from './charts/hooks/useDashboardUI';
+import { format } from 'date-fns';
 
 type DashboardChartsProps = {
   transactions?: Transaction[];
@@ -110,16 +111,23 @@ export default function DashboardCharts({
     setDateRange: handleDateRangeChange
   });
 
+  // Criar descrição do filtro de data para exibição
+  const dateFilterDescription = validDateRange?.from && validDateRange?.to ? 
+    `${format(validDateRange.from, 'dd/MM/yyyy')} - ${format(validDateRange.to, 'dd/MM/yyyy')}` : 
+    '';
+
   return (
     <div className="grid grid-cols-1 gap-4 md:gap-6 mb-6">
       {/* Mostrar filtros ativos */}
       {renderActiveFilters()}
       
-      {/* Monthly Chart Card - Usando todas as transações sem filtro */}
+      {/* Monthly Chart Card - Passando tanto transações completas quanto filtradas */}
       <MonthlyChartCard 
         transactions={transactions} 
+        filteredTransactions={filteredTransactions}
         onMonthClick={handleMonthClick}
         selectedMonth={selectedMonth}
+        dateFilterDescription={dateFilterDescription}
       />
       
       {/* Category Charts (Pie Chart and Ranking) */}

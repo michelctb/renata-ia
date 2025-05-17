@@ -21,6 +21,8 @@ interface MonthlyChartProps {
   }>;
   onMonthClick?: (month: string) => void;
   selectedMonth?: string | null;
+  isEmpty?: boolean;
+  mode?: 'all' | 'filtered';
 }
 
 // Custom tooltip para o gráfico de barras
@@ -40,7 +42,7 @@ const CustomBarTooltip = ({ active, payload, label }: TooltipProps<number, strin
   return null;
 };
 
-export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChartProps) {
+export function MonthlyChart({ data, onMonthClick, selectedMonth, isEmpty = false, mode = 'all' }: MonthlyChartProps) {
   const isMobile = useIsMobile();
 
   // Verificar se os dados são válidos
@@ -50,14 +52,23 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChart
   console.log('MonthlyChart - Dados recebidos:', {
     data,
     isValid: isDataValid,
-    count: data?.length || 0
+    count: data?.length || 0,
+    mode
   });
   
-  if (!isDataValid) {
+  if (isEmpty || !isDataValid) {
     return (
       <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
-        <p className="mb-2">Sem dados para exibir</p>
-        <p className="text-sm text-gray-500">Tente selecionar outro período ou adicionar transações</p>
+        <p className="mb-2">
+          {mode === 'filtered' 
+            ? "Sem dados para o período filtrado" 
+            : "Sem dados para exibir"}
+        </p>
+        <p className="text-sm text-gray-500">
+          {mode === 'filtered' 
+            ? "Tente selecionar outro período ou alternar para a visualização completa" 
+            : "Tente adicionar transações"}
+        </p>
       </div>
     );
   }
