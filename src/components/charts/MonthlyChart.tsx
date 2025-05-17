@@ -14,7 +14,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useState, useEffect, useCallback } from 'react';
 
 interface MonthlyChartProps {
-  data: Array<{
+  data?: Array<{
     name: string;
     entrada: number;
     saída: number;
@@ -42,7 +42,13 @@ const CustomBarTooltip = ({ active, payload, label }: TooltipProps<number, strin
   return null;
 };
 
-export function MonthlyChart({ data = [], onMonthClick, selectedMonth, isEmpty = false, mode = 'all' }: MonthlyChartProps) {
+export function MonthlyChart({ 
+  data = [], 
+  onMonthClick, 
+  selectedMonth, 
+  isEmpty = false, 
+  mode = 'all' 
+}: MonthlyChartProps) {
   const isMobile = useIsMobile();
   const [chartHeight, setChartHeight] = useState(260);
   const [chartWidth, setChartWidth] = useState(isMobile ? 350 : 650);
@@ -54,7 +60,7 @@ export function MonthlyChart({ data = [], onMonthClick, selectedMonth, isEmpty =
   // Use useCallback para evitar recriação da função em cada render
   const handleBarClick = useCallback((data: any) => {
     console.log('MonthlyChart - Clique no mês:', data.name);
-    if (onMonthClick) {
+    if (onMonthClick && typeof onMonthClick === 'function') {
       onMonthClick(data.name);
     }
   }, [onMonthClick]);
@@ -114,13 +120,16 @@ export function MonthlyChart({ data = [], onMonthClick, selectedMonth, isEmpty =
     );
   }
 
+  // Garantir que os dados são uma array válida antes de renderizar o gráfico
+  const safeData = Array.isArray(data) ? data : [];
+
   return (
     <div className="w-full h-full flex items-center justify-center">
       <div className="w-full h-[260px]">
         <BarChart
           width={chartWidth}
           height={chartHeight}
-          data={data}
+          data={safeData}
           margin={isMobile ? 
             { top: 10, right: 5, left: 0, bottom: 20 } : 
             { top: 20, right: 20, left: 20, bottom: 20 }}
@@ -130,6 +139,11 @@ export function MonthlyChart({ data = [], onMonthClick, selectedMonth, isEmpty =
           <XAxis 
             dataKey="name" 
             tick={(props: any) => {
+              // Verificar se props é válido
+              if (!props || !props.payload || !props.payload.value) {
+                return null;
+              }
+              
               // Destacar o mês selecionado
               const isSelected = selectedMonth === props.payload.value;
               return (

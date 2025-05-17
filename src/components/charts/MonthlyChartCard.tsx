@@ -26,8 +26,8 @@ interface MonthlyChartCardProps {
 
 export function MonthlyChartCard({ 
   data, 
-  transactions = [], // Forneça um array vazio como padrão para evitar undefined
-  filteredTransactions = [], // Garanta que nunca seja undefined
+  transactions = [], 
+  filteredTransactions = [], 
   clientId,
   onMonthClick,
   selectedMonth,
@@ -43,11 +43,11 @@ export function MonthlyChartCard({
   // Log para debug dos dados recebidos
   useEffect(() => {
     console.log("MonthlyChartCard - dados recebidos:", {
-      hasDirectData: !!data,
-      hasTransactions: !!transactions?.length,
-      transactionsCount: transactions?.length || 0,
-      hasFilteredTransactions: !!filteredTransactions?.length,
-      filteredTransactionsCount: filteredTransactions?.length || 0,
+      hasDirectData: Array.isArray(data) && data.length > 0,
+      hasTransactions: Array.isArray(transactions) && transactions.length > 0,
+      transactionsCount: Array.isArray(transactions) ? transactions.length : 0,
+      hasFilteredTransactions: Array.isArray(filteredTransactions) && filteredTransactions.length > 0,
+      filteredTransactionsCount: Array.isArray(filteredTransactions) ? filteredTransactions.length : 0,
       respectingFilter: respectDateFilter
     });
   }, [data, transactions, filteredTransactions, respectDateFilter]);
@@ -56,7 +56,12 @@ export function MonthlyChartCard({
   const allDataProcessed = useMemo(() => {
     try {
       // Tratamento seguro para evitar acesso a propriedades de undefined
-      if (!Array.isArray(transactions) || transactions.length === 0) {
+      if (!Array.isArray(transactions)) {
+        console.log("MonthlyChartCard - transactions não é um array");
+        return [];
+      }
+      
+      if (transactions.length === 0) {
         console.log("MonthlyChartCard - sem transações para processamento geral");
         return [];
       }
@@ -75,7 +80,12 @@ export function MonthlyChartCard({
   const filteredDataProcessed = useMemo(() => {
     try {
       // Tratamento seguro para evitar acesso a propriedades de undefined
-      if (!Array.isArray(filteredTransactions) || filteredTransactions.length === 0) {
+      if (!Array.isArray(filteredTransactions)) {
+        console.log("MonthlyChartCard - filteredTransactions não é um array");
+        return [];
+      }
+      
+      if (filteredTransactions.length === 0) {
         console.log("MonthlyChartCard - sem transações para processamento filtrado");
         return [];
       }

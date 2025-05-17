@@ -22,7 +22,7 @@ type DashboardChartsProps = {
 };
 
 export default function DashboardCharts({ 
-  transactions: propTransactions = [], // Forneça um valor padrão aqui
+  transactions: propTransactions = [],
   dateRange, 
   clientId,
   viewMode = 'user',
@@ -32,11 +32,14 @@ export default function DashboardCharts({
   // Detector de dispositivo móvel
   const isMobile = useIsMobile();
   
+  // Garantir que propTransactions é sempre um array
+  const safeTransactions = Array.isArray(propTransactions) ? propTransactions : [];
+  
   // Log inicial para debug
   useEffect(() => {
     console.log('DashboardCharts - Inicializado com:', { 
-      hasTransactions: Array.isArray(propTransactions) && propTransactions.length > 0,
-      transactionCount: Array.isArray(propTransactions) ? propTransactions.length : 0,
+      hasTransactions: Array.isArray(safeTransactions) && safeTransactions.length > 0,
+      transactionCount: safeTransactions.length,
       hasDateRange: !!dateRange,
       isMobile: isMobile,
       hasSetDateRange: !!setDateRange,
@@ -49,7 +52,7 @@ export default function DashboardCharts({
         to: dateRange.to?.toISOString()
       });
     }
-  }, [propTransactions, dateRange, isMobile, setDateRange, onCategorySelect]);
+  }, [safeTransactions, dateRange, isMobile, setDateRange, onCategorySelect]);
   
   // Estado base do dashboard
   const {
@@ -59,7 +62,7 @@ export default function DashboardCharts({
     viewMode: normalizedViewMode,
     clientId: normalizedClientId
   } = useDashboardState({
-    transactions: propTransactions || [], // Garanta que não é undefined
+    transactions: safeTransactions,
     dateRange,
     clientId,
     viewMode,
@@ -99,7 +102,7 @@ export default function DashboardCharts({
     categoryData,
     metasComProgresso
   } = useDashboardData({
-    propTransactions: propTransactions || [], // Garanta que não é undefined
+    propTransactions: safeTransactions,
     validDateRange,
     clientId,
     viewMode: normalizedViewMode,
@@ -133,6 +136,10 @@ export default function DashboardCharts({
     });
   }, [transactions, filteredTransactions, filteredByCategory]);
 
+  // Garantir que transactions e filteredTransactions são arrays válidos
+  const safeFilteredTransactions = Array.isArray(filteredTransactions) ? filteredTransactions : [];
+  const safeAllTransactions = Array.isArray(transactions) ? transactions : [];
+
   return (
     <div className="grid grid-cols-1 gap-4 md:gap-6 mb-6">
       {/* Mostrar filtros ativos */}
@@ -140,8 +147,8 @@ export default function DashboardCharts({
       
       {/* Monthly Chart Card - Passando tanto transações completas quanto filtradas */}
       <MonthlyChartCard 
-        transactions={transactions || []} // Garanta que não é undefined
-        filteredTransactions={filteredTransactions || []} // Garanta que não é undefined
+        transactions={safeAllTransactions}
+        filteredTransactions={safeFilteredTransactions}
         onMonthClick={handleMonthClick}
         selectedMonth={selectedMonth}
         dateFilterDescription={dateFilterDescription}
@@ -149,7 +156,7 @@ export default function DashboardCharts({
       
       {/* Category Charts (Pie Chart and Ranking) */}
       <CategoryChartsContainer 
-        categoryData={categoryData || []} // Garanta que não é undefined
+        categoryData={categoryData || []}
         transactionType={transactionType}
         setTransactionType={setTransactionType}
         onCategoryClick={handleCategoryClick}
@@ -157,7 +164,7 @@ export default function DashboardCharts({
       />
       
       {/* Meta Progress Display */}
-      <MetaProgressDisplay metasComProgresso={metasComProgresso || []} /> {/* Garanta que não é undefined */}
+      <MetaProgressDisplay metasComProgresso={metasComProgresso || []} />
     </div>
   );
 }
