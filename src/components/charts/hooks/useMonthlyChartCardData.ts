@@ -1,7 +1,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Transaction } from '@/lib/supabase/types';
-import { useMonthlyChartDataProcessor } from './useMonthlyChartDataProcessor';
+import { useMonthlyChartDataProcessor } from './monthlyChart';
 import { toast } from '@/hooks/use-toast';
 
 interface UseMonthlyChartCardDataProps {
@@ -39,7 +39,7 @@ export function useMonthlyChartCardData({
         return [];
       }
       
-      // Usando o processador diretamente para evitar problemas com hooks em hooks
+      // Usando o processador da versão refatorada
       const result = useMonthlyChartDataProcessor(safeTransactions);
       return Array.isArray(result) ? result : [];
     } catch (error) {
@@ -63,7 +63,7 @@ export function useMonthlyChartCardData({
         return [];
       }
       
-      // Usando o processador diretamente
+      // Usando o processador da versão refatorada
       const result = useMonthlyChartDataProcessor(safeFilteredTransactions);
       return Array.isArray(result) ? result : [];
     } catch (error) {
