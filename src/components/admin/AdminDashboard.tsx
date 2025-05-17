@@ -7,10 +7,11 @@ import { PlanConversionChart } from './dashboard/PlanConversionChart';
 import { RetentionRateChart } from './dashboard/RetentionRateChart';
 import { RecurrencePreview } from './dashboard/RecurrencePreview';
 import { RecurrencePreviewConsultor } from './dashboard/RecurrencePreviewConsultor';
-import { ConsultorRevenueChartCard } from './dashboard/ConsultorRevenueChartCard';
+import { ConsultorRevenueChart } from './dashboard/ConsultorRevenueChart';
 import { Cliente } from '@/lib/supabase/types';
 import { Loader2, BarChart3, LineChart, PieChart, TrendingUp } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AdminDashboardProps {
   clients: Cliente[];
@@ -20,6 +21,7 @@ interface AdminDashboardProps {
 const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
   const { isAdmin, isConsultor } = useAuth();
   const viewMode = isAdmin() ? 'admin' : 'consultor';
+  const isMobile = useIsMobile();
   
   if (isLoading) {
     return (
@@ -100,17 +102,17 @@ const AdminDashboard = ({ clients, isLoading }: AdminDashboardProps) => {
           </>
         ) : (
           <>
-            {/* Gráfico de Faturamento (Consultor) */}
+            {/* Gráfico de Faturamento (Consultor) - MODIFICADO PARA USAR ConsultorRevenueChart DIRETAMENTE */}
             <Card className="bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-all duration-300">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <div>
                   <CardTitle className="text-xl font-semibold">Faturamento Mensal</CardTitle>
-                  <CardDescription>Evolução de adesões e recorrências</CardDescription>
+                  <CardDescription>Adesões e recorrências dos últimos {isMobile ? '6' : '12'} meses</CardDescription>
                 </div>
                 <BarChart3 className="h-5 w-5 text-muted-foreground" />
               </CardHeader>
               <CardContent className="h-[350px]">
-                <ConsultorRevenueChartCard clients={clients} />
+                <ConsultorRevenueChart clients={clients} isMobile={isMobile} />
               </CardContent>
             </Card>
             
