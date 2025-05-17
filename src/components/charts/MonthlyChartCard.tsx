@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MonthlyChart } from './MonthlyChart';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Transaction } from '@/lib/supabase/types';
 import { useMonthlyChartData } from './hooks/useChartData';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -61,33 +61,36 @@ export function MonthlyChartCard({
     });
   }, [selectedMonth, onMonthClick, data, transactions]);
   
-  // Se os dados forem fornecidos diretamente, use-os
-  // Caso contrário, processe os dados de todas as transações
-  let chartData: any[] = [];
-  
-  try {
-    if (data) {
-      chartData = data;
-      console.log("MonthlyChartCard - usando dados diretos:", chartData);
-    } else {
-      if (!transactions || transactions.length === 0) {
-        console.log("MonthlyChartCard - sem transações para processar");
+  // Processa os dados com useMemo para evitar recálculos desnecessários
+  const chartData = useMemo(() => {
+    try {
+      if (data) {
+        console.log("MonthlyChartCard - usando dados diretos:", data);
+        return data;
       } else {
-        try {
-          chartData = useMonthlyChartData(transactions || []);
-          console.log("MonthlyChartCard - dados processados:", chartData);
-        } catch (error) {
-          console.error('Erro ao processar dados do gráfico mensal:', error);
-          setHasError(true);
-          setErrorMessage(error instanceof Error ? error.message : "Erro desconhecido no processamento de dados");
+        if (!transactions || transactions.length === 0) {
+          console.log("MonthlyChartCard - sem transações para processar");
+          return [];
+        } else {
+          try {
+            const processedData = useMonthlyChartData(transactions || []);
+            console.log("MonthlyChartCard - dados processados:", processedData);
+            return processedData;
+          } catch (error) {
+            console.error('Erro ao processar dados do gráfico mensal:', error);
+            setHasError(true);
+            setErrorMessage(error instanceof Error ? error.message : "Erro desconhecido no processamento de dados");
+            return [];
+          }
         }
       }
+    } catch (error) {
+      console.error('Erro geral no MonthlyChartCard:', error);
+      setHasError(true);
+      setErrorMessage(error instanceof Error ? error.message : "Erro desconhecido");
+      return [];
     }
-  } catch (error) {
-    console.error('Erro geral no MonthlyChartCard:', error);
-    setHasError(true);
-    setErrorMessage(error instanceof Error ? error.message : "Erro desconhecido");
-  }
+  }, [data, transactions]);
   
   // Função de callback para clique com log de debug
   const handleMonthClick = (month: string) => {
