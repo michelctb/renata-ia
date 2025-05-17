@@ -35,6 +35,7 @@ export function useMonthlyChartCardData({
         return [];
       }
       
+      // CORREÇÃO: Usar função diretamente, não como hook
       const result = useMonthlyChartDataProcessor(safeTransactions);
       return Array.isArray(result) ? result : [];
     } catch (error) {
@@ -53,6 +54,7 @@ export function useMonthlyChartCardData({
         return [];
       }
       
+      // CORREÇÃO: Usar função diretamente, não como hook
       const result = useMonthlyChartDataProcessor(safeFilteredTransactions);
       return Array.isArray(result) ? result : [];
     } catch (error) {
@@ -99,7 +101,7 @@ export function useMonthlyChartCardData({
   }, [filteredDataProcessed]);
   
   return {
-    chartData,
+    chartData: Array.isArray(chartData) ? chartData : [], // Garantia extra de segurança
     hasError,
     errorMessage,
     hasFilteredData,
