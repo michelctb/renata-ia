@@ -36,11 +36,19 @@ export default function DashboardCharts({
   useEffect(() => {
     console.log('DashboardCharts - Inicializado com:', { 
       hasTransactions: !!propTransactions?.length,
+      transactionCount: propTransactions?.length || 0,
       hasDateRange: !!dateRange,
       isMobile: isMobile,
       hasSetDateRange: !!setDateRange,
       hasOnCategorySelect: !!onCategorySelect
     });
+    
+    if (dateRange) {
+      console.log('DashboardCharts - Date Range:', {
+        from: dateRange.from?.toISOString(),
+        to: dateRange.to?.toISOString()
+      });
+    }
   }, []);
   
   // Estado base do dashboard
@@ -115,6 +123,15 @@ export default function DashboardCharts({
   const dateFilterDescription = validDateRange?.from && validDateRange?.to ? 
     `${format(validDateRange.from, 'dd/MM/yyyy')} - ${format(validDateRange.to, 'dd/MM/yyyy')}` : 
     '';
+    
+  // Verificar e logar quantidades de transações
+  useEffect(() => {
+    console.log('DashboardCharts - Contagem de transações:', {
+      total: transactions?.length || 0,
+      filtradas: filteredTransactions?.length || 0,
+      porCategoria: filteredByCategory?.length || 0
+    });
+  }, [transactions, filteredTransactions, filteredByCategory]);
 
   return (
     <div className="grid grid-cols-1 gap-4 md:gap-6 mb-6">

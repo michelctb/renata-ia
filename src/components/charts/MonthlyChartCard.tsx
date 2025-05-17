@@ -40,10 +40,42 @@ export function MonthlyChartCard({
   // Estado para controlar se o gráfico deve respeitar o filtro de data
   const [respectDateFilter, setRespectDateFilter] = useState<boolean>(false);
   
-  // Processar os dados com useMonthlyChartData no nível superior do componente
-  // Este hook deve ser chamado SEMPRE, independente das condições
-  const allDataProcessed = useMonthlyChartData(transactions || []);
-  const filteredDataProcessed = useMonthlyChartData(filteredTransactions || []);
+  // Processar dados com useMonthlyChartData
+  const allDataProcessed = useMemo(() => {
+    try {
+      if (!transactions || transactions.length === 0) {
+        console.log("MonthlyChartCard - sem transações para processamento geral");
+        return [];
+      }
+      
+      const processed = useMonthlyChartData(transactions);
+      console.log("MonthlyChartCard - processamento geral completo:", processed);
+      return processed;
+    } catch (error) {
+      console.error("Erro no processamento geral:", error);
+      setHasError(true);
+      setErrorMessage("Erro ao processar dados gerais");
+      return [];
+    }
+  }, [transactions]);
+  
+  const filteredDataProcessed = useMemo(() => {
+    try {
+      if (!filteredTransactions || filteredTransactions.length === 0) {
+        console.log("MonthlyChartCard - sem transações para processamento filtrado");
+        return [];
+      }
+      
+      const processed = useMonthlyChartData(filteredTransactions);
+      console.log("MonthlyChartCard - processamento filtrado completo:", processed);
+      return processed;
+    } catch (error) {
+      console.error("Erro no processamento filtrado:", error);
+      setHasError(true);
+      setErrorMessage("Erro ao processar dados filtrados");
+      return [];
+    }
+  }, [filteredTransactions]);
   
   // Log para debug dos dados recebidos
   useEffect(() => {
@@ -62,25 +94,13 @@ export function MonthlyChartCard({
     if (hasError) {
       toast({
         title: "Erro no gráfico mensal",
-        description: "Não foi possível processar os dados para o gráfico",
+        description: errorMessage || "Não foi possível processar os dados para o gráfico",
         variant: "destructive"
       });
     }
-  }, [hasError]);
+  }, [hasError, errorMessage]);
   
-  // Log para debug na primeira renderização
-  useEffect(() => {
-    console.log('MonthlyChartCard - Inicializado com:', {
-      selectedMonth,
-      hasMonthClickCallback: !!onMonthClick,
-      hasDirectData: !!data,
-      hasTransactions: !!transactions?.length,
-      transactionsCount: transactions?.length || 0,
-      filteredTransactionsCount: filteredTransactions?.length || 0
-    });
-  }, [selectedMonth, onMonthClick, data, transactions, filteredTransactions]);
-  
-  // Agora use useMemo apenas para processamento de dados, não para chamar hooks
+  // Selecionar quais dados usar
   const chartData = useMemo(() => {
     try {
       // Se dados diretos forem fornecidos, use-os
@@ -89,25 +109,10 @@ export function MonthlyChartCard({
         return data;
       } else {
         // Se não, selecione entre dados completos ou filtrados
-        const transactionsToUse = respectDateFilter ? filteredTransactions : transactions;
-        
-        if (!transactionsToUse || transactionsToUse.length === 0) {
-          console.log("MonthlyChartCard - sem transações para processar");
-          return [];
-        } else {
-          try {
-            // Use os dados pré-processados correspondentes
-            const dataToUse = respectDateFilter ? filteredDataProcessed : allDataProcessed;
-            console.log("MonthlyChartCard - dados processados:", dataToUse, 
-              "modo:", respectDateFilter ? "filtrado" : "completo");
-            return dataToUse;
-          } catch (error) {
-            console.error('Erro ao processar dados do gráfico mensal:', error);
-            setHasError(true);
-            setErrorMessage(error instanceof Error ? error.message : "Erro desconhecido no processamento de dados");
-            return [];
-          }
-        }
+        const dataToUse = respectDateFilter ? filteredDataProcessed : allDataProcessed;
+        console.log("MonthlyChartCard - usando dados processados:", dataToUse, 
+          "modo:", respectDateFilter ? "filtrado" : "completo");
+        return dataToUse;
       }
     } catch (error) {
       console.error('Erro geral no MonthlyChartCard:', error);
@@ -115,7 +120,10 @@ export function MonthlyChartCard({
       setErrorMessage(error instanceof Error ? error.message : "Erro desconhecido");
       return [];
     }
-  }, [data, transactions, filteredTransactions, respectDateFilter, allDataProcessed, filteredDataProcessed]);
+  }, [data, respectDateFilter, allDataProcessed, filteredDataProcessed]);
+  
+  // Verificar se há dados disponíveis para o modo filtrado
+  const hasFilteredData = filteredDataProcessed && filteredDataProcessed.length > 0;
   
   // Função de callback para clique com log de debug
   const handleMonthClick = (month: string) => {
@@ -162,7 +170,7 @@ export function MonthlyChartCard({
           {selectedMonth && <span className="ml-1 text-blue-500 font-medium">• Filtro: {selectedMonth}</span>}
         </CardDescription>
       </CardHeader>
-      <CardContent className="min-h-[300px] pb-4">
+      <CardContent className="h-[320px] pb-2">
         {hasError ? (
           <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
             <p className="mb-2">Erro ao processar dados do gráfico</p>

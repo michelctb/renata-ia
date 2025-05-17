@@ -8,10 +8,10 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
   TooltipProps,
 } from 'recharts';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useState, useEffect } from 'react';
 
 interface MonthlyChartProps {
   data: Array<{
@@ -44,21 +44,46 @@ const CustomBarTooltip = ({ active, payload, label }: TooltipProps<number, strin
 
 export function MonthlyChart({ data, onMonthClick, selectedMonth, isEmpty = false, mode = 'all' }: MonthlyChartProps) {
   const isMobile = useIsMobile();
+  const [chartHeight, setChartHeight] = useState(270); // Altura inicial segura
+  const [chartWidth, setChartWidth] = useState('100%');
+  const [hasError, setHasError] = useState(false);
 
   // Verificar se os dados são válidos
   const isDataValid = Array.isArray(data) && data.length > 0;
   
-  // Log detalhado para depuração
-  console.log('MonthlyChart - Dados recebidos:', {
-    data,
-    isValid: isDataValid,
-    count: data?.length || 0,
-    mode
-  });
+  // Efeito para garantir que as dimensões sejam atualizadas após a renderização
+  useEffect(() => {
+    try {
+      // Log detalhado para depuração
+      console.log('MonthlyChart - Dados recebidos:', {
+        data,
+        isValid: isDataValid,
+        count: data?.length || 0,
+        mode
+      });
+    } catch (error) {
+      console.error('Erro ao logar dados do gráfico:', error);
+      setHasError(true);
+    }
+  }, [data, isDataValid, mode]);
+  
+  if (hasError) {
+    return (
+      <div className="h-full w-full flex flex-col items-center justify-center text-red-500">
+        <p className="text-center">Erro ao renderizar o gráfico</p>
+        <button 
+          className="mt-2 px-3 py-1 bg-blue-500 text-white rounded-md text-sm"
+          onClick={() => window.location.reload()}
+        >
+          Recarregar página
+        </button>
+      </div>
+    );
+  }
   
   if (isEmpty || !isDataValid) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
+      <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground">
         <p className="mb-2">
           {mode === 'filtered' 
             ? "Sem dados para o período filtrado" 
@@ -73,8 +98,6 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth, isEmpty = fals
     );
   }
 
-  console.log('MonthlyChart - Renderizando com dados:', data);
-
   // Função para lidar com o clique em uma barra
   const handleBarClick = (data: any) => {
     console.log('MonthlyChart - Clique no mês:', data.name);
@@ -84,13 +107,15 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth, isEmpty = fals
   };
 
   return (
-    <div className="relative h-full">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="w-full h-full">
+      <div className="w-full h-[270px]">
         <BarChart
+          width={isMobile ? 350 : 650}
+          height={chartHeight}
           data={data}
           margin={isMobile ? 
-            { top: 10, right: 5, left: 0, bottom: 10 } : 
-            { top: 20, right: 20, left: 20, bottom: 10 }}
+            { top: 10, right: 5, left: 0, bottom: 20 } : 
+            { top: 20, right: 20, left: 20, bottom: 20 }}
           barGap={0}
         >
           <CartesianGrid strokeDasharray="3 3" />
@@ -113,6 +138,7 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth, isEmpty = fals
                 </text>
               );
             }}
+            height={30}
             interval={isMobile ? 1 : 0}
           />
           <YAxis 
@@ -127,7 +153,7 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth, isEmpty = fals
             cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
           />
           <Legend 
-            wrapperStyle={isMobile ? { fontSize: '10px' } : undefined}
+            wrapperStyle={isMobile ? { fontSize: '10px', marginTop: '10px' } : { marginTop: '10px' }}
           />
           <Bar 
             dataKey="entrada" 
@@ -136,12 +162,6 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth, isEmpty = fals
             onClick={handleBarClick}
             cursor="pointer"
             isAnimationActive={false}
-            onMouseOver={() => {
-              document.body.style.cursor = 'pointer';
-            }}
-            onMouseOut={() => {
-              document.body.style.cursor = 'default';
-            }}
           />
           <Bar 
             dataKey="saída" 
@@ -150,16 +170,10 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth, isEmpty = fals
             onClick={handleBarClick}
             cursor="pointer"
             isAnimationActive={false}
-            onMouseOver={() => {
-              document.body.style.cursor = 'pointer';
-            }}
-            onMouseOut={() => {
-              document.body.style.cursor = 'default';
-            }}
           />
         </BarChart>
-      </ResponsiveContainer>
-      <div className="absolute bottom-0 right-0 text-xs text-muted-foreground pr-2 pb-1">
+      </div>
+      <div className="text-xs text-muted-foreground text-right pr-2 mt-2">
         {selectedMonth 
           ? `Filtro aplicado: ${selectedMonth} (clique novamente para remover)` 
           : isMobile ? 'Toque para filtrar' : 'Clique em um mês para filtrar'}
