@@ -1,9 +1,8 @@
-
 import { useEffect } from 'react';
 import { Transaction } from '@/lib/supabase';
 import { DateRange } from 'react-day-picker';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { MonthlyChartCard } from './charts/MonthlyChartCard';
+import { MonthlyChartCard } from './charts/monthly-chart/MonthlyChartCard';
 import { CategoryChartsContainer } from './charts/CategoryChartsContainer';
 import { MetaProgressDisplay } from './charts/MetaProgressDisplay';
 import { useDashboardState } from './charts/hooks/useDashboardState';
