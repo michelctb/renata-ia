@@ -33,6 +33,7 @@ export function CategoryChartsContainer({
 
   return (
     <>
+      {/* Aumentamos para col-span-2 para ocupar mais espaço */}
       <Card className="border-none shadow-md animate-fade-up col-span-1 lg:col-span-2" style={{ animationDelay: '0.2s' }}>
         <CardHeader className="pb-2 flex flex-row justify-between items-center">
           <div>
@@ -47,7 +48,7 @@ export function CategoryChartsContainer({
             setTransactionType={setTransactionType}
           />
         </CardHeader>
-        <CardContent className="h-[350px]">
+        <CardContent className="h-[400px]">
           <ExpensesPieChart 
             data={categoryData} 
             transactionType={transactionType} 

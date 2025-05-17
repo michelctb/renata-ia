@@ -52,7 +52,7 @@ export function useDashboardData({
     selectedCategory
   );
   
-  // Preparar dados para gráfico de categoria - agora usando o hook corretamente exportado
+  // Preparar dados para gráfico de categoria
   const categoryData = useCategoryChartData(
     selectedCategory ? filteredByCategory : filteredTransactions,
     transactionType
@@ -62,7 +62,6 @@ export function useDashboardData({
   const metasComProgresso = useMetasProgress(metas, filteredTransactions);
 
   return {
-    transactions,
     filteredTransactions,
     filteredByCategory,
     categoryData,

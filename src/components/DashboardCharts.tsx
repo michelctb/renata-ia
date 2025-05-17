@@ -3,14 +3,12 @@ import { useEffect } from 'react';
 import { Transaction } from '@/lib/supabase';
 import { DateRange } from 'react-day-picker';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { MonthlyChartCard } from './charts/monthly-chart/MonthlyChartCard';
 import { CategoryChartsContainer } from './charts/CategoryChartsContainer';
 import { MetaProgressDisplay } from './charts/MetaProgressDisplay';
 import { useDashboardState } from './charts/hooks/useDashboardState';
 import { useDashboardIntegration } from './charts/hooks/useDashboardIntegration';
 import { useDashboardData } from './charts/hooks/useDashboardData';
 import { useDashboardUI } from './charts/hooks/useDashboardUI';
-import { format } from 'date-fns';
 
 type DashboardChartsProps = {
   transactions?: Transaction[];
@@ -80,7 +78,6 @@ export default function DashboardCharts({
   
   // Preparação de dados para o dashboard
   const {
-    transactions,
     filteredTransactions,
     filteredByCategory,
     categoryData,
@@ -102,45 +99,30 @@ export default function DashboardCharts({
     handleCategoryClick,
     clearAllDrilldownFilters
   });
-
-  // Criar descrição do filtro de data para exibição
-  const dateFilterDescription = validDateRange?.from && validDateRange?.to ? 
-    `${format(validDateRange.from, 'dd/MM/yyyy')} - ${format(validDateRange.to, 'dd/MM/yyyy')}` : 
-    '';
     
   // Verificar e logar quantidades de transações
   useEffect(() => {
     console.log('DashboardCharts - Contagem de transações:', {
-      total: Array.isArray(transactions) ? transactions.length : 0,
       filtradas: Array.isArray(filteredTransactions) ? filteredTransactions.length : 0,
       porCategoria: Array.isArray(filteredByCategory) ? filteredByCategory.length : 0
     });
-  }, [transactions, filteredTransactions, filteredByCategory]);
-
-  // Garantir que transactions e filteredTransactions são arrays válidos
-  const safeFilteredTransactions = Array.isArray(filteredTransactions) ? filteredTransactions : [];
-  const safeAllTransactions = Array.isArray(transactions) ? transactions : [];
+  }, [filteredTransactions, filteredByCategory]);
 
   return (
     <div className="grid grid-cols-1 gap-4 md:gap-6 mb-6">
       {/* Mostrar filtros ativos */}
       {renderActiveFilters()}
       
-      {/* Monthly Chart Card - Passando tanto transações completas quanto filtradas */}
-      <MonthlyChartCard 
-        transactions={safeAllTransactions}
-        filteredTransactions={safeFilteredTransactions}
-        dateFilterDescription={dateFilterDescription}
-      />
-      
-      {/* Category Charts (Pie Chart and Ranking) */}
-      <CategoryChartsContainer 
-        categoryData={categoryData || []}
-        transactionType={transactionType}
-        setTransactionType={setTransactionType}
-        onCategoryClick={handleCategoryClick}
-        selectedCategory={selectedCategory}
-      />
+      {/* Category Charts (Pie Chart and Ranking) - Ocupando espaço total após remoção do MonthlyChart */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 col-span-1">
+        <CategoryChartsContainer 
+          categoryData={categoryData || []}
+          transactionType={transactionType}
+          setTransactionType={setTransactionType}
+          onCategoryClick={handleCategoryClick}
+          selectedCategory={selectedCategory}
+        />
+      </div>
       
       {/* Meta Progress Display */}
       <MetaProgressDisplay metasComProgresso={metasComProgresso || []} />
