@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { Transaction } from '@/lib/supabase';
 import { DateRange } from 'react-day-picker';
 import { useClientTransactions } from './useClientTransactions';
-import { useFilteredTransactions } from './useFilteredTransactions';
+import { useFilteredTransactionsByDate } from './useFilteredTransactionsByDate';
 import { useCategoryChartData } from './useChartData';
 import { useMetasData } from './useMetasData';
 import { useMetasProgress } from './useMetaProgress';
@@ -44,7 +44,7 @@ export function useDashboardData({
   const metas = useMetasData(validDateRange, clientId, viewMode);
   
   // Filtrar transações pelo intervalo de datas
-  const filteredTransactions = useFilteredTransactions(transactions, validDateRange);
+  const filteredTransactions = useFilteredTransactionsByDate(transactions, validDateRange);
   
   // Filtrar transações por categoria se necessário
   const { filteredByCategory } = useDrilldownFiltering(
