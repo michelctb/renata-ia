@@ -52,7 +52,7 @@ export function useDashboardData({
     selectedCategory
   );
   
-  // Preparar dados para gráfico de categoria
+  // Preparar dados para gráfico de categoria - agora usando o hook corretamente exportado
   const categoryData = useCategoryChartData(
     selectedCategory ? filteredByCategory : filteredTransactions,
     transactionType
