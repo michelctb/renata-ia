@@ -39,7 +39,7 @@ export const convertSvgsToImages = async (svgElements: NodeListOf<Element>): Pro
       .then(base64 => ({
         name: `grafico_${index + 1}.png`,
         data: base64
-      }))
+      } as ImageResult))
       .catch((error) => {
         console.error(`Falha em ambos os métodos de conversão para o gráfico ${index + 1}:`, error);
         // Retornar um objeto vazio para não quebrar o Promise.all
@@ -47,7 +47,7 @@ export const convertSvgsToImages = async (svgElements: NodeListOf<Element>): Pro
           name: `grafico_${index + 1}_error.png`,
           data: '',
           error: true
-        };
+        } as ImageResult;
       });
   });
   
