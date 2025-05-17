@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { MonthlyChart } from '../MonthlyChart';
+import { MonthlyChart } from './MonthlyChart';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Transaction } from '@/lib/supabase/types';
 import { ChartFilterToggle } from './ChartFilterToggle';
