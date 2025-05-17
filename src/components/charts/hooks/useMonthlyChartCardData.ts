@@ -27,20 +27,20 @@ export function useMonthlyChartCardData({
   
   // Processar dados com useMonthlyChartDataProcessor - com proteção contra undefined
   const allDataProcessed = useMemo(() => {
-    // Verificação de segurança logo no início
-    if (!Array.isArray(safeTransactions)) {
-      console.log("MonthlyChartCard - safeTransactions não é um array válido");
-      return [];
-    }
-    
-    if (safeTransactions.length === 0) {
-      console.log("MonthlyChartCard - sem transações para processamento geral");
-      return [];
-    }
-    
     try {
+      // Verificação de segurança logo no início
+      if (!Array.isArray(safeTransactions)) {
+        console.log("MonthlyChartCard - safeTransactions não é um array válido");
+        return [];
+      }
+      
+      if (safeTransactions.length === 0) {
+        console.log("MonthlyChartCard - sem transações para processamento geral");
+        return [];
+      }
+      
       // Usando o processador diretamente para evitar problemas com hooks em hooks
-      return useMonthlyChartDataProcessor(safeTransactions);
+      return useMonthlyChartDataProcessor(safeTransactions) || [];
     } catch (error) {
       console.error("Erro no processamento geral:", error);
       setHasError(true);
@@ -50,20 +50,20 @@ export function useMonthlyChartCardData({
   }, [safeTransactions]); // Garantimos que safeTransactions é sempre um array
   
   const filteredDataProcessed = useMemo(() => {
-    // Verificação de segurança logo no início
-    if (!Array.isArray(safeFilteredTransactions)) {
-      console.log("MonthlyChartCard - safeFilteredTransactions não é um array válido");
-      return [];
-    }
-    
-    if (safeFilteredTransactions.length === 0) {
-      console.log("MonthlyChartCard - sem transações para processamento filtrado");
-      return [];
-    }
-    
     try {
+      // Verificação de segurança logo no início
+      if (!Array.isArray(safeFilteredTransactions)) {
+        console.log("MonthlyChartCard - safeFilteredTransactions não é um array válido");
+        return [];
+      }
+      
+      if (safeFilteredTransactions.length === 0) {
+        console.log("MonthlyChartCard - sem transações para processamento filtrado");
+        return [];
+      }
+      
       // Usando o processador diretamente
-      return useMonthlyChartDataProcessor(safeFilteredTransactions);
+      return useMonthlyChartDataProcessor(safeFilteredTransactions) || [];
     } catch (error) {
       console.error("Erro no processamento filtrado:", error);
       setHasError(true);
@@ -85,13 +85,13 @@ export function useMonthlyChartCardData({
   
   // Selecionar quais dados usar - com proteção contra undefined
   const chartData = useMemo(() => {
-    // Verificar se temos dados diretos válidos
-    if (Array.isArray(data) && data.length > 0) {
-      console.log("MonthlyChartCard - usando dados diretos:", data);
-      return data;
-    } 
-    
     try {
+      // Verificar se temos dados diretos válidos
+      if (Array.isArray(data) && data.length > 0) {
+        console.log("MonthlyChartCard - usando dados diretos:", data);
+        return data;
+      } 
+      
       // Verificações de segurança para allDataProcessed e filteredDataProcessed
       const safeAllData = Array.isArray(allDataProcessed) ? allDataProcessed : [];
       const safeFilteredData = Array.isArray(filteredDataProcessed) ? filteredDataProcessed : [];
