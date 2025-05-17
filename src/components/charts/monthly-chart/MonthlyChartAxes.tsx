@@ -17,7 +17,7 @@ export function MonthlyChartAxes({
         height={40}
       />
       <YAxis
-        tickFormatter={(value) => formatCurrency(value, { notation: 'compact' })}
+        tickFormatter={(value) => formatCurrency(value)}
         tick={{ fontSize: isMobile ? 10 : 12 }}
         width={isMobile ? 40 : 60}
       />
