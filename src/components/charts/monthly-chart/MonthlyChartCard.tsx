@@ -42,15 +42,15 @@ export function MonthlyChartCard({
     respectingFilter: respectDateFilter
   });
   
-  // Uso do hook para processamento de dados
+  // Uso do hook para processamento de dados com verificações de tipo
   const {
     chartData,
     hasError,
     errorMessage,
   } = useMonthlyChartCardData({
-    data,
-    transactions: transactions || [],
-    filteredTransactions: filteredTransactions || [],
+    data: Array.isArray(data) ? data : undefined,
+    transactions: Array.isArray(transactions) ? transactions : [],
+    filteredTransactions: Array.isArray(filteredTransactions) ? filteredTransactions : [],
     respectDateFilter
   });
 

@@ -43,32 +43,38 @@ export function MonthlyChart({
     return <MonthlyChartEmpty mode={mode} />;
   }
 
-  // Garantir que os dados são uma array válida antes de renderizar o gráfico
-  const safeData = Array.isArray(data) ? data : [];
+  try {
+    // Garantir que os dados são uma array válida antes de renderizar o gráfico
+    const safeData = Array.isArray(data) ? data : [];
 
-  return (
-    <div className="w-full h-full flex items-center justify-center">
-      <div className="w-full h-[260px]">
-        <BarChart
-          width={width}
-          height={height}
-          data={safeData}
-          margin={margins}
-          barGap={0}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <MonthlyChartAxes isMobile={isMobile} />
-          <Tooltip 
-            content={<MonthlyChartTooltip />} 
-            cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
-          />
-          <Legend 
-            wrapperStyle={isMobile ? { fontSize: '10px', marginTop: '10px' } : { marginTop: '10px' }}
-          />
-          <MonthlyChartBars />
-        </BarChart>
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="w-full h-[260px]">
+          <BarChart
+            width={width}
+            height={height}
+            data={safeData}
+            margin={margins}
+            barGap={0}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <MonthlyChartAxes isMobile={isMobile} />
+            <Tooltip 
+              content={<MonthlyChartTooltip />} 
+              cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
+            />
+            <Legend 
+              wrapperStyle={isMobile ? { fontSize: '10px', marginTop: '10px' } : { marginTop: '10px' }}
+            />
+            <MonthlyChartBars />
+          </BarChart>
+        </div>
+        <MonthlyChartFooter />
       </div>
-      <MonthlyChartFooter />
-    </div>
-  );
+    );
+  } catch (error) {
+    console.error('Erro ao renderizar MonthlyChart:', error);
+    setHasError(true);
+    return <MonthlyChartError />;
+  }
 }

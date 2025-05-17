@@ -1,7 +1,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Transaction } from '@/lib/supabase/types';
-import { useMonthlyChartData } from './useChartData';
+import { useMonthlyChartDataProcessor } from './useMonthlyChartDataProcessor';
 import { toast } from '@/hooks/use-toast';
 
 interface UseMonthlyChartCardDataProps {
@@ -25,7 +25,7 @@ export function useMonthlyChartCardData({
   const safeTransactions = Array.isArray(transactions) ? transactions : [];
   const safeFilteredTransactions = Array.isArray(filteredTransactions) ? filteredTransactions : [];
   
-  // Processar dados com useMonthlyChartData - com proteção contra undefined
+  // Processar dados com useMonthlyChartDataProcessor - com proteção contra undefined
   const allDataProcessed = useMemo(() => {
     try {
       if (safeTransactions.length === 0) {
@@ -33,11 +33,8 @@ export function useMonthlyChartCardData({
         return [];
       }
       
-      // Usando o hook, que retorna undefined ou um array
-      const processed = useMonthlyChartData(safeTransactions);
-      console.log("MonthlyChartCard - processamento geral completo:", processed);
-      // Verificação de segurança para garantir que retornamos um array
-      return Array.isArray(processed) ? processed : [];
+      // Usando o processador diretamente para evitar problemas com hooks em hooks
+      return useMonthlyChartDataProcessor(safeTransactions);
     } catch (error) {
       console.error("Erro no processamento geral:", error);
       setHasError(true);
@@ -53,11 +50,8 @@ export function useMonthlyChartCardData({
         return [];
       }
       
-      // Mesma proteção aqui
-      const processed = useMonthlyChartData(safeFilteredTransactions);
-      console.log("MonthlyChartCard - processamento filtrado completo:", processed);
-      // Garantia de retornar um array
-      return Array.isArray(processed) ? processed : [];
+      // Usando o processador diretamente
+      return useMonthlyChartDataProcessor(safeFilteredTransactions);
     } catch (error) {
       console.error("Erro no processamento filtrado:", error);
       setHasError(true);

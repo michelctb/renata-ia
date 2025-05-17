@@ -7,62 +7,80 @@ import { toZonedTime } from 'date-fns-tz';
 const TIMEZONE = 'America/Sao_Paulo';
 
 /**
- * Hook para processar dados para o gráfico mensal
+ * Hook/função para processar dados para o gráfico mensal
+ * Esta implementação evita usar hooks dentro de hooks
  */
 export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{name: string; entrada: number; saída: number}> {
   return useMemo(() => {
-    // Primeiro, garantimos que as transações são um array válido
-    if (!Array.isArray(transactions) || transactions.length === 0) {
-      console.log('useMonthlyChartData - Array vazio ou inválido recebido');
-      return [];
-    }
-
     try {
-      console.log('useMonthlyChartData - Iniciando processamento de', transactions.length, 'transações');
+      // Primeiro, garantir que as transações são um array válido
+      if (!Array.isArray(transactions) || transactions.length === 0) {
+        console.log('useMonthlyChartDataProcessor - Array vazio ou inválido recebido');
+        return [];
+      }
+
+      console.log('useMonthlyChartDataProcessor - Iniciando processamento de', transactions.length, 'transações');
       
-      const months = new Map();
+      const months = new Map<string, {name: string; entrada: number; saída: number}>();
       
       let successCount = 0;
       let errorCount = 0;
       
-      transactions.forEach((transaction, index) => {
+      // Iterar sobre as transações com verificações de segurança
+      for (let index = 0; index < transactions.length; index++) {
         try {
-          if (!transaction.data) {
-            console.warn(`useMonthlyChartData - Transação #${index} sem data:`, transaction);
+          const transaction = transactions[index];
+          
+          // Verificar se a transação tem uma data válida
+          if (!transaction || !transaction.data) {
+            console.warn(`useMonthlyChartDataProcessor - Transação #${index} sem data válida`);
             errorCount++;
-            return;
+            continue;
           }
           
-          // Parse the date and convert to São Paulo timezone
-          const dateStr = transaction.data;
+          // Parse the date string safely
+          const dateStr = String(transaction.data || '');
           
-          // Log detalhado apenas para algumas transações para não sobrecarregar o console
           const shouldLog = index < 5 || index % 20 === 0;
           if (shouldLog) {
-            console.log(`useMonthlyChartData - Processando transação #${index}, data: ${dateStr}`);
+            console.log(`useMonthlyChartDataProcessor - Processando transação #${index}, data: ${dateStr}`);
           }
           
           try {
+            // Parse a data com tratamento de erro
+            if (!dateStr || dateStr.trim() === '') {
+              console.warn(`useMonthlyChartDataProcessor - Data vazia na transação #${index}`);
+              errorCount++;
+              continue;
+            }
+            
             const dateUTC = parseISO(dateStr);
             
             // Verificar se a data foi parseada corretamente
             if (isNaN(dateUTC.getTime())) {
-              console.warn(`useMonthlyChartData - Data inválida na transação #${index}:`, dateStr);
+              console.warn(`useMonthlyChartDataProcessor - Data inválida na transação #${index}: ${dateStr}`);
               errorCount++;
-              return;
+              continue;
             }
             
-            // Usar toZonedTime com tratamento de erro
+            // Converter para o fuso horário correto com tratamento de erro
             const date = toZonedTime(dateUTC, TIMEZONE);
             
+            // Extrair mês e ano formatados para exibição
             const monthKey = format(date, 'yyyy-MM');
             const monthLabel = format(date, 'MMM yyyy', { locale: ptBR });
-            const operationType = transaction.operação?.toLowerCase() || '';
             
-            if (shouldLog) {
-              console.log(`useMonthlyChartData - Data processada para transação #${index}: ${monthKey} (${monthLabel}), operação: ${operationType}`);
+            // Garantir que temos um valor válido para o tipo de operação
+            let operationType = '';
+            if (transaction.operação !== undefined) {
+              operationType = String(transaction.operação).toLowerCase();
             }
             
+            if (shouldLog) {
+              console.log(`useMonthlyChartDataProcessor - Data processada para transação #${index}: ${monthKey} (${monthLabel}), operação: ${operationType}`);
+            }
+            
+            // Inicializar o contador do mês se não existir
             if (!months.has(monthKey)) {
               months.set(monthKey, { 
                 name: monthLabel, 
@@ -71,15 +89,16 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
               });
             }
             
-            const monthData = months.get(monthKey);
-            const valor = Number(transaction.valor || 0);
+            const monthData = months.get(monthKey)!;
             
-            if (isNaN(valor)) {
-              console.warn(`useMonthlyChartData - Valor inválido na transação #${index}:`, transaction.valor);
-              errorCount++;
-              return;
+            // Converter valor para número com validação
+            let valor = 0;
+            if (transaction.valor !== undefined) {
+              const parsedValor = Number(transaction.valor);
+              valor = isNaN(parsedValor) ? 0 : parsedValor;
             }
             
+            // Contabilizar o valor na categoria correta
             if (operationType === 'entrada') {
               monthData.entrada += valor;
             } else if (operationType === 'saída' || operationType === 'saida') {
@@ -88,21 +107,25 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
             
             successCount++;
           } catch (dateError) {
-            console.error(`useMonthlyChartData - Erro processando data da transação #${index}:`, dateStr, dateError);
+            console.error(`useMonthlyChartDataProcessor - Erro processando data da transação #${index}: ${dateStr}`, dateError);
             errorCount++;
-            return;
           }
-        } catch (error) {
-          console.error(`useMonthlyChartData - Erro geral processando transação #${index}:`, error);
+        } catch (transactionError) {
+          console.error(`useMonthlyChartDataProcessor - Erro processando transação #${index}:`, transactionError);
           errorCount++;
         }
-      });
+      }
       
-      console.log(`useMonthlyChartData - Resultados: ${successCount} processadas com sucesso, ${errorCount} com erro`);
+      console.log(`useMonthlyChartDataProcessor - Resultados: ${successCount} processadas com sucesso, ${errorCount} com erro`);
+      
+      // Converter os dados para array e ordenar por mês
+      if (months.size === 0) {
+        return [];
+      }
       
       const result = Array.from(months.values())
         .sort((a, b) => {
-          // Corrigir o erro de tipo Month ordenando corretamente os meses
+          // Função para extrair mês e ano do nome do mês
           const getMonthYear = (monthName: string) => {
             const parts = monthName.split(' ');
             if (parts.length !== 2) return { month: 0, year: 0 };
@@ -128,7 +151,7 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
           return dateA.month - dateB.month;
         });
       
-      console.log('useMonthlyChartData - Dados finais:', result);
+      console.log('useMonthlyChartDataProcessor - Dados finais:', result);
       return result;
     } catch (error) {
       console.error("Erro ao processar dados mensais:", error);
