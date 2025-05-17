@@ -23,7 +23,7 @@ interface MonthlyChartProps {
   selectedMonth?: string | null;
 }
 
-// Custom tooltip for bar chart
+// Custom tooltip para o gráfico de barras
 const CustomBarTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
   if (active && payload && payload.length) {
     return (
@@ -42,22 +42,29 @@ const CustomBarTooltip = ({ active, payload, label }: TooltipProps<number, strin
 
 export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChartProps) {
   const isMobile = useIsMobile();
+
+  // Verificar se os dados são válidos
+  const isDataValid = Array.isArray(data) && data.length > 0;
   
-  if (data.length === 0) {
+  if (!isDataValid) {
+    console.log('MonthlyChart - Dados inválidos ou vazios:', data);
+    
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground">
-        Sem dados para exibir
+        Sem dados para exibir. Tente selecionar outro período.
       </div>
     );
   }
 
-  // Função para lidar com o clique em uma barra - removendo o useCallback que causava erro #310
-  function handleBarClick(data: any) {
+  console.log('MonthlyChart - Renderizando com dados:', data);
+
+  // Função para lidar com o clique em uma barra
+  const handleBarClick = (data: any) => {
     console.log('MonthlyChart - Clique no mês:', data.name);
     if (onMonthClick) {
       onMonthClick(data.name);
     }
-  }
+  };
 
   return (
     <div className="relative h-full">

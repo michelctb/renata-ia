@@ -1,10 +1,11 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MonthlyChart } from './MonthlyChart';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Transaction } from '@/lib/supabase/types';
 import { useMonthlyChartData } from './hooks/useChartData';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { toast } from '@/hooks/use-toast';
 
 interface MonthlyChartCardProps {
   data?: Array<{
@@ -25,10 +26,28 @@ export function MonthlyChartCard({
   onMonthClick,
   selectedMonth
 }: MonthlyChartCardProps) {
+  const [hasError, setHasError] = useState(false);
+  const isMobile = useIsMobile();
+  
   // Se os dados forem fornecidos diretamente, use-os
   // Caso contrário, processe os dados de todas as transações
-  const chartData = data || useMonthlyChartData(transactions || []);
-  const isMobile = useIsMobile();
+  let chartData: any[] = [];
+  
+  try {
+    chartData = data || useMonthlyChartData(transactions || []);
+  } catch (error) {
+    console.error('Erro ao processar dados do gráfico mensal:', error);
+    setHasError(true);
+    
+    // Mostrar toast apenas uma vez
+    useEffect(() => {
+      toast({
+        title: "Erro no gráfico mensal",
+        description: "Não foi possível processar os dados para o gráfico",
+        variant: "destructive"
+      });
+    }, []);
+  }
   
   // Função de callback para clique com log de debug
   const handleMonthClick = (month: string) => {
@@ -38,12 +57,15 @@ export function MonthlyChartCard({
     }
   };
   
-  // Log para debug apenas na primeira renderização
+  // Log para debug na primeira renderização
   useEffect(() => {
     console.log('MonthlyChartCard - Inicializado com:', {
       selectedMonth,
       hasMonthClickCallback: !!onMonthClick,
-      dataLength: chartData.length
+      dataLength: chartData?.length || 0,
+      hasDirectData: !!data,
+      hasTransactions: !!transactions?.length,
+      transactionsCount: transactions?.length || 0
     });
   }, []);
 
@@ -58,11 +80,23 @@ export function MonthlyChartCard({
         </CardDescription>
       </CardHeader>
       <CardContent className="min-h-[300px] pb-4">
-        <MonthlyChart 
-          data={chartData} 
-          onMonthClick={onMonthClick ? handleMonthClick : undefined}
-          selectedMonth={selectedMonth}
-        />
+        {hasError ? (
+          <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
+            <p className="mb-2">Erro ao processar dados do gráfico</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="text-sm text-primary hover:underline"
+            >
+              Recarregar página
+            </button>
+          </div>
+        ) : (
+          <MonthlyChart 
+            data={chartData} 
+            onMonthClick={onMonthClick ? handleMonthClick : undefined}
+            selectedMonth={selectedMonth}
+          />
+        )}
       </CardContent>
     </Card>
   );
