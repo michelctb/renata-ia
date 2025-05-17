@@ -54,7 +54,6 @@ export const ConsultorRevenueChart = ({ clients, isMobile = false }: ConsultorRe
         }
         
         // Se o cliente já existia neste mês, adicionar a recorrência
-        // (ou seja, se foi criado neste mês ou antes)
         if (!isAfter(createdDate, monthEnd)) {
           recurrenceRevenue += Number(client.recorrencia) || 0;
         }
@@ -77,7 +76,7 @@ export const ConsultorRevenueChart = ({ clients, isMobile = false }: ConsultorRe
       const dataPoint = chartData.find(item => item.name === label);
       
       return (
-        <div className="bg-white p-2 shadow-md rounded-md border text-xs">
+        <div className="bg-white dark:bg-gray-800 p-2 shadow-md rounded-md border border-gray-200 dark:border-gray-700 text-xs">
           <p className="font-medium">{`${label} (${dataPoint?.month || ''})`}</p>
           <p className="text-red-500">{`Adesões: ${formatCurrency(payload[0]?.value || 0)}`}</p>
           <p className="text-blue-500">{`Recorrências: ${formatCurrency(payload[1]?.value || 0)}`}</p>
@@ -88,6 +87,7 @@ export const ConsultorRevenueChart = ({ clients, isMobile = false }: ConsultorRe
     return null;
   };
 
+  // Estado vazio
   if (!clients || clients.length === 0) {
     return (
       <div className="flex justify-center items-center h-[300px]">
@@ -143,7 +143,7 @@ export const ConsultorRevenueChart = ({ clients, isMobile = false }: ConsultorRe
           <Legend 
             verticalAlign="bottom"
             align="center"
-            wrapperStyle={isMobile ? { fontSize: '10px' } : undefined}
+            wrapperStyle={isMobile ? { fontSize: '10px' } : { paddingTop: '10px' }}
           />
           <Bar dataKey="adesao" name="Adesões" fill="#ef4444" isAnimationActive={false} />
           <Bar dataKey="recorrencia" name="Recorrências" fill="#3b82f6" isAnimationActive={false} />

@@ -4,6 +4,7 @@ import { MonthlyChart } from './MonthlyChart';
 import { useEffect } from 'react';
 import { Transaction } from '@/lib/supabase/types';
 import { useMonthlyChartData } from './hooks/useChartData';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MonthlyChartCardProps {
   data?: Array<{
@@ -27,6 +28,7 @@ export function MonthlyChartCard({
   // Se os dados forem fornecidos diretamente, use-os
   // Caso contrário, processe os dados de todas as transações
   const chartData = data || useMonthlyChartData(transactions || []);
+  const isMobile = useIsMobile();
   
   // Função de callback para clique com log de debug
   const handleMonthClick = (month: string) => {
@@ -50,7 +52,8 @@ export function MonthlyChartCard({
       <CardHeader className="pb-2">
         <CardTitle className="text-lg">Entradas e Saídas por Mês</CardTitle>
         <CardDescription>
-          Visualização mensal de valores recebidos e pagos (todos os períodos)
+          Visualização mensal de valores recebidos e pagos 
+          {isMobile ? ' ' : ' (todos os períodos) '}
           {selectedMonth && <span className="ml-1 text-blue-500 font-medium">• Filtro: {selectedMonth}</span>}
         </CardDescription>
       </CardHeader>

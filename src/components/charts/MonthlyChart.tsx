@@ -11,7 +11,6 @@ import {
   ResponsiveContainer,
   TooltipProps,
 } from 'recharts';
-import { useCallback } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MonthlyChartProps {
@@ -28,7 +27,7 @@ interface MonthlyChartProps {
 const CustomBarTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white p-2 border border-gray-200 rounded shadow-md">
+      <div className="bg-white dark:bg-gray-800 p-2 border border-gray-200 dark:border-gray-700 rounded shadow-md">
         <p className="font-medium">{label}</p>
         {payload.map((entry, index) => (
           <p key={index} style={{ color: entry.color }}>
@@ -52,13 +51,13 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChart
     );
   }
 
-  // Função para lidar com o clique em uma barra
-  const handleBarClick = (data: any) => {
+  // Função para lidar com o clique em uma barra - removendo o useCallback que causava erro #310
+  function handleBarClick(data: any) {
     console.log('MonthlyChart - Clique no mês:', data.name);
     if (onMonthClick) {
       onMonthClick(data.name);
     }
-  };
+  }
 
   return (
     <div className="relative h-full">
