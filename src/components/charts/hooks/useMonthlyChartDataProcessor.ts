@@ -17,7 +17,7 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
   return useMemo(() => {
     try {
       // Primeiro, garantir que as transações são um array válido
-      if (safeTransactions.length === 0) {
+      if (!safeTransactions || safeTransactions.length === 0) {
         console.log('useMonthlyChartDataProcessor - Array vazio recebido');
         return [];
       }
@@ -122,7 +122,7 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
       console.log(`useMonthlyChartDataProcessor - Resultados: ${successCount} processadas com sucesso, ${errorCount} com erro`);
       
       // Converter os dados para array e ordenar por mês
-      if (months.size === 0) {
+      if (!months || months.size === 0) {
         return [];
       }
       

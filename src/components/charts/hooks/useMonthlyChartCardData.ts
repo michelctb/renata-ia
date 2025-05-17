@@ -27,12 +27,12 @@ export function useMonthlyChartCardData({
   
   // Processar dados com useMonthlyChartDataProcessor - com proteção contra undefined
   const allDataProcessed = useMemo(() => {
+    if (!safeTransactions || safeTransactions.length === 0) {
+      console.log("MonthlyChartCard - sem transações para processamento geral");
+      return [];
+    }
+    
     try {
-      if (safeTransactions.length === 0) {
-        console.log("MonthlyChartCard - sem transações para processamento geral");
-        return [];
-      }
-      
       // Usando o processador diretamente para evitar problemas com hooks em hooks
       return useMonthlyChartDataProcessor(safeTransactions);
     } catch (error) {
@@ -44,12 +44,12 @@ export function useMonthlyChartCardData({
   }, [safeTransactions]); // Garantimos que safeTransactions é sempre um array
   
   const filteredDataProcessed = useMemo(() => {
+    if (!safeFilteredTransactions || safeFilteredTransactions.length === 0) {
+      console.log("MonthlyChartCard - sem transações para processamento filtrado");
+      return [];
+    }
+    
     try {
-      if (safeFilteredTransactions.length === 0) {
-        console.log("MonthlyChartCard - sem transações para processamento filtrado");
-        return [];
-      }
-      
       // Usando o processador diretamente
       return useMonthlyChartDataProcessor(safeFilteredTransactions);
     } catch (error) {
@@ -73,28 +73,27 @@ export function useMonthlyChartCardData({
   
   // Selecionar quais dados usar - com proteção contra undefined
   const chartData = useMemo(() => {
+    if (Array.isArray(data) && data.length > 0) {
+      console.log("MonthlyChartCard - usando dados diretos:", data);
+      return data;
+    } 
+      
     try {
-      // Se dados diretos forem fornecidos, use-os (com verificação de segurança)
-      if (Array.isArray(data) && data.length > 0) {
-        console.log("MonthlyChartCard - usando dados diretos:", data);
-        return data;
-      } else {
-        // Se não, selecione entre dados completos ou filtrados, garantindo que sejam arrays
-        const dataToUse = respectDateFilter ? 
-          (Array.isArray(filteredDataProcessed) ? filteredDataProcessed : []) : 
-          (Array.isArray(allDataProcessed) ? allDataProcessed : []);
-          
-        console.log("MonthlyChartCard - usando dados processados:", dataToUse, 
-          "modo:", respectDateFilter ? "filtrado" : "completo");
-        return dataToUse;
-      }
+      // Selecione entre dados completos ou filtrados, garantindo que sejam arrays
+      const dataToUse = respectDateFilter ? 
+        (Array.isArray(filteredDataProcessed) ? filteredDataProcessed : []) : 
+        (Array.isArray(allDataProcessed) ? allDataProcessed : []);
+        
+      console.log("MonthlyChartCard - usando dados processados:", dataToUse, 
+        "modo:", respectDateFilter ? "filtrado" : "completo");
+      return dataToUse;
     } catch (error) {
       console.error('Erro geral no MonthlyChartCard:', error);
       setHasError(true);
       setErrorMessage(error instanceof Error ? error.message : "Erro desconhecido");
       return [];
     }
-  }, [data, respectDateFilter, allDataProcessed, filteredDataProcessed]); // Todas dependências garantidas como não-undefined
+  }, [data, respectDateFilter, allDataProcessed, filteredDataProcessed]);
   
   // Verificar se há dados disponíveis para o modo filtrado
   const hasFilteredData = Array.isArray(filteredDataProcessed) && filteredDataProcessed.length > 0;
