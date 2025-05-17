@@ -35,7 +35,7 @@ export function useMonthlyChartCardData({
       
       const processed = useMonthlyChartData(safeTransactions);
       console.log("MonthlyChartCard - processamento geral completo:", processed);
-      return processed;
+      return processed || []; // Garantir que retornamos um array mesmo se processed for undefined
     } catch (error) {
       console.error("Erro no processamento geral:", error);
       setHasError(true);
@@ -53,7 +53,7 @@ export function useMonthlyChartCardData({
       
       const processed = useMonthlyChartData(safeFilteredTransactions);
       console.log("MonthlyChartCard - processamento filtrado completo:", processed);
-      return processed;
+      return processed || []; // Garantir que retornamos um array mesmo se processed for undefined
     } catch (error) {
       console.error("Erro no processamento filtrado:", error);
       setHasError(true);

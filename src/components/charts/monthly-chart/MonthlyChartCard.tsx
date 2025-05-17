@@ -53,8 +53,8 @@ export function MonthlyChartCard({
     errorMessage,
   } = useMonthlyChartCardData({
     data,
-    transactions,
-    filteredTransactions,
+    transactions: transactions || [],
+    filteredTransactions: filteredTransactions || [],
     respectDateFilter
   });
   
@@ -90,7 +90,7 @@ export function MonthlyChartCard({
           <ChartErrorDisplay errorMessage={errorMessage} />
         ) : (
           <MonthlyChart 
-            data={chartData} 
+            data={chartData || []} 
             onMonthClick={onMonthClick ? handleMonthClick : undefined}
             selectedMonth={selectedMonth}
             isEmpty={!Array.isArray(chartData) || chartData.length === 0}

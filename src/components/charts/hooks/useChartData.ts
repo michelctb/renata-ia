@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react';
 import { Transaction } from '@/lib/supabase';
 import { DateRange } from 'react-day-picker';
@@ -77,13 +76,18 @@ export function useFilteredTransactions(
   }, [transactions, dateRange]);
 }
 
-export function useMonthlyChartData(filteredTransactions: Transaction[]) {
-  return useMemo(() => {
-    console.log('useMonthlyChartData - Iniciando processamento de', filteredTransactions.length, 'transações');
+export function useMonthlyChartData(transactions: any[]): Array<{name: string; entrada: number; saída: number}> {
+  // Primeiro, garanta que as transações são um array válido
+  if (!Array.isArray(transactions) || transactions.length === 0) {
+    return [];
+  }
+
+  try {
+    console.log('useMonthlyChartData - Iniciando processamento de', transactions.length, 'transações');
     
     const months = new Map();
     
-    if (!filteredTransactions || filteredTransactions.length === 0) {
+    if (!transactions || transactions.length === 0) {
       console.log('useMonthlyChartData - Nenhuma transação para processar');
       return [];
     }
@@ -91,7 +95,7 @@ export function useMonthlyChartData(filteredTransactions: Transaction[]) {
     let successCount = 0;
     let errorCount = 0;
     
-    filteredTransactions.forEach((transaction, index) => {
+    transactions.forEach((transaction, index) => {
       try {
         if (!transaction.data) {
           console.warn(`useMonthlyChartData - Transação #${index} sem data:`, transaction);
@@ -196,7 +200,10 @@ export function useMonthlyChartData(filteredTransactions: Transaction[]) {
     
     console.log('useMonthlyChartData - Dados finais:', result);
     return result;
-  }, [filteredTransactions]);
+  } catch (error) {
+    console.error("Erro ao processar dados mensais:", error);
+    return []; // Garante que mesmo em caso de erro, retornamos um array vazio
+  }
 }
 
 export function useCategoryChartData(
