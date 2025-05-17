@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MonthlyChart } from './MonthlyChart';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -32,20 +32,20 @@ export function MonthlyChartCard({
   // Estado para controlar se o gráfico deve respeitar o filtro de data
   const [respectDateFilter, setRespectDateFilter] = useState<boolean>(false);
   
+  // Garantir arrays seguros antes de passar para o hook
+  const safeData = useMemo(() => Array.isArray(data) ? data : undefined, [data]);
+  const safeTransactions = useMemo(() => Array.isArray(transactions) ? transactions : [], [transactions]);
+  const safeFilteredTransactions = useMemo(() => Array.isArray(filteredTransactions) ? filteredTransactions : [], [filteredTransactions]);
+  
   // Log para debug dos dados recebidos
   console.log("MonthlyChartCard - dados recebidos:", {
-    hasDirectData: Array.isArray(data) && data.length > 0,
-    hasTransactions: Array.isArray(transactions) && transactions.length > 0,
-    transactionsCount: Array.isArray(transactions) ? transactions.length : 0,
-    hasFilteredTransactions: Array.isArray(filteredTransactions) && filteredTransactions.length > 0,
-    filteredTransactionsCount: Array.isArray(filteredTransactions) ? filteredTransactions.length : 0,
+    hasDirectData: Array.isArray(safeData) && safeData?.length > 0,
+    hasTransactions: safeTransactions.length > 0,
+    transactionsCount: safeTransactions.length,
+    hasFilteredTransactions: safeFilteredTransactions.length > 0,
+    filteredTransactionsCount: safeFilteredTransactions.length,
     respectingFilter: respectDateFilter
   });
-  
-  // Garantir arrays seguros antes de passar para o hook
-  const safeData = Array.isArray(data) ? data : undefined;
-  const safeTransactions = Array.isArray(transactions) ? transactions : [];
-  const safeFilteredTransactions = Array.isArray(filteredTransactions) ? filteredTransactions : [];
   
   // Uso do hook para processamento de dados com verificações de tipo
   const {

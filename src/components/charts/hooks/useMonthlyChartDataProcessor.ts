@@ -11,20 +11,18 @@ const TIMEZONE = 'America/Sao_Paulo';
  * Esta implementação evita usar hooks dentro de hooks
  */
 export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{name: string; entrada: number; saída: number}> {
+  // Garantir que transactions seja sempre um array
+  const safeTransactions = Array.isArray(transactions) ? transactions : [];
+  
   return useMemo(() => {
     try {
       // Primeiro, garantir que as transações são um array válido
-      if (!Array.isArray(transactions)) {
-        console.log('useMonthlyChartDataProcessor - Array inválido recebido');
-        return [];
-      }
-      
-      if (transactions.length === 0) {
+      if (safeTransactions.length === 0) {
         console.log('useMonthlyChartDataProcessor - Array vazio recebido');
         return [];
       }
 
-      console.log('useMonthlyChartDataProcessor - Iniciando processamento de', transactions.length, 'transações');
+      console.log('useMonthlyChartDataProcessor - Iniciando processamento de', safeTransactions.length, 'transações');
       
       const months = new Map<string, {name: string; entrada: number; saída: number}>();
       
@@ -32,9 +30,9 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
       let errorCount = 0;
       
       // Iterar sobre as transações com verificações de segurança
-      for (let index = 0; index < transactions.length; index++) {
+      for (let index = 0; index < safeTransactions.length; index++) {
         try {
-          const transaction = transactions[index];
+          const transaction = safeTransactions[index];
           
           // Verificar se a transação tem uma data válida
           if (!transaction || !transaction.data) {
@@ -162,5 +160,5 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
       console.error("Erro ao processar dados mensais:", error);
       return []; // Garante que mesmo em caso de erro, retornamos um array vazio
     }
-  }, [transactions]); // Garantimos que transactions é sempre um array
+  }, [safeTransactions]); // Usando safeTransactions que é garantido como array
 }

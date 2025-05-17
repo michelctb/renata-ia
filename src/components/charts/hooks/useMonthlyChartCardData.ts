@@ -100,7 +100,7 @@ export function useMonthlyChartCardData({
   const hasFilteredData = Array.isArray(filteredDataProcessed) && filteredDataProcessed.length > 0;
   
   return {
-    chartData,
+    chartData: Array.isArray(chartData) ? chartData : [], // Garantindo que o retorno é sempre um array
     hasError,
     errorMessage,
     hasFilteredData,
