@@ -1,6 +1,6 @@
 
 import { toast } from 'sonner';
-import { svgToImage } from './chartExport';
+import { svgToImage, svgToImageAlternative } from './chartExport';
 import { parseISO, format } from 'date-fns';
 import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
 
@@ -20,17 +20,43 @@ export const convertSvgsToImages = async (svgElements: NodeListOf<Element>): Pro
     return [];
   }
   
-  // Liste de promessas para converter cada SVG para imagem
-  const imagePromises = Array.from(svgElements).map((svg, index) => 
-    svgToImage(svg as SVGElement, 800, 500)
+  // Lista de promessas para converter cada SVG para imagem
+  const imagePromises = Array.from(svgElements).map((svg, index) => {
+    return svgToImage(svg as SVGElement, 800, 500)
+      .catch((error) => {
+        console.error(`Falha no método primário de conversão para o gráfico ${index + 1}:`, error);
+        
+        // Tentar o método alternativo
+        return svgToImageAlternative(svg as SVGElement, 800, 500);
+      })
       .then(base64 => ({
         name: `grafico_${index + 1}.png`,
         data: base64
       }))
-  );
+      .catch((error) => {
+        console.error(`Falha em ambos os métodos de conversão para o gráfico ${index + 1}:`, error);
+        // Retornar um objeto vazio para não quebrar o Promise.all
+        return {
+          name: `grafico_${index + 1}_error.png`,
+          data: '',
+          error: true
+        };
+      });
+  });
   
   // Aguarde todas as conversões
-  return Promise.all(imagePromises);
+  const results = await Promise.all(imagePromises);
+  
+  // Filtre possíveis erros
+  const validImages = results.filter(img => !img.error && img.data);
+  
+  if (validImages.length === 0 && svgElements.length > 0) {
+    toast.error("Falha ao converter gráficos para imagens");
+  } else if (validImages.length < svgElements.length) {
+    toast.warning(`Apenas ${validImages.length} de ${svgElements.length} gráficos foram convertidos`);
+  }
+  
+  return validImages;
 };
 
 /**
@@ -43,6 +69,13 @@ export const formatDateForReport = (isoDate: string | Date | null | undefined): 
   
   try {
     const date = typeof isoDate === 'string' ? parseISO(isoDate) : isoDate;
+    
+    // Verificar se é uma data válida
+    if (isNaN(date.getTime())) {
+      console.warn('Data inválida:', isoDate);
+      return null;
+    }
+    
     // Usar formatInTimeZone para garantir que a data seja formatada no fuso horário correto
     return formatInTimeZone(date, TIMEZONE, 'yyyy-MM-dd');
   } catch (error) {
@@ -62,14 +95,25 @@ export const prepareReportData = (
   dateRange: any,
   clientId?: string
 ) => {
+  // Garantir que dateRange tenha valores válidos
+  const validDateRange = dateRange && (dateRange.from || dateRange.to) ? {
+    inicio: dateRange.from ? formatDateForReport(dateRange.from) : null,
+    fim: dateRange.to ? formatDateForReport(dateRange.to) : null
+  } : null;
+  
   return {
     geradoEm: formatInTimeZone(new Date(), TIMEZONE, 'yyyy-MM-dd\'T\'HH:mm:ssXXX'),
     clientId: clientId || 'user-dashboard',
-    periodo: dateRange ? {
-      inicio: formatDateForReport(dateRange.from),
-      fim: formatDateForReport(dateRange.to)
-    } : null,
-    totalTransacoes: transactions.length,
+    periodo: validDateRange,
+    totalTransacoes: Array.isArray(transactions) ? transactions.length : 0,
+    resumoFinanceiro: {
+      totalEntradas: Array.isArray(transactions) 
+        ? transactions.filter(t => t.operação === 'entrada').reduce((acc, t) => acc + Number(t.valor || 0), 0) 
+        : 0,
+      totalSaidas: Array.isArray(transactions) 
+        ? transactions.filter(t => t.operação === 'saída').reduce((acc, t) => acc + Number(t.valor || 0), 0) 
+        : 0
+    },
     metas: formatMetasDataForReport(metasComProgresso),
     categorias: formatCategoryDataForReport(categoryData),
     images

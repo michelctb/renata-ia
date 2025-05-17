@@ -46,25 +46,23 @@ export default function DateRangePicker({
         if (fromText && toText) {
           return (
             <>
-              {fromText} - {toText}
+              <span className="text-primary font-medium">De:</span> {fromText} <span className="text-primary font-medium mx-1">até:</span> {toText}
             </>
           );
         }
       } else {
         const fromText = formatSafeDate(dateRange.from);
         if (fromText) {
-          return fromText;
+          return (
+            <>
+              <span className="text-primary font-medium">A partir de:</span> {fromText}
+            </>
+          );
         }
       }
     }
     
     return <span>Selecione um período</span>;
-  };
-  
-  // Log de eventos
-  const handleDateRangeChange = (newRange: DateRange | undefined) => {
-    console.log('DateRangePicker - Nova seleção de datas:', newRange);
-    onDateRangeChange(newRange);
   };
 
   return (
@@ -84,12 +82,15 @@ export default function DateRangePicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
+          <div className="p-2 bg-muted/20 border-b text-center text-sm">
+            <p>Clique para selecionar a <strong>data inicial</strong>, depois clique novamente para a <strong>data final</strong>.</p>
+          </div>
           <Calendar
             initialFocus
             mode="range"
             defaultMonth={dateRange?.from && !isNaN(dateRange.from.getTime()) ? dateRange.from : undefined}
             selected={dateRange}
-            onSelect={handleDateRangeChange}
+            onSelect={onDateRangeChange}
             numberOfMonths={2}
             locale={ptBR}
             className="pointer-events-auto"
@@ -99,3 +100,4 @@ export default function DateRangePicker({
     </div>
   );
 }
+

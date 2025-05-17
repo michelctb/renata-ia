@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { BarChart3, PieChart, FileBarChart, Download } from 'lucide-react';
+import { BarChart3, PieChart, FileBarChart, Download, FileText, AlertCircle } from 'lucide-react';
 import { useClientData } from '@/hooks/useClientData';
 import { subMonths } from 'date-fns';
 import { toast } from 'sonner';
@@ -13,6 +14,7 @@ import ReportFilters from './reports/ReportFilters';
 import ReportSummary from './reports/ReportSummary';
 import ReportDetailed from './reports/ReportDetailed';
 import ReportCategories from './reports/ReportCategories';
+import { useDateValidation } from '@/hooks/useDateValidation';
 
 const ReportsTab: React.FC = () => {
   const { clients, isLoading: isLoadingClients } = useClientData();
@@ -22,6 +24,11 @@ const ReportsTab: React.FC = () => {
     from: subMonths(new Date(), 3),
     to: new Date()
   });
+  
+  const { isValidDateRange, getSafeDateRange } = useDateValidation();
+
+  // Validar o intervalo de datas atual
+  const validDateRange = isValidDateRange(dateRange) ? dateRange : getSafeDateRange(dateRange);
 
   // Usar o hook personalizado para gerenciar os dados do relatório
   const { 
@@ -30,16 +37,26 @@ const ReportsTab: React.FC = () => {
     categoryData, 
     metasComProgresso,
     isLoading: isLoadingTransactions
-  } = useReportData(selectedClient, dateRange);
+  } = useReportData(selectedClient, validDateRange as DateRange);
 
   // Gerar relatório em formato tabular
-  const generateTableReport = () => {
+  const generateTableReport = async () => {
     if (!transactions.length) {
       toast.error("Não há dados para gerar o relatório");
       return;
     }
 
-    toast.success("Relatório gerado com sucesso!");
+    // Se a função estiver disponível no escopo global (implementada pelo ReportGenerator)
+    if (typeof (window as any).generateFinancialReport === 'function') {
+      try {
+        await (window as any).generateFinancialReport();
+      } catch (error) {
+        console.error("Erro ao gerar relatório:", error);
+        toast.error("Erro ao gerar relatório. Verifique o console para mais detalhes.");
+      }
+    } else {
+      toast.error("Funcionalidade de geração de relatório não está disponível");
+    }
   };
 
   // Função para lidar com mudanças no intervalo de datas
@@ -100,12 +117,18 @@ const ReportsTab: React.FC = () => {
               </TabsContent>
             </Tabs>
           ) : (
-            <div className="text-center py-12">
-              {selectedClient ? (
-                <p>Não há transações para o período selecionado.</p>
-              ) : (
-                <p>Selecione um cliente para visualizar os relatórios.</p>
-              )}
+            <div className="text-center py-12 space-y-4">
+              <div className="mx-auto bg-muted/20 p-6 rounded-lg max-w-md border border-dashed">
+                <AlertCircle className="h-10 w-10 text-amber-500 mx-auto mb-4" />
+                {selectedClient ? (
+                  <p>Não há transações para o período selecionado.</p>
+                ) : (
+                  <p>Selecione um cliente para visualizar os relatórios.</p>
+                )}
+                <p className="text-sm text-muted-foreground mt-2">
+                  Tente ajustar o intervalo de datas ou selecione outro cliente.
+                </p>
+              </div>
             </div>
           )}
           
@@ -116,8 +139,16 @@ const ReportsTab: React.FC = () => {
                 variant="outline"
                 className="flex items-center gap-2"
               >
+                <FileText className="h-4 w-4" />
+                Gerar Tabela de Transações
+              </Button>
+              
+              <Button
+                onClick={generateTableReport}
+                className="flex items-center gap-2"
+              >
                 <Download className="h-4 w-4" />
-                Exportar Relatório
+                Exportar Relatório Completo
               </Button>
             </div>
           )}
@@ -128,7 +159,7 @@ const ReportsTab: React.FC = () => {
               monthlyData={monthlyData}
               categoryData={categoryData}
               metasComProgresso={metasComProgresso}
-              dateRange={dateRange}
+              dateRange={validDateRange}
               clientId={selectedClient}
             />
           )}

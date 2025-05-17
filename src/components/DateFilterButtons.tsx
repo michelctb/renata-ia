@@ -4,7 +4,7 @@ import { ptBR } from 'date-fns/locale';
 import { DateRange } from 'react-day-picker';
 import { Button } from '@/components/ui/button';
 import DateRangePicker from '@/components/DateRangePicker';
-import { Plus } from 'lucide-react';
+import { Plus, CalendarRange } from 'lucide-react';
 import { useEffect } from 'react';
 
 interface DateFilterButtonsProps {
@@ -24,18 +24,12 @@ export function DateFilterButtons({
 }: DateFilterButtonsProps) {
   const isReadOnly = viewMode === 'consultor';
   
-  // Efeito para log de mudanças no dateRange
-  useEffect(() => {
-    console.log('DateFilterButtons - dateRange atualizado:', dateRange);
-  }, [dateRange]);
-  
   const handleTodayClick = () => {
     const today = new Date();
     const newRange = {
       from: startOfDay(today),
       to: endOfDay(today)
     };
-    console.log('DateFilterButtons - Aplicando filtro de hoje:', newRange);
     onDateRangeChange(newRange);
   };
 
@@ -45,7 +39,6 @@ export function DateFilterButtons({
       from: startOfWeek(today, { locale: ptBR, weekStartsOn: 0 }),
       to: endOfWeek(today, { locale: ptBR, weekStartsOn: 0 })
     };
-    console.log('DateFilterButtons - Aplicando filtro desta semana:', newRange);
     onDateRangeChange(newRange);
   };
 
@@ -55,7 +48,6 @@ export function DateFilterButtons({
       from: startOfMonth(today),
       to: endOfMonth(today)
     };
-    console.log('DateFilterButtons - Aplicando filtro deste mês:', newRange);
     onDateRangeChange(newRange);
   };
 
@@ -66,45 +58,50 @@ export function DateFilterButtons({
       from: startOfMonth(lastMonth),
       to: endOfMonth(lastMonth)
     };
-    console.log('DateFilterButtons - Aplicando filtro do mês passado:', newRange);
     onDateRangeChange(newRange);
   };
 
   return (
     <div className="flex flex-wrap items-center gap-2 ml-auto">
-      <div className="flex flex-wrap gap-1">
-        <Button 
-          variant="outline"
-          size="sm"
-          onClick={handleTodayClick}
-          className="text-xs"
-        >
-          Hoje
-        </Button>
-        <Button 
-          variant="outline"
-          size="sm"
-          onClick={handleThisWeekClick}
-          className="text-xs"
-        >
-          Esta Semana
-        </Button>
-        <Button 
-          variant="outline"
-          size="sm"
-          onClick={handleThisMonthClick}
-          className="text-xs"
-        >
-          Mês Atual
-        </Button>
-        <Button 
-          variant="outline"
-          size="sm"
-          onClick={handleLastMonthClick}
-          className="text-xs"
-        >
-          Mês Passado
-        </Button>
+      <div className="flex flex-col gap-2">
+        <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+          <CalendarRange className="h-3 w-3" /> 
+          Período rápido:
+        </div>
+        <div className="flex flex-wrap gap-1">
+          <Button 
+            variant="outline"
+            size="sm"
+            onClick={handleTodayClick}
+            className="text-xs"
+          >
+            Hoje
+          </Button>
+          <Button 
+            variant="outline"
+            size="sm"
+            onClick={handleThisWeekClick}
+            className="text-xs"
+          >
+            Esta Semana
+          </Button>
+          <Button 
+            variant="outline"
+            size="sm"
+            onClick={handleThisMonthClick}
+            className="text-xs"
+          >
+            Mês Atual
+          </Button>
+          <Button 
+            variant="outline"
+            size="sm"
+            onClick={handleLastMonthClick}
+            className="text-xs"
+          >
+            Mês Passado
+          </Button>
+        </div>
       </div>
       
       <DateRangePicker 
