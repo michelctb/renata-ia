@@ -42,15 +42,20 @@ export function MonthlyChartCard({
     respectingFilter: respectDateFilter
   });
   
+  // Garantir arrays seguros antes de passar para o hook
+  const safeData = Array.isArray(data) ? data : undefined;
+  const safeTransactions = Array.isArray(transactions) ? transactions : [];
+  const safeFilteredTransactions = Array.isArray(filteredTransactions) ? filteredTransactions : [];
+  
   // Uso do hook para processamento de dados com verificações de tipo
   const {
     chartData,
     hasError,
     errorMessage,
   } = useMonthlyChartCardData({
-    data: Array.isArray(data) ? data : undefined,
-    transactions: Array.isArray(transactions) ? transactions : [],
-    filteredTransactions: Array.isArray(filteredTransactions) ? filteredTransactions : [],
+    data: safeData,
+    transactions: safeTransactions,
+    filteredTransactions: safeFilteredTransactions,
     respectDateFilter
   });
 

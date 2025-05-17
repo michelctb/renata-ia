@@ -41,7 +41,7 @@ export function useMonthlyChartCardData({
       setErrorMessage("Erro ao processar dados gerais");
       return [];
     }
-  }, [safeTransactions]);
+  }, [safeTransactions]); // Garantimos que safeTransactions é sempre um array
   
   const filteredDataProcessed = useMemo(() => {
     try {
@@ -58,7 +58,7 @@ export function useMonthlyChartCardData({
       setErrorMessage("Erro ao processar dados filtrados");
       return [];
     }
-  }, [safeFilteredTransactions]);
+  }, [safeFilteredTransactions]); // Garantimos que safeFilteredTransactions é sempre um array
   
   // Efeito para mostrar toast apenas uma vez em caso de erro
   useEffect(() => {
@@ -94,7 +94,7 @@ export function useMonthlyChartCardData({
       setErrorMessage(error instanceof Error ? error.message : "Erro desconhecido");
       return [];
     }
-  }, [data, respectDateFilter, allDataProcessed, filteredDataProcessed]);
+  }, [data, respectDateFilter, allDataProcessed, filteredDataProcessed]); // Todas dependências garantidas como não-undefined
   
   // Verificar se há dados disponíveis para o modo filtrado
   const hasFilteredData = Array.isArray(filteredDataProcessed) && filteredDataProcessed.length > 0;

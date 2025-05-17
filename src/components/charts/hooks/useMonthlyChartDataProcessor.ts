@@ -14,8 +14,13 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
   return useMemo(() => {
     try {
       // Primeiro, garantir que as transações são um array válido
-      if (!Array.isArray(transactions) || transactions.length === 0) {
-        console.log('useMonthlyChartDataProcessor - Array vazio ou inválido recebido');
+      if (!Array.isArray(transactions)) {
+        console.log('useMonthlyChartDataProcessor - Array inválido recebido');
+        return [];
+      }
+      
+      if (transactions.length === 0) {
+        console.log('useMonthlyChartDataProcessor - Array vazio recebido');
         return [];
       }
 
@@ -157,5 +162,5 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
       console.error("Erro ao processar dados mensais:", error);
       return []; // Garante que mesmo em caso de erro, retornamos um array vazio
     }
-  }, [transactions]);
+  }, [transactions]); // Garantimos que transactions é sempre um array
 }
