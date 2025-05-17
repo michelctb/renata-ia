@@ -68,7 +68,9 @@ export function MonthlyChartCard({
   });
 
   // Garantir que chartData é sempre um array válido
-  const safeChartData = Array.isArray(chartData) ? chartData : [];
+  const safeChartData = useMemo(() => {
+    return Array.isArray(chartData) ? chartData : [];
+  }, [chartData]);
   
   return (
     <Card className="border shadow-sm col-span-1 lg:col-span-3">

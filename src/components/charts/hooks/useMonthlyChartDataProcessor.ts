@@ -1,6 +1,6 @@
 
 import { useMemo } from 'react';
-import { format, parseISO, eachMonthOfInterval, min, max, isValid, startOfMonth, endOfMonth } from 'date-fns';
+import { format, parseISO, eachMonthOfInterval, min, max, isValid, startOfMonth, endOfMonth, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toZonedTime } from 'date-fns-tz';
 
@@ -19,7 +19,17 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
       // Primeiro, garantir que as transações são um array válido
       if (!Array.isArray(safeTransactions) || safeTransactions.length === 0) {
         console.log('useMonthlyChartDataProcessor - Array vazio ou inválido recebido');
-        return [];
+        
+        // Para casos sem transações, retornar pelo menos o mês atual com zeros
+        const currentDate = new Date();
+        const currentMonthStart = startOfMonth(currentDate);
+        const currentMonthLabel = format(currentMonthStart, 'MMM yyyy', { locale: ptBR });
+        
+        return [{
+          name: currentMonthLabel,
+          entrada: 0,
+          saída: 0
+        }];
       }
 
       console.log('useMonthlyChartDataProcessor - Iniciando processamento de', safeTransactions.length, 'transações');
@@ -68,10 +78,18 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
         }
       }
       
-      // Se não temos datas válidas, retornar array vazio
+      // Se não temos datas válidas, retornar o mês atual com valores zerados
       if (validDates.length === 0) {
         console.log('useMonthlyChartDataProcessor - Nenhuma data válida encontrada nas transações');
-        return [];
+        const currentDate = new Date();
+        const currentMonthStart = startOfMonth(currentDate);
+        const currentMonthLabel = format(currentMonthStart, 'MMM yyyy', { locale: ptBR });
+        
+        return [{
+          name: currentMonthLabel,
+          entrada: 0,
+          saída: 0
+        }];
       }
       
       // Encontrar a data mais antiga e mais recente
@@ -85,9 +103,21 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
       const minMonthDate = startOfMonth(minDate);
       const maxMonthDate = endOfMonth(maxDate);
       
+      // Verificar se as datas estão muito distantes (mais de 2 anos)
+      // Se sim, limitar para o último ano para evitar gráficos muito grandes
+      let startDateForRange = minMonthDate;
+      const twoYearsInMonths = 24;
+      const monthDiff = (maxDate.getFullYear() - minDate.getFullYear()) * 12 + 
+                        maxDate.getMonth() - minDate.getMonth();
+                        
+      if (monthDiff > twoYearsInMonths) {
+        startDateForRange = startOfMonth(addMonths(maxMonthDate, -twoYearsInMonths));
+        console.log(`useMonthlyChartDataProcessor - Intervalo limitado a 24 meses, novo início: ${startDateForRange.toISOString()}`);
+      }
+      
       // Gerar todos os meses entre a data mais antiga e mais recente
       const allMonths = eachMonthOfInterval({
-        start: minMonthDate,
+        start: startDateForRange,
         end: maxMonthDate
       });
       
@@ -191,7 +221,11 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
       
       // Converter os dados para array e ordenar por mês
       if (!months || months.size === 0) {
-        return [];
+        return [{
+          name: format(new Date(), 'MMM yyyy', { locale: ptBR }),
+          entrada: 0,
+          saída: 0
+        }];
       }
       
       const result = Array.from(months.values())
@@ -226,7 +260,12 @@ export function useMonthlyChartDataProcessor(transactions: any[] = []): Array<{n
       return result;
     } catch (error) {
       console.error("Erro ao processar dados mensais:", error);
-      return []; // Garante que mesmo em caso de erro, retornamos um array vazio
+      // Em caso de erro, retornar pelo menos um mês com valores zerados
+      return [{
+        name: format(new Date(), 'MMM yyyy', { locale: ptBR }),
+        entrada: 0,
+        saída: 0
+      }];
     }
   }, [safeTransactions]); // Usando safeTransactions que é garantido como array
 }

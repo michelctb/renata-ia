@@ -40,7 +40,8 @@ export function useMonthlyChartCardData({
       }
       
       // Usando o processador diretamente para evitar problemas com hooks em hooks
-      return useMonthlyChartDataProcessor(safeTransactions) || [];
+      const result = useMonthlyChartDataProcessor(safeTransactions);
+      return Array.isArray(result) ? result : [];
     } catch (error) {
       console.error("Erro no processamento geral:", error);
       setHasError(true);
@@ -63,7 +64,8 @@ export function useMonthlyChartCardData({
       }
       
       // Usando o processador diretamente
-      return useMonthlyChartDataProcessor(safeFilteredTransactions) || [];
+      const result = useMonthlyChartDataProcessor(safeFilteredTransactions);
+      return Array.isArray(result) ? result : [];
     } catch (error) {
       console.error("Erro no processamento filtrado:", error);
       setHasError(true);
