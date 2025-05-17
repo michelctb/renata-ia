@@ -44,7 +44,7 @@ export function MonthlyChartCard({
     transactionsCount: transactions?.length,
     hasFilteredTransactions: filteredTransactions?.length > 0,
     filteredTransactionsCount: filteredTransactions?.length,
-    respectingFilter: respectDataFilter
+    respectingFilter: respectDateFilter  // Correção: respectDateFilter em vez de respectDataFilter
   });
   
   // Uso do hook refatorado para processamento de dados
