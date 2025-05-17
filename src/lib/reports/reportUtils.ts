@@ -10,7 +10,7 @@ import { formatMetasDataForReport, formatCategoryDataForReport } from './chartEx
 const TIMEZONE = 'America/Sao_Paulo';
 
 // Interface para o retorno da função de conversão SVG para imagem
-interface ImageResult {
+export interface ImageResult {
   name: string;
   data: string;
   error?: boolean;
@@ -54,7 +54,7 @@ export const convertSvgsToImages = async (svgElements: NodeListOf<Element>): Pro
   // Aguarde todas as conversões
   const results = await Promise.all(imagePromises);
   
-  // Filtre possíveis erros
+  // Filtre possíveis erros - Agora usando a interface ImageResult para tipar corretamente
   const validImages = results.filter(img => !img.error && img.data);
   
   if (validImages.length === 0 && svgElements.length > 0) {
