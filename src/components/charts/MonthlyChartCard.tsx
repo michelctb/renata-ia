@@ -27,17 +27,44 @@ export function MonthlyChartCard({
   selectedMonth
 }: MonthlyChartCardProps) {
   const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const isMobile = useIsMobile();
+  
+  // Log para debug dos dados recebidos
+  useEffect(() => {
+    console.log("MonthlyChartCard - dados recebidos:", {
+      hasDirectData: !!data,
+      hasTransactions: !!transactions?.length,
+      transactionsCount: transactions?.length || 0
+    });
+  }, [data, transactions]);
   
   // Se os dados forem fornecidos diretamente, use-os
   // Caso contrário, processe os dados de todas as transações
   let chartData: any[] = [];
   
   try {
-    chartData = data || useMonthlyChartData(transactions || []);
+    if (data) {
+      chartData = data;
+      console.log("MonthlyChartCard - usando dados diretos:", chartData);
+    } else {
+      if (!transactions || transactions.length === 0) {
+        console.log("MonthlyChartCard - sem transações para processar");
+      } else {
+        try {
+          chartData = useMonthlyChartData(transactions || []);
+          console.log("MonthlyChartCard - dados processados:", chartData);
+        } catch (error) {
+          console.error('Erro ao processar dados do gráfico mensal:', error);
+          setHasError(true);
+          setErrorMessage(error instanceof Error ? error.message : "Erro desconhecido no processamento de dados");
+        }
+      }
+    }
   } catch (error) {
-    console.error('Erro ao processar dados do gráfico mensal:', error);
+    console.error('Erro geral no MonthlyChartCard:', error);
     setHasError(true);
+    setErrorMessage(error instanceof Error ? error.message : "Erro desconhecido");
     
     // Mostrar toast apenas uma vez
     useEffect(() => {
@@ -83,6 +110,7 @@ export function MonthlyChartCard({
         {hasError ? (
           <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
             <p className="mb-2">Erro ao processar dados do gráfico</p>
+            <p className="mb-4 text-xs text-red-500">{errorMessage}</p>
             <button 
               onClick={() => window.location.reload()} 
               className="text-sm text-primary hover:underline"

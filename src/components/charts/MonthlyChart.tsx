@@ -46,12 +46,18 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth }: MonthlyChart
   // Verificar se os dados são válidos
   const isDataValid = Array.isArray(data) && data.length > 0;
   
+  // Log detalhado para depuração
+  console.log('MonthlyChart - Dados recebidos:', {
+    data,
+    isValid: isDataValid,
+    count: data?.length || 0
+  });
+  
   if (!isDataValid) {
-    console.log('MonthlyChart - Dados inválidos ou vazios:', data);
-    
     return (
-      <div className="h-full flex items-center justify-center text-muted-foreground">
-        Sem dados para exibir. Tente selecionar outro período.
+      <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
+        <p className="mb-2">Sem dados para exibir</p>
+        <p className="text-sm text-gray-500">Tente selecionar outro período ou adicionar transações</p>
       </div>
     );
   }

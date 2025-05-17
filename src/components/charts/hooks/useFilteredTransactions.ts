@@ -31,8 +31,12 @@ export function useFilteredTransactions(
     }
     
     try {
+      // Na versão 3.x do date-fns-tz, toZonedTime é usado para converter entre fusos horários
+      // Ajustando para garantir que estamos lidando corretamente com a data
       const fromDate = startOfDay(toZonedTime(dateRange.from, TIMEZONE));
-      let toDate = dateRange.to ? endOfDay(toZonedTime(dateRange.to, TIMEZONE)) : endOfDay(toZonedTime(dateRange.from, TIMEZONE));
+      let toDate = dateRange.to 
+        ? endOfDay(toZonedTime(dateRange.to, TIMEZONE)) 
+        : endOfDay(toZonedTime(dateRange.from, TIMEZONE));
       
       // Logar o intervalo de datas filtrado
       console.log(`Filtrando transações com intervalo de datas:`, {
@@ -47,27 +51,43 @@ export function useFilteredTransactions(
         try {
           // Garantir que a string da data está em formato ISO
           const transactionDateStr = transaction.data;
-          
-          // Converter para o fuso horário de São Paulo
-          const transactionDateUTC = parseISO(transactionDateStr);
-          const transactionDate = toZonedTime(transactionDateUTC, TIMEZONE);
-          
-          // Normalizar para o início do dia para a comparação
-          const transactionDateStart = startOfDay(transactionDate);
-          
-          // Verificar se a data da transação está dentro do intervalo
-          const isInRange = isWithinInterval(transactionDateStart, { 
-            start: fromDate, 
-            end: toDate 
-          });
-          
-          if (isInRange) {
-            transacoesFiltradas++;
-          } else {
-            transacoesForaIntervalo++;
+          if (!transactionDateStr) {
+            console.warn('Transação sem data:', transaction);
+            return false;
           }
           
-          return isInRange;
+          // Converter para o fuso horário de São Paulo com manejo de erros
+          try {
+            const transactionDateUTC = parseISO(transactionDateStr);
+            
+            // Verificar se a data foi parseada corretamente
+            if (isNaN(transactionDateUTC.getTime())) {
+              console.warn('Data inválida na transação:', transactionDateStr);
+              return false;
+            }
+            
+            const transactionDate = toZonedTime(transactionDateUTC, TIMEZONE);
+            
+            // Normalizar para o início do dia para a comparação
+            const transactionDateStart = startOfDay(transactionDate);
+            
+            // Verificar se a data da transação está dentro do intervalo
+            const isInRange = isWithinInterval(transactionDateStart, { 
+              start: fromDate, 
+              end: toDate 
+            });
+            
+            if (isInRange) {
+              transacoesFiltradas++;
+            } else {
+              transacoesForaIntervalo++;
+            }
+            
+            return isInRange;
+          } catch (parseError) {
+            console.error('Erro no parsing da data:', transactionDateStr, parseError);
+            return false;
+          }
         } catch (error) {
           console.error('Erro ao analisar data da transação:', transaction.data, error);
           return false;

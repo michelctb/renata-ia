@@ -1,3 +1,4 @@
+
 import { useMemo } from 'react';
 import { Transaction } from '@/lib/supabase';
 import { DateRange } from 'react-day-picker';
@@ -32,30 +33,42 @@ export function useFilteredTransactions(
       try {
         // Garantir que a string da data está em formato ISO
         const transactionDateStr = transaction.data;
+        if (!transactionDateStr) return false;
         
         // Converter para o fuso horário de São Paulo
-        const transactionDateUTC = parseISO(transactionDateStr);
-        const transactionDate = toZonedTime(transactionDateUTC, TIMEZONE);
-        
-        // Normalizar para o início do dia
-        const transactionDateStart = startOfDay(transactionDate);
-        
-        // Ajustar as datas do intervalo para o fuso horário de São Paulo
-        const fromDate = dateRange.from ? startOfDay(toZonedTime(dateRange.from, TIMEZONE)) : null;
-        const toDate = dateRange.to ? endOfDay(toZonedTime(dateRange.to, TIMEZONE)) : null;
-        
-        if (fromDate && toDate) {
-          return isWithinInterval(transactionDateStart, { 
-            start: fromDate, 
-            end: toDate 
-          });
+        try {
+          const transactionDateUTC = parseISO(transactionDateStr);
+          
+          // Verificar se o parsing da data foi bem sucedido
+          if (isNaN(transactionDateUTC.getTime())) {
+            return false;
+          }
+          
+          const transactionDate = toZonedTime(transactionDateUTC, TIMEZONE);
+          
+          // Normalizar para o início do dia
+          const transactionDateStart = startOfDay(transactionDate);
+          
+          // Ajustar as datas do intervalo para o fuso horário de São Paulo
+          const fromDate = dateRange.from ? startOfDay(toZonedTime(dateRange.from, TIMEZONE)) : null;
+          const toDate = dateRange.to ? endOfDay(toZonedTime(dateRange.to, TIMEZONE)) : null;
+          
+          if (fromDate && toDate) {
+            return isWithinInterval(transactionDateStart, { 
+              start: fromDate, 
+              end: toDate 
+            });
+          }
+          
+          if (fromDate) {
+            return transactionDateStart >= fromDate;
+          }
+          
+          return true;
+        } catch (error) {
+          console.error('Erro ao processar data para filtro:', transactionDateStr, error);
+          return false;
         }
-        
-        if (fromDate) {
-          return transactionDateStart >= fromDate;
-        }
-        
-        return true;
       } catch (error) {
         console.error('Erro ao analisar data para filtro de gráfico:', transaction.data, error);
         return false;
@@ -66,7 +79,7 @@ export function useFilteredTransactions(
 
 export function useMonthlyChartData(filteredTransactions: Transaction[]) {
   return useMemo(() => {
-    console.log('useMonthlyChartData - Processando', filteredTransactions.length, 'transações');
+    console.log('useMonthlyChartData - Iniciando processamento de', filteredTransactions.length, 'transações');
     
     const months = new Map();
     
@@ -78,47 +91,75 @@ export function useMonthlyChartData(filteredTransactions: Transaction[]) {
     let successCount = 0;
     let errorCount = 0;
     
-    filteredTransactions.forEach(transaction => {
+    filteredTransactions.forEach((transaction, index) => {
       try {
         if (!transaction.data) {
-          console.warn('useMonthlyChartData - Transação sem data:', transaction);
+          console.warn(`useMonthlyChartData - Transação #${index} sem data:`, transaction);
           errorCount++;
           return;
         }
         
         // Parse the date and convert to São Paulo timezone
         const dateStr = transaction.data;
-        console.log(`useMonthlyChartData - Processando data: ${dateStr}`);
         
-        const dateUTC = parseISO(dateStr);
-        const date = toZonedTime(dateUTC, TIMEZONE);
-        
-        const monthKey = format(date, 'yyyy-MM');
-        const monthLabel = format(date, 'MMM yyyy', { locale: ptBR });
-        const operationType = transaction.operação?.toLowerCase() || '';
-        
-        console.log(`useMonthlyChartData - Data convertida: ${monthKey} (${monthLabel}), operação: ${operationType}`);
-        
-        if (!months.has(monthKey)) {
-          months.set(monthKey, { 
-            name: monthLabel, 
-            entrada: 0, 
-            saída: 0 
-          });
+        // Log detalhado apenas para algumas transações para não sobrecarregar o console
+        const shouldLog = index < 5 || index % 20 === 0;
+        if (shouldLog) {
+          console.log(`useMonthlyChartData - Processando transação #${index}, data: ${dateStr}`);
         }
         
-        const monthData = months.get(monthKey);
-        const valor = Number(transaction.valor || 0);
-        
-        if (operationType === 'entrada') {
-          monthData.entrada += valor;
-        } else if (operationType === 'saída' || operationType === 'saida') {
-          monthData.saída += valor;
+        try {
+          const dateUTC = parseISO(dateStr);
+          
+          // Verificar se a data foi parseada corretamente
+          if (isNaN(dateUTC.getTime())) {
+            console.warn(`useMonthlyChartData - Data inválida na transação #${index}:`, dateStr);
+            errorCount++;
+            return;
+          }
+          
+          // Usar toZonedTime com tratamento de erro
+          const date = toZonedTime(dateUTC, TIMEZONE);
+          
+          const monthKey = format(date, 'yyyy-MM');
+          const monthLabel = format(date, 'MMM yyyy', { locale: ptBR });
+          const operationType = transaction.operação?.toLowerCase() || '';
+          
+          if (shouldLog) {
+            console.log(`useMonthlyChartData - Data processada para transação #${index}: ${monthKey} (${monthLabel}), operação: ${operationType}`);
+          }
+          
+          if (!months.has(monthKey)) {
+            months.set(monthKey, { 
+              name: monthLabel, 
+              entrada: 0, 
+              saída: 0 
+            });
+          }
+          
+          const monthData = months.get(monthKey);
+          const valor = Number(transaction.valor || 0);
+          
+          if (isNaN(valor)) {
+            console.warn(`useMonthlyChartData - Valor inválido na transação #${index}:`, transaction.valor);
+            errorCount++;
+            return;
+          }
+          
+          if (operationType === 'entrada') {
+            monthData.entrada += valor;
+          } else if (operationType === 'saída' || operationType === 'saida') {
+            monthData.saída += valor;
+          }
+          
+          successCount++;
+        } catch (dateError) {
+          console.error(`useMonthlyChartData - Erro processando data da transação #${index}:`, dateStr, dateError);
+          errorCount++;
+          return;
         }
-        
-        successCount++;
       } catch (error) {
-        console.error('Erro processando data para gráfico mensal:', transaction.data, error);
+        console.error(`useMonthlyChartData - Erro geral processando transação #${index}:`, error);
         errorCount++;
       }
     });
