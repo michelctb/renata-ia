@@ -22,7 +22,7 @@ type DashboardChartsProps = {
 };
 
 export default function DashboardCharts({ 
-  transactions: propTransactions, 
+  transactions: propTransactions = [], // Forneça um valor padrão aqui
   dateRange, 
   clientId,
   viewMode = 'user',
@@ -35,8 +35,8 @@ export default function DashboardCharts({
   // Log inicial para debug
   useEffect(() => {
     console.log('DashboardCharts - Inicializado com:', { 
-      hasTransactions: !!propTransactions?.length,
-      transactionCount: propTransactions?.length || 0,
+      hasTransactions: Array.isArray(propTransactions) && propTransactions.length > 0,
+      transactionCount: Array.isArray(propTransactions) ? propTransactions.length : 0,
       hasDateRange: !!dateRange,
       isMobile: isMobile,
       hasSetDateRange: !!setDateRange,
@@ -49,7 +49,7 @@ export default function DashboardCharts({
         to: dateRange.to?.toISOString()
       });
     }
-  }, []);
+  }, [propTransactions, dateRange, isMobile, setDateRange, onCategorySelect]);
   
   // Estado base do dashboard
   const {
@@ -59,7 +59,7 @@ export default function DashboardCharts({
     viewMode: normalizedViewMode,
     clientId: normalizedClientId
   } = useDashboardState({
-    transactions: propTransactions,
+    transactions: propTransactions || [], // Garanta que não é undefined
     dateRange,
     clientId,
     viewMode,
@@ -99,7 +99,7 @@ export default function DashboardCharts({
     categoryData,
     metasComProgresso
   } = useDashboardData({
-    propTransactions,
+    propTransactions: propTransactions || [], // Garanta que não é undefined
     validDateRange,
     clientId,
     viewMode: normalizedViewMode,
@@ -127,9 +127,9 @@ export default function DashboardCharts({
   // Verificar e logar quantidades de transações
   useEffect(() => {
     console.log('DashboardCharts - Contagem de transações:', {
-      total: transactions?.length || 0,
-      filtradas: filteredTransactions?.length || 0,
-      porCategoria: filteredByCategory?.length || 0
+      total: Array.isArray(transactions) ? transactions.length : 0,
+      filtradas: Array.isArray(filteredTransactions) ? filteredTransactions.length : 0,
+      porCategoria: Array.isArray(filteredByCategory) ? filteredByCategory.length : 0
     });
   }, [transactions, filteredTransactions, filteredByCategory]);
 
@@ -140,8 +140,8 @@ export default function DashboardCharts({
       
       {/* Monthly Chart Card - Passando tanto transações completas quanto filtradas */}
       <MonthlyChartCard 
-        transactions={transactions} 
-        filteredTransactions={filteredTransactions}
+        transactions={transactions || []} // Garanta que não é undefined
+        filteredTransactions={filteredTransactions || []} // Garanta que não é undefined
         onMonthClick={handleMonthClick}
         selectedMonth={selectedMonth}
         dateFilterDescription={dateFilterDescription}
@@ -149,7 +149,7 @@ export default function DashboardCharts({
       
       {/* Category Charts (Pie Chart and Ranking) */}
       <CategoryChartsContainer 
-        categoryData={categoryData}
+        categoryData={categoryData || []} // Garanta que não é undefined
         transactionType={transactionType}
         setTransactionType={setTransactionType}
         onCategoryClick={handleCategoryClick}
@@ -157,7 +157,7 @@ export default function DashboardCharts({
       />
       
       {/* Meta Progress Display */}
-      <MetaProgressDisplay metasComProgresso={metasComProgresso} />
+      <MetaProgressDisplay metasComProgresso={metasComProgresso || []} /> {/* Garanta que não é undefined */}
     </div>
   );
 }

@@ -11,7 +11,7 @@ import {
   TooltipProps,
 } from 'recharts';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface MonthlyChartProps {
   data: Array<{
@@ -42,30 +42,46 @@ const CustomBarTooltip = ({ active, payload, label }: TooltipProps<number, strin
   return null;
 };
 
-export function MonthlyChart({ data, onMonthClick, selectedMonth, isEmpty = false, mode = 'all' }: MonthlyChartProps) {
+export function MonthlyChart({ data = [], onMonthClick, selectedMonth, isEmpty = false, mode = 'all' }: MonthlyChartProps) {
   const isMobile = useIsMobile();
-  const [chartHeight, setChartHeight] = useState(270); // Altura inicial segura
-  const [chartWidth, setChartWidth] = useState('100%');
+  const [chartHeight, setChartHeight] = useState(260);
+  const [chartWidth, setChartWidth] = useState(isMobile ? 350 : 650);
   const [hasError, setHasError] = useState(false);
 
-  // Verificar se os dados são válidos
+  // Função segura para verificar se os dados são válidos
   const isDataValid = Array.isArray(data) && data.length > 0;
   
+  // Use useCallback para evitar recriação da função em cada render
+  const handleBarClick = useCallback((data: any) => {
+    console.log('MonthlyChart - Clique no mês:', data.name);
+    if (onMonthClick) {
+      onMonthClick(data.name);
+    }
+  }, [onMonthClick]);
+
   // Efeito para garantir que as dimensões sejam atualizadas após a renderização
   useEffect(() => {
     try {
       // Log detalhado para depuração
       console.log('MonthlyChart - Dados recebidos:', {
-        data,
+        dataExists: !!data,
+        isArray: Array.isArray(data),
+        count: Array.isArray(data) ? data.length : 0,
         isValid: isDataValid,
-        count: data?.length || 0,
-        mode
+        mode: mode
       });
+      
+      // Atualizar dimensões baseado no dispositivo
+      if (isMobile) {
+        setChartWidth(350);
+      } else {
+        setChartWidth(650);
+      }
     } catch (error) {
       console.error('Erro ao logar dados do gráfico:', error);
       setHasError(true);
     }
-  }, [data, isDataValid, mode]);
+  }, [data, isDataValid, mode, isMobile]);
   
   if (hasError) {
     return (
@@ -98,19 +114,11 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth, isEmpty = fals
     );
   }
 
-  // Função para lidar com o clique em uma barra
-  const handleBarClick = (data: any) => {
-    console.log('MonthlyChart - Clique no mês:', data.name);
-    if (onMonthClick) {
-      onMonthClick(data.name);
-    }
-  };
-
   return (
-    <div className="w-full h-full">
-      <div className="w-full h-[270px]">
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="w-full h-[260px]">
         <BarChart
-          width={isMobile ? 350 : 650}
+          width={chartWidth}
           height={chartHeight}
           data={data}
           margin={isMobile ? 
@@ -173,7 +181,7 @@ export function MonthlyChart({ data, onMonthClick, selectedMonth, isEmpty = fals
           />
         </BarChart>
       </div>
-      <div className="text-xs text-muted-foreground text-right pr-2 mt-2">
+      <div className="text-xs text-muted-foreground text-right pr-2 mt-2 absolute bottom-2 right-2">
         {selectedMonth 
           ? `Filtro aplicado: ${selectedMonth} (clique novamente para remover)` 
           : isMobile ? 'Toque para filtrar' : 'Clique em um mês para filtrar'}

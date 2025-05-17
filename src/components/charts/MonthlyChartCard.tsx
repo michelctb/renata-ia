@@ -26,8 +26,8 @@ interface MonthlyChartCardProps {
 
 export function MonthlyChartCard({ 
   data, 
-  transactions, 
-  filteredTransactions = [],
+  transactions = [], // Forneça um array vazio como padrão para evitar undefined
+  filteredTransactions = [], // Garanta que nunca seja undefined
   clientId,
   onMonthClick,
   selectedMonth,
@@ -40,10 +40,23 @@ export function MonthlyChartCard({
   // Estado para controlar se o gráfico deve respeitar o filtro de data
   const [respectDateFilter, setRespectDateFilter] = useState<boolean>(false);
   
-  // Processar dados com useMonthlyChartData
+  // Log para debug dos dados recebidos
+  useEffect(() => {
+    console.log("MonthlyChartCard - dados recebidos:", {
+      hasDirectData: !!data,
+      hasTransactions: !!transactions?.length,
+      transactionsCount: transactions?.length || 0,
+      hasFilteredTransactions: !!filteredTransactions?.length,
+      filteredTransactionsCount: filteredTransactions?.length || 0,
+      respectingFilter: respectDateFilter
+    });
+  }, [data, transactions, filteredTransactions, respectDateFilter]);
+  
+  // Processar dados com useMonthlyChartData - com proteção contra undefined
   const allDataProcessed = useMemo(() => {
     try {
-      if (!transactions || transactions.length === 0) {
+      // Tratamento seguro para evitar acesso a propriedades de undefined
+      if (!Array.isArray(transactions) || transactions.length === 0) {
         console.log("MonthlyChartCard - sem transações para processamento geral");
         return [];
       }
@@ -61,7 +74,8 @@ export function MonthlyChartCard({
   
   const filteredDataProcessed = useMemo(() => {
     try {
-      if (!filteredTransactions || filteredTransactions.length === 0) {
+      // Tratamento seguro para evitar acesso a propriedades de undefined
+      if (!Array.isArray(filteredTransactions) || filteredTransactions.length === 0) {
         console.log("MonthlyChartCard - sem transações para processamento filtrado");
         return [];
       }
@@ -77,18 +91,6 @@ export function MonthlyChartCard({
     }
   }, [filteredTransactions]);
   
-  // Log para debug dos dados recebidos
-  useEffect(() => {
-    console.log("MonthlyChartCard - dados recebidos:", {
-      hasDirectData: !!data,
-      hasTransactions: !!transactions?.length,
-      transactionsCount: transactions?.length || 0,
-      hasFilteredTransactions: !!filteredTransactions?.length,
-      filteredTransactionsCount: filteredTransactions?.length || 0,
-      respectingFilter: respectDateFilter
-    });
-  }, [data, transactions, filteredTransactions, respectDateFilter]);
-  
   // Efeito para mostrar toast apenas uma vez em caso de erro
   useEffect(() => {
     if (hasError) {
@@ -100,16 +102,19 @@ export function MonthlyChartCard({
     }
   }, [hasError, errorMessage]);
   
-  // Selecionar quais dados usar
+  // Selecionar quais dados usar - com proteção contra undefined
   const chartData = useMemo(() => {
     try {
-      // Se dados diretos forem fornecidos, use-os
-      if (data) {
+      // Se dados diretos forem fornecidos, use-os (com verificação de segurança)
+      if (Array.isArray(data) && data.length > 0) {
         console.log("MonthlyChartCard - usando dados diretos:", data);
         return data;
       } else {
-        // Se não, selecione entre dados completos ou filtrados
-        const dataToUse = respectDateFilter ? filteredDataProcessed : allDataProcessed;
+        // Se não, selecione entre dados completos ou filtrados, garantindo que sejam arrays
+        const dataToUse = respectDateFilter ? 
+          (Array.isArray(filteredDataProcessed) ? filteredDataProcessed : []) : 
+          (Array.isArray(allDataProcessed) ? allDataProcessed : []);
+          
         console.log("MonthlyChartCard - usando dados processados:", dataToUse, 
           "modo:", respectDateFilter ? "filtrado" : "completo");
         return dataToUse;
@@ -122,8 +127,8 @@ export function MonthlyChartCard({
     }
   }, [data, respectDateFilter, allDataProcessed, filteredDataProcessed]);
   
-  // Verificar se há dados disponíveis para o modo filtrado
-  const hasFilteredData = filteredDataProcessed && filteredDataProcessed.length > 0;
+  // Verificar se há dados disponíveis para o modo filtrado - com proteção contra undefined
+  const hasFilteredData = Array.isArray(filteredDataProcessed) && filteredDataProcessed.length > 0;
   
   // Função de callback para clique com log de debug
   const handleMonthClick = (month: string) => {
@@ -187,7 +192,7 @@ export function MonthlyChartCard({
             data={chartData} 
             onMonthClick={onMonthClick ? handleMonthClick : undefined}
             selectedMonth={selectedMonth}
-            isEmpty={chartData.length === 0}
+            isEmpty={!Array.isArray(chartData) || chartData.length === 0}
             mode={respectDateFilter ? 'filtered' : 'all'}
           />
         )}
