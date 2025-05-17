@@ -30,6 +30,10 @@ export function MonthlyChartCard({
   const [errorMessage, setErrorMessage] = useState<string>("");
   const isMobile = useIsMobile();
   
+  // Processar os dados com useMonthlyChartData no nível superior do componente
+  // Este hook deve ser chamado SEMPRE, independente das condições
+  const processedDataFromHook = useMonthlyChartData(transactions || []);
+  
   // Log para debug dos dados recebidos
   useEffect(() => {
     console.log("MonthlyChartCard - dados recebidos:", {
@@ -61,7 +65,7 @@ export function MonthlyChartCard({
     });
   }, [selectedMonth, onMonthClick, data, transactions]);
   
-  // Processa os dados com useMemo para evitar recálculos desnecessários
+  // Agora use useMemo apenas para processamento de dados, não para chamar hooks
   const chartData = useMemo(() => {
     try {
       if (data) {
@@ -73,9 +77,8 @@ export function MonthlyChartCard({
           return [];
         } else {
           try {
-            const processedData = useMonthlyChartData(transactions || []);
-            console.log("MonthlyChartCard - dados processados:", processedData);
-            return processedData;
+            console.log("MonthlyChartCard - dados processados:", processedDataFromHook);
+            return processedDataFromHook;
           } catch (error) {
             console.error('Erro ao processar dados do gráfico mensal:', error);
             setHasError(true);
@@ -90,7 +93,7 @@ export function MonthlyChartCard({
       setErrorMessage(error instanceof Error ? error.message : "Erro desconhecido");
       return [];
     }
-  }, [data, transactions]);
+  }, [data, transactions, processedDataFromHook]);
   
   // Função de callback para clique com log de debug
   const handleMonthClick = (month: string) => {
