@@ -11,6 +11,7 @@ import { MetasHeader } from './components/MetasHeader';
 import { MetasEmptyState } from './components/MetasEmptyState';
 import { Card, CardContent } from '@/components/ui/card';
 import { CopyMetasButton } from './components/CopyMetasButton';
+import { MonthSelector } from './components/MonthSelector';
 import { usePeriodoDateRange } from './hooks/usePeriodoDateRange';
 
 interface MetasTabProps {
@@ -18,8 +19,16 @@ interface MetasTabProps {
 }
 
 export function MetasTab({ userId }: MetasTabProps) {
-  const { periodoFiltro, dateRange, handleChangePeriodo } = usePeriodoDateRange();
-  const { metas, isLoading, handleSaveMeta, handleDeleteMeta, refreshMetas } = useMetasData(userId);
+  const { currentDate, changeMonth } = usePeriodoDateRange();
+  const currentMonth = currentDate.getMonth() + 1; // +1 porque getMonth() retorna 0-11
+  const currentYear = currentDate.getFullYear();
+  
+  const { metas, isLoading, handleSaveMeta, handleDeleteMeta, refreshMetas } = useMetasData({
+    userId, 
+    mesReferencia: currentMonth,
+    anoReferencia: currentYear
+  });
+  
   const { categoriesWithMetas, isLoading: isCategoriesLoading, refreshData } = useCategoriesWithMetas(userId);
   
   const [showForm, setShowForm] = useState(false);
@@ -69,6 +78,14 @@ export function MetasTab({ userId }: MetasTabProps) {
     <div className="py-10">
       <div className="container max-w-[1000px]">
         <MetasHeader />
+        
+        {/* Seletor de mês */}
+        <div className="mb-6">
+          <MonthSelector 
+            currentDate={currentDate}
+            onMonthChange={changeMonth}
+          />
+        </div>
 
         {/* Show form if requested */}
         {showForm ? (
@@ -92,7 +109,14 @@ export function MetasTab({ userId }: MetasTabProps) {
                     </Button>
                     
                     {/* Add copy button */}
-                    {userId && <CopyMetasButton userId={userId} onCopySuccess={handleCopySuccess} />}
+                    {userId && (
+                      <CopyMetasButton 
+                        userId={userId} 
+                        onCopySuccess={handleCopySuccess} 
+                        targetMonth={currentMonth}
+                        targetYear={currentYear}
+                      />
+                    )}
                   </div>
                 </div>
               </CardContent>

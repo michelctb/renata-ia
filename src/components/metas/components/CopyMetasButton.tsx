@@ -8,11 +8,12 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { CopyIcon } from 'lucide-react';
 import { copyMetasFromPreviousPeriod } from '@/lib/metas';
-import { usePeriodoDateRange } from '../hooks/usePeriodoDateRange';
 
 interface CopyMetasButtonProps {
   userId: string;
   onCopySuccess: () => void;
+  targetMonth: number; // Mês para o qual estamos copiando
+  targetYear: number;  // Ano para o qual estamos copiando
 }
 
 type CopyFormValues = {
@@ -20,25 +21,26 @@ type CopyFormValues = {
   sourceYear: string;
 };
 
-export const CopyMetasButton: React.FC<CopyMetasButtonProps> = ({ userId, onCopySuccess }) => {
+export const CopyMetasButton: React.FC<CopyMetasButtonProps> = ({ 
+  userId, 
+  onCopySuccess,
+  targetMonth,
+  targetYear
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { dateRange } = usePeriodoDateRange();
-  
-  const currentMonth = dateRange?.from?.getMonth() ?? new Date().getMonth();
-  const currentYear = dateRange?.from?.getFullYear() ?? new Date().getFullYear();
   
   const form = useForm<CopyFormValues>({
     defaultValues: {
-      sourceMonth: (currentMonth === 0 ? '12' : String(currentMonth)).padStart(2, '0'),
-      sourceYear: currentMonth === 0 ? String(currentYear - 1) : String(currentYear)
+      sourceMonth: (targetMonth === 1 ? '12' : String(targetMonth - 1)).padStart(2, '0'),
+      sourceYear: targetMonth === 1 ? String(targetYear - 1) : String(targetYear)
     }
   });
   
   // Gerar os últimos 12 meses como opções
   const monthOptions = [];
   for (let i = 0; i < 12; i++) {
-    const date = new Date(currentYear, currentMonth - i - 1);
+    const date = new Date(targetYear, targetMonth - i - 2);
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
     monthOptions.push({
@@ -53,8 +55,6 @@ export const CopyMetasButton: React.FC<CopyMetasButtonProps> = ({ userId, onCopy
     
     const sourceMes = parseInt(values.sourceMonth);
     const sourceAno = parseInt(values.sourceYear);
-    const targetMes = currentMonth + 1; // +1 porque getMonth() retorna 0-11
-    const targetAno = currentYear;
     
     setIsLoading(true);
     try {
@@ -62,8 +62,8 @@ export const CopyMetasButton: React.FC<CopyMetasButtonProps> = ({ userId, onCopy
         userId, 
         sourceMes, 
         sourceAno, 
-        targetMes, 
-        targetAno
+        targetMonth, 
+        targetYear
       );
       
       toast.success('Metas copiadas com sucesso!');

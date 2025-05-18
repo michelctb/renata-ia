@@ -1,11 +1,9 @@
 
-import { useState } from 'react';
 import { Form } from "@/components/ui/form";
 import { MetaCategoria } from '@/lib/metas/types';
 import { toast } from 'sonner';
 import { useMetaForm } from './hooks/useMetaForm';
 import { MetaBasicFields } from './components/MetaBasicFields';
-import { PeriodSelectors } from './components/PeriodSelectors';
 import { MetaFormFooter } from './components/MetaFormFooter';
 import { CategoryWithMeta } from '@/hooks/useCategoriesWithMetas';
 
@@ -20,7 +18,6 @@ interface MetaFormProps {
 export function MetaForm({ userId, metaAtual, onSubmit, onCancel, availableCategories }: MetaFormProps) {
   const {
     form,
-    periodoSelecionado,
     prepareMetaForSubmit
   } = useMetaForm(userId, metaAtual, availableCategories);
   
@@ -41,11 +38,6 @@ export function MetaForm({ userId, metaAtual, onSubmit, onCancel, availableCateg
         <MetaBasicFields 
           form={form} 
           availableCategories={availableCategories} 
-        />
-        
-        <PeriodSelectors 
-          form={form} 
-          periodoSelecionado={periodoSelecionado} 
         />
         
         <MetaFormFooter 

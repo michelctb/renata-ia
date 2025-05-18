@@ -4,7 +4,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { MetaFormValues } from "../hooks/useMetaForm";
-import { PERIODO_OPTIONS } from '@/lib/metas';
 import { CategoryWithMeta } from '@/hooks/useCategoriesWithMetas';
 import { Badge } from '@/components/ui/badge';
 
@@ -53,31 +52,6 @@ export function MetaBasicFields({ form, availableCategories }: MetaBasicFieldsPr
             <FormControl>
               <Input type="number" step="0.01" min="0" {...field} />
             </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      
-      <FormField
-        control={form.control}
-        name="periodo"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Período</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o período" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {PERIODO_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
             <FormMessage />
           </FormItem>
         )}

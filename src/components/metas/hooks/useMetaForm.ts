@@ -3,34 +3,22 @@ import { useState, useEffect } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { getMonth, getYear } from 'date-fns';
 import { toast } from 'sonner';
 import { MetaCategoria } from '@/lib/metas/types';
 import { CategoryWithMeta } from '@/hooks/useCategoriesWithMetas';
 
-// Schema for form validation
+// Schema for form validation - Simplificado, sem campo período
 const formSchema = z.object({
   id: z.number().optional(),
   categoria: z.string().min(1, { message: 'Selecione uma categoria' }),
   valor_meta: z.coerce.number().positive({ message: 'O valor deve ser maior que zero' }),
-  periodo: z.enum(['mensal', 'trimestral', 'anual']),
-  mes_referencia: z.number().optional(),
-  ano_referencia: z.number().optional(),
 });
 
 export type MetaFormValues = z.infer<typeof formSchema>;
 
 /**
  * Custom hook for managing the meta (spending goal) form.
- * Handles form state, validation, category loading, and data preparation.
- * 
- * @param {string} userId - The ID of the current user
- * @param {MetaCategoria | null} metaAtual - The current meta being edited, or null if creating a new one
- * @param {CategoryWithMeta[]} availableCategories - List of available categories with meta information
- * @returns {Object} An object containing form controls and helper functions
- * @property {UseFormReturn} form - React Hook Form's form object with validation
- * @property {string} periodoSelecionado - Currently selected period type
- * @property {Function} prepareMetaForSubmit - Function to prepare form values for submission
+ * Simplified to use only monthly targets.
  */
 export const useMetaForm = (
   userId: string, 
@@ -43,28 +31,19 @@ export const useMetaForm = (
     defaultValues: {
       categoria: metaAtual?.categoria || '',
       valor_meta: metaAtual?.valor_meta || 0,
-      periodo: (metaAtual?.periodo as 'mensal' | 'trimestral' | 'anual') || 'mensal',
-      mes_referencia: metaAtual?.mes_referencia || getMonth(new Date()) + 1,
-      ano_referencia: metaAtual?.ano_referencia || getYear(new Date()),
     },
   });
   
-  // Monitor changes to period type to show/hide relevant fields
-  const periodoSelecionado = form.watch('periodo');
-  
   /**
    * Prepares the form values for submission to the API.
-   * Adds necessary fields based on the selected period type.
-   * 
-   * @param {MetaFormValues} values - The form values to prepare
-   * @returns {MetaCategoria} The prepared meta object ready for API submission
+   * Period is fixed as 'mensal' - month/year are set at the saving stage.
    */
   const prepareMetaForSubmit = (values: MetaFormValues): MetaCategoria => {
     const meta: MetaCategoria = {
       id_cliente: userId,
       categoria: values.categoria,
       valor_meta: values.valor_meta,
-      periodo: values.periodo
+      periodo: 'mensal'
     };
     
     // Add ID if editing an existing meta
@@ -72,23 +51,11 @@ export const useMetaForm = (
       meta.id = metaAtual.id;
     }
     
-    // Add month and year for monthly metas
-    if (values.periodo === 'mensal') {
-      meta.mes_referencia = values.mes_referencia;
-      meta.ano_referencia = values.ano_referencia;
-    } 
-    // Add only year for annual metas
-    else if (values.periodo === 'anual') {
-      meta.ano_referencia = values.ano_referencia;
-    }
-    // For quarterly metas, specific logic can be implemented here
-    
     return meta;
   };
 
   return {
     form,
-    periodoSelecionado,
     prepareMetaForSubmit
   };
 };

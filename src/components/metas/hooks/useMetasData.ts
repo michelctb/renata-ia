@@ -3,25 +3,23 @@ import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { 
   MetaCategoria, 
-  fetchMetasCategorias, 
+  fetchMetasPeriodo, 
   addMetaCategoria, 
   updateMetaCategoria, 
   deleteMetaCategoria 
 } from '@/lib/metas';
 
+interface UseMetasDataProps {
+  userId: string | undefined;
+  mesReferencia: number;
+  anoReferencia: number;
+}
+
 /**
  * Custom hook for managing metas data operations.
  * Handles fetching, creating, updating, and deleting metas.
- * 
- * @param {string | undefined} userId - The ID of the current user.
- * @returns {Object} Object containing metas data, loading state, and CRUD handlers.
- * @property {MetaCategoria[]} metas - The list of metas for the current user.
- * @property {boolean} isLoading - Whether the metas are currently being loaded.
- * @property {Function} handleSaveMeta - Function to save (create or update) a meta.
- * @property {Function} handleDeleteMeta - Function to delete a meta.
- * @property {Function} refreshMetas - Function to refresh the metas list.
  */
-export const useMetasData = (userId: string | undefined) => {
+export const useMetasData = ({ userId, mesReferencia, anoReferencia }: UseMetasDataProps) => {
   const [metas, setMetas] = useState<MetaCategoria[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -31,8 +29,13 @@ export const useMetasData = (userId: string | undefined) => {
     
     setIsLoading(true);
     try {
-      const data = await fetchMetasCategorias(userId);
-      console.log('Metas carregadas:', data);
+      // Buscar metas do mês e ano atual
+      const data = await fetchMetasPeriodo(
+        userId, 
+        'mensal',
+        mesReferencia, 
+        anoReferencia
+      );
       
       const metasProcessadas: MetaCategoria[] = data.map(meta => ({
         ...meta,
@@ -46,18 +49,15 @@ export const useMetasData = (userId: string | undefined) => {
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, [userId, mesReferencia, anoReferencia]);
   
-  // Load metas on component mount
+  // Load metas on component mount or when month/year changes
   useEffect(() => {
     loadMetas();
   }, [loadMetas]);
   
   /**
    * Handles saving a meta (creates a new one or updates an existing one).
-   * 
-   * @param {MetaCategoria} meta - The meta to save.
-   * @returns {Promise<void>}
    */
   const handleSaveMeta = async (meta: MetaCategoria) => {
     if (!userId) return;
@@ -65,7 +65,12 @@ export const useMetasData = (userId: string | undefined) => {
     try {
       const metaToSave = {
         ...meta,
-        id_cliente: userId
+        id_cliente: userId,
+        // Garantir que o período seja sempre mensal
+        periodo: 'mensal',
+        // Adicionar mês e ano da seleção atual
+        mes_referencia: mesReferencia,
+        ano_referencia: anoReferencia
       };
       
       if (meta.id) {
@@ -97,9 +102,6 @@ export const useMetasData = (userId: string | undefined) => {
   
   /**
    * Handles deleting a meta.
-   * 
-   * @param {number} id - The ID of the meta to delete.
-   * @returns {Promise<void>}
    */
   const handleDeleteMeta = async (id: number) => {
     try {
