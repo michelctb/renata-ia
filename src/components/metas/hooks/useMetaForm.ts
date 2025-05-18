@@ -7,11 +7,13 @@ import { toast } from 'sonner';
 import { MetaCategoria } from '@/lib/metas/types';
 import { CategoryWithMeta } from '@/hooks/useCategoriesWithMetas';
 
-// Schema for form validation - Simplificado, sem campo período
+// Schema for form validation - Simplificado, incluindo campos mes_referencia e ano_referencia
 const formSchema = z.object({
   id: z.number().optional(),
   categoria: z.string().min(1, { message: 'Selecione uma categoria' }),
   valor_meta: z.coerce.number().positive({ message: 'O valor deve ser maior que zero' }),
+  mes_referencia: z.number().optional(),
+  ano_referencia: z.number().optional(),
 });
 
 export type MetaFormValues = z.infer<typeof formSchema>;
@@ -31,6 +33,8 @@ export const useMetaForm = (
     defaultValues: {
       categoria: metaAtual?.categoria || '',
       valor_meta: metaAtual?.valor_meta || 0,
+      mes_referencia: metaAtual?.mes_referencia,
+      ano_referencia: metaAtual?.ano_referencia,
     },
   });
   
