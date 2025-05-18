@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { MetasHeader } from './components/MetasHeader';
 import { MetasEmptyState } from './components/MetasEmptyState';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { CopyMetasButton } from './components/CopyMetasButton';
 import { usePeriodoDateRange } from './hooks/usePeriodoDateRange';
@@ -72,50 +71,46 @@ export function MetasTab({ userId }: MetasTabProps) {
         <MetasHeader />
 
         {/* Show form if requested */}
-        <Tabs defaultValue="metas">
-          <TabsContent value="metas">
-            {showForm ? (
-              <MetaForm
-                userId={userId || ''}
-                metaAtual={metaAtual}
-                onSubmit={handleFormSubmit}
-                onCancel={handleFormCancel}
-                availableCategories={categoriesWithMetas}
+        {showForm ? (
+          <MetaForm
+            userId={userId || ''}
+            metaAtual={metaAtual}
+            onSubmit={handleFormSubmit}
+            onCancel={handleFormCancel}
+            availableCategories={categoriesWithMetas}
+          />
+        ) : (
+          <>
+            {/* Actions bar with add and copy buttons */}
+            <Card className="mb-6">
+              <CardContent className="pt-6">
+                <div className="flex flex-wrap gap-3 justify-between items-center">
+                  <div>
+                    <Button onClick={handleAddClick} className="mr-2">
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Nova Meta
+                    </Button>
+                    
+                    {/* Add copy button */}
+                    {userId && <CopyMetasButton userId={userId} onCopySuccess={handleCopySuccess} />}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Show list or empty state */}
+            {metas.length > 0 ? (
+              <MetasList
+                metas={metas}
+                onEditClick={handleEditClick}
+                onDeleteClick={handleDeleteMeta}
+                categoriesWithMetas={categoriesWithMetas}
               />
             ) : (
-              <>
-                {/* Actions bar with add and copy buttons */}
-                <Card className="mb-6">
-                  <CardContent className="pt-6">
-                    <div className="flex flex-wrap gap-3 justify-between items-center">
-                      <div>
-                        <Button onClick={handleAddClick} className="mr-2">
-                          <PlusCircle className="mr-2 h-4 w-4" />
-                          Nova Meta
-                        </Button>
-                        
-                        {/* Add copy button */}
-                        {userId && <CopyMetasButton userId={userId} onCopySuccess={handleCopySuccess} />}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Show list or empty state */}
-                {metas.length > 0 ? (
-                  <MetasList
-                    metas={metas}
-                    onEditClick={handleEditClick}
-                    onDeleteClick={handleDeleteMeta}
-                    categoriesWithMetas={categoriesWithMetas}
-                  />
-                ) : (
-                  <MetasEmptyState onAddMeta={handleAddClick} />
-                )}
-              </>
+              <MetasEmptyState onAddMeta={handleAddClick} />
             )}
-          </TabsContent>
-        </Tabs>
+          </>
+        )}
       </div>
     </div>
   );
