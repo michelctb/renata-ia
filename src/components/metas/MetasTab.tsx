@@ -10,13 +10,17 @@ import { PlusCircle } from 'lucide-react';
 import { MetasHeader } from './components/MetasHeader';
 import { MetasEmptyState } from './components/MetasEmptyState';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
+import { CopyMetasButton } from './components/CopyMetasButton';
+import { usePeriodoDateRange } from './hooks/usePeriodoDateRange';
 
 interface MetasTabProps {
   userId: string | undefined;
 }
 
 export function MetasTab({ userId }: MetasTabProps) {
-  const { metas, isLoading, handleSaveMeta, handleDeleteMeta } = useMetasData(userId);
+  const { periodoFiltro, dateRange, handleChangePeriodo } = usePeriodoDateRange();
+  const { metas, isLoading, handleSaveMeta, handleDeleteMeta, refreshMetas } = useMetasData(userId);
   const { categoriesWithMetas, isLoading: isCategoriesLoading, refreshData } = useCategoriesWithMetas(userId);
   
   const [showForm, setShowForm] = useState(false);
@@ -42,6 +46,10 @@ export function MetasTab({ userId }: MetasTabProps) {
   const handleFormCancel = () => {
     setShowForm(false);
     setMetaAtual(null);
+  };
+
+  const handleCopySuccess = () => {
+    refreshMetas();
   };
 
   // Loading state
@@ -76,13 +84,22 @@ export function MetasTab({ userId }: MetasTabProps) {
               />
             ) : (
               <>
-                {/* Add button */}
-                <div className="mb-6">
-                  <Button onClick={handleAddClick} className="w-full sm:w-auto">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Adicionar Meta
-                  </Button>
-                </div>
+                {/* Actions bar with add and copy buttons */}
+                <Card className="mb-6">
+                  <CardContent className="pt-6">
+                    <div className="flex flex-wrap gap-3 justify-between items-center">
+                      <div>
+                        <Button onClick={handleAddClick} className="mr-2">
+                          <PlusCircle className="mr-2 h-4 w-4" />
+                          Nova Meta
+                        </Button>
+                        
+                        {/* Add copy button */}
+                        {userId && <CopyMetasButton userId={userId} onCopySuccess={handleCopySuccess} />}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 {/* Show list or empty state */}
                 {metas.length > 0 ? (

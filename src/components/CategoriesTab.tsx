@@ -8,7 +8,6 @@ import { useCategories } from '@/hooks/categories';
 import { CategoryFormManager } from '@/components/categories/CategoryFormManager';
 import { z } from 'zod';
 import { categoryFormSchema } from '@/components/categories/categoryFormSchema';
-import { Category } from '@/lib/categories';
 
 type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 
@@ -78,15 +77,13 @@ const CategoriesTab = ({ clientId, viewMode = 'user' }: CategoriesTabProps) => {
   
   // Handle form submission
   const handleFormSubmit = async (formData: CategoryFormValues) => {
+    // Agora não precisamos passar meta information, apenas a categoria
     const success = await handleSubmitCategory({
       id: formData.id,
       nome: formData.nome,
       tipo: formData.tipo,
       cliente: userId || '',
-      padrao: !!formData.hasMeta
-    }, {
-      hasMeta: formData.hasMeta,
-      valorMeta: formData.valorMeta
+      padrao: false // Não está mais relacionado a metas
     });
     
     if (success) {

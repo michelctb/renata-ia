@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { 
   MetaCategoria, 
@@ -19,37 +19,39 @@ import {
  * @property {boolean} isLoading - Whether the metas are currently being loaded.
  * @property {Function} handleSaveMeta - Function to save (create or update) a meta.
  * @property {Function} handleDeleteMeta - Function to delete a meta.
+ * @property {Function} refreshMetas - Function to refresh the metas list.
  */
 export const useMetasData = (userId: string | undefined) => {
   const [metas, setMetas] = useState<MetaCategoria[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   // Load metas from database
-  useEffect(() => {
-    const loadMetas = async () => {
-      if (!userId) return;
-      
-      setIsLoading(true);
-      try {
-        const data = await fetchMetasCategorias(userId);
-        console.log('Metas carregadas:', data);
-        
-        const metasProcessadas: MetaCategoria[] = data.map(meta => ({
-          ...meta,
-          periodo: meta.periodo as 'mensal' | 'trimestral' | 'anual'
-        }));
-        
-        setMetas(metasProcessadas);
-      } catch (error) {
-        console.error('Erro ao carregar metas:', error);
-        toast.error('Erro ao carregar metas de gastos');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const loadMetas = useCallback(async () => {
+    if (!userId) return;
     
-    loadMetas();
+    setIsLoading(true);
+    try {
+      const data = await fetchMetasCategorias(userId);
+      console.log('Metas carregadas:', data);
+      
+      const metasProcessadas: MetaCategoria[] = data.map(meta => ({
+        ...meta,
+        periodo: meta.periodo as 'mensal' | 'trimestral' | 'anual'
+      }));
+      
+      setMetas(metasProcessadas);
+    } catch (error) {
+      console.error('Erro ao carregar metas:', error);
+      toast.error('Erro ao carregar metas de gastos');
+    } finally {
+      setIsLoading(false);
+    }
   }, [userId]);
+  
+  // Load metas on component mount
+  useEffect(() => {
+    loadMetas();
+  }, [loadMetas]);
   
   /**
    * Handles saving a meta (creates a new one or updates an existing one).
@@ -110,10 +112,18 @@ export const useMetasData = (userId: string | undefined) => {
     }
   };
   
+  /**
+   * Refreshes the metas list.
+   */
+  const refreshMetas = useCallback(() => {
+    loadMetas();
+  }, [loadMetas]);
+  
   return {
     metas,
     isLoading,
     handleSaveMeta,
-    handleDeleteMeta
+    handleDeleteMeta,
+    refreshMetas
   };
 };

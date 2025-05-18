@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,6 +9,7 @@ import DashboardHeader from '@/components/DashboardHeader';
 import TransactionsTab from '@/components/TransactionsTab';
 import CategoriesTab from '@/components/CategoriesTab';
 import LembretesTab from '@/components/LembretesTab';
+import { MetasTab } from '@/components/metas/MetasTab';
 import { DateFilterButtons } from '@/components/DateFilterButtons';
 import { toast } from 'sonner';
 import { startOfMonth, endOfMonth } from 'date-fns';
@@ -114,6 +116,7 @@ const Dashboard = ({ clientId, viewMode = 'user' }: DashboardProps) => {
             <TabsList className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm shadow-sm">
               <TabsTrigger value="transactions" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Transações</TabsTrigger>
               <TabsTrigger value="categories" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Categorias</TabsTrigger>
+              <TabsTrigger value="metas" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Metas</TabsTrigger>
               <TabsTrigger value="lembretes" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Lembretes</TabsTrigger>
             </TabsList>
           </Tabs>
@@ -144,6 +147,10 @@ const Dashboard = ({ clientId, viewMode = 'user' }: DashboardProps) => {
             
             <TabsContent value="categories" className="animate-fade-up">
               <CategoriesTab clientId={clientId} viewMode={viewMode} />
+            </TabsContent>
+            
+            <TabsContent value="metas" className="animate-fade-up">
+              <MetasTab userId={viewMode === 'consultor' && clientId ? clientId : user?.id} />
             </TabsContent>
             
             <TabsContent value="lembretes" className="animate-fade-up">

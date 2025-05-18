@@ -11,5 +11,6 @@ export {
   fetchMetasPeriodo,
   addMetaCategoria,
   updateMetaCategoria,
-  deleteMetaCategoria
+  deleteMetaCategoria,
+  copyMetasFromPreviousPeriod
 } from './operations';
