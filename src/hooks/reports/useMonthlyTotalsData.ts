@@ -3,10 +3,7 @@ import { useMemo } from 'react';
 import { DateRange } from 'react-day-picker';
 import { format, parseISO, isWithinInterval } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { toZonedTime } from 'date-fns-tz';
 import { Transaction } from '@/lib/supabase';
-
-const TIMEZONE = 'America/Sao_Paulo';
 
 // Interface para os dados mensais
 export interface MonthlyTotalItem {
@@ -41,25 +38,34 @@ export function normalizeOperationType(operation: string): 'entrada' | 'saída' 
 
 /**
  * Verifica se uma data está dentro do intervalo de datas
- * CORREÇÃO: Método atualizado para compatibilidade com date-fns-tz v3.x
+ * Correção: Método atualizado para compatibilidade com date-fns v3.x
  */
 function isDateInFilterRange(
-  dataSaoPaulo: Date,
+  dateToCheck: Date,
   dateRange: DateRange | null
 ): boolean {
   // Se não tiver filtro, retornar falso
   if (!dateRange?.from) return false;
   
   try {
-    // Converter as datas do filtro para o formato correto
-    // Convertemos para Date normal ao invés de usar toZonedTime aqui
-    const fromDate = new Date(dateRange.from);
-    const toDate = dateRange.to ? new Date(dateRange.to) : fromDate;
-    
     // Verificar se a data está dentro do intervalo
-    return isWithinInterval(dataSaoPaulo, {
-      start: new Date(fromDate.setHours(0, 0, 0, 0)),
-      end: new Date(toDate.setHours(23, 59, 59, 999))
+    const fromDate = new Date(dateRange.from);
+    fromDate.setHours(0, 0, 0, 0);
+    
+    // Se não tiver data final, comparar apenas com a data inicial
+    if (!dateRange.to) {
+      const dateToCheckStart = new Date(dateToCheck);
+      dateToCheckStart.setHours(0, 0, 0, 0);
+      return dateToCheckStart.getTime() === fromDate.getTime();
+    }
+    
+    // Converter as datas do filtro para o formato correto
+    const toDate = new Date(dateRange.to);
+    toDate.setHours(23, 59, 59, 999);
+    
+    return isWithinInterval(dateToCheck, {
+      start: fromDate,
+      end: toDate
     });
   } catch (error) {
     console.error("Erro ao verificar se data está no intervalo:", error);
@@ -95,9 +101,9 @@ function processMonthlyTotals(
         return; // Pular esta transação
       }
       
-      // Converter para o fuso horário de São Paulo
+      // Converter a string de data para um objeto Date
       const dateUTC = parseISO(transaction.data);
-      const dateSaoPaulo = new Date(dateUTC); // Simplificado para evitar problemas com toZonedTime
+      const dateSaoPaulo = new Date(dateUTC);
       
       // Verificar se a data está dentro do filtro
       const isInFilter = isDateInFilterRange(dateSaoPaulo, dateRange);
@@ -131,12 +137,11 @@ function processMonthlyTotals(
         
         if (operationType === 'entrada') {
           monthData.entradas += value;
+          monthData.saldo += value;
         } else {
           monthData.saidas += value;
+          monthData.saldo -= value;
         }
-        
-        // Recalcular o saldo
-        monthData.saldo = monthData.entradas - monthData.saidas;
       }
     } catch (error) {
       console.error('Erro ao processar dados mensais:', transaction, error);
