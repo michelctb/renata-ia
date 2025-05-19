@@ -105,19 +105,29 @@ export default function DashboardCharts({
   // Verificar e logar quantidades de transações
   useEffect(() => {
     console.log('DashboardCharts - Contagem de transações:', {
+      total: safeTransactions.length,
       filtradas: Array.isArray(filteredTransactions) ? filteredTransactions.length : 0,
       porCategoria: Array.isArray(filteredByCategory) ? filteredByCategory.length : 0
     });
-  }, [filteredTransactions, filteredByCategory]);
+  }, [safeTransactions, filteredTransactions, filteredByCategory]);
 
   // Obter dados para o gráfico de totais mensais
-  // Importante: usamos safeTransactions ao invés de filteredTransactions para mostrar todos os meses
-  // e definimos o respectDateFilter como false para sempre mostrar todos os meses mas destacar os do filtro
-  const { monthlyTotals, isLoading: isLoadingMonthlyTotals, hasData: hasMonthlyTotalsData } = useMonthlyTotalsData(
+  // Usamos safeTransactions ao invés de filteredTransactions para mostrar TODOS os meses
+  // e definimos o respectDateFilter como false para sempre mostrar todos os meses
+  // mas destacar visualmente os que estão dentro do filtro
+  const { monthlyTotals, isLoading: isLoadingMonthlyTotals } = useMonthlyTotalsData(
     safeTransactions,
     validDateRange,
-    false // Sempre false para mostrar todos os meses, mas o componente destacará os meses do filtro
+    false // IMPORTANTE: sempre false para mostrar todos os meses, destacando os do filtro
   );
+  
+  // Adicionar logs para debug do gráfico de totais mensais
+  useEffect(() => {
+    console.log('DashboardCharts - Dados do gráfico mensal:', {
+      mesesDisponíveis: monthlyTotals?.length || 0,
+      isLoading: isLoadingMonthlyTotals
+    });
+  }, [monthlyTotals, isLoadingMonthlyTotals]);
 
   return (
     <div className="grid grid-cols-1 gap-4 md:gap-6 mb-6">

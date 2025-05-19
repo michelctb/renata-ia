@@ -32,6 +32,14 @@ export function MonthlyTotalsChart({
 }: MonthlyTotalsChartProps) {
   const isMobile = useIsMobile();
 
+  // Verificar se temos dados válidos
+  if (!Array.isArray(data) || data.length === 0) {
+    console.log("MonthlyTotalsChart: Nenhum dado para exibir");
+    return <MonthlyTotalsEmpty />;
+  }
+  
+  console.log(`MonthlyTotalsChart: Renderizando com ${data.length} meses de dados`, data);
+
   // Calcular valor máximo para ajuste do domínio do gráfico
   const maxValue = useMemo(() => {
     if (!data?.length) return 1000;
@@ -52,11 +60,6 @@ export function MonthlyTotalsChart({
       saidas_fill: item.isInDateRange ? "#ef4444" : "#ef444480"    // Vermelho com 50% de opacidade se não estiver no filtro
     }));
   }, [data, highlightFilteredMonths]);
-
-  // Não há dados para mostrar
-  if (!data?.length) {
-    return <MonthlyTotalsEmpty />;
-  }
 
   return (
     <ResponsiveContainer width="100%" height={height}>
