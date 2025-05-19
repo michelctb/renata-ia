@@ -4,6 +4,7 @@ import { useTransactionLoader } from './useTransactionLoader';
 import { useReportDataProcessor } from './useReportDataProcessor';
 import { ReportData } from './types';
 
+// Ajuste de importações para remover referência a useMonthlyTotalsData
 export { normalizeOperationType, getMonthNumberFromName } from './reportDataUtils';
 export type { ReportData, MonthlyDataItem, CategoryDataItem, MetaProgressItem } from './types';
 
