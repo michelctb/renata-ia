@@ -7,6 +7,7 @@ import { MonthlyTotalsEmpty } from "./MonthlyTotalsEmpty";
 import { MonthlyTotalsError } from "./MonthlyTotalsError";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface MonthlyTotalsChartCardProps {
   data: MonthlyTotalItem[];
@@ -25,6 +26,12 @@ export function MonthlyTotalsChartCard({
 }: MonthlyTotalsChartCardProps) {
   // Estado para controlar a exibição da linha de saldo
   const [showSaldo, setShowSaldo] = useState(true);
+  
+  // Estado para controlar se o gráfico respeita o filtro de data
+  const [respectDateFilter, setRespectDateFilter] = useState(false);
+  
+  // Estado para controlar se devemos destacar meses dentro do filtro
+  const [highlightFilteredMonths, setHighlightFilteredMonths] = useState(true);
 
   // Renderizar o conteúdo com base no estado
   const renderContent = () => {
@@ -44,25 +51,44 @@ export function MonthlyTotalsChartCard({
       return <MonthlyTotalsEmpty />;
     }
 
-    return <MonthlyTotalsChart data={data} showSaldo={showSaldo} />;
+    return (
+      <MonthlyTotalsChart 
+        data={data} 
+        showSaldo={showSaldo}
+        highlightFilteredMonths={highlightFilteredMonths && !respectDateFilter} 
+      />
+    );
   };
 
   return (
     <Card className={`shadow-sm ${className}`}>
-      <CardHeader className="pb-4">
+      <CardHeader className="pb-2">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between">
           <div>
             <CardTitle>Totais Mensais</CardTitle>
             <CardDescription>Visão geral das entradas e saídas por mês</CardDescription>
           </div>
           
-          <div className="flex items-center space-x-2 mt-2 sm:mt-0">
-            <Switch 
-              id="show-saldo" 
-              checked={showSaldo} 
-              onCheckedChange={setShowSaldo} 
-            />
-            <Label htmlFor="show-saldo">Mostrar Saldo</Label>
+          <div className="flex flex-col space-y-2 md:flex-row md:items-center md:space-y-0 md:space-x-4 mt-2 sm:mt-0">
+            <div className="flex items-center space-x-2">
+              <Switch 
+                id="show-saldo" 
+                checked={showSaldo} 
+                onCheckedChange={setShowSaldo} 
+              />
+              <Label htmlFor="show-saldo">Mostrar Saldo</Label>
+            </div>
+
+            <Tabs 
+              value={respectDateFilter ? "filtered" : "all"} 
+              onValueChange={(value) => setRespectDateFilter(value === "filtered")}
+              className="w-full md:w-auto"
+            >
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="all">Todos os meses</TabsTrigger>
+                <TabsTrigger value="filtered">Período filtrado</TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
         </div>
       </CardHeader>

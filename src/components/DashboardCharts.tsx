@@ -111,9 +111,11 @@ export default function DashboardCharts({
   }, [filteredTransactions, filteredByCategory]);
 
   // Obter dados para o gráfico de totais mensais
+  // Importante: usamos safeTransactions ao invés de filteredTransactions para mostrar todos os meses
   const { monthlyTotals, isLoading: isLoadingMonthlyTotals, hasData: hasMonthlyTotalsData } = useMonthlyTotalsData(
     safeTransactions,
-    validDateRange
+    validDateRange,
+    false // Não respeitar filtro de data por padrão, será controlado pelo componente
   );
 
   return (
@@ -121,7 +123,7 @@ export default function DashboardCharts({
       {/* Mostrar filtros ativos */}
       {renderActiveFilters()}
       
-      {/* Gráfico de totais mensais - Agora posicionado primeiro, antes dos gráficos de categoria */}
+      {/* Gráfico de totais mensais - Posicionado primeiro, antes dos gráficos de categoria */}
       <div className="grid grid-cols-1 gap-4">
         <MonthlyTotalsChartCard
           data={monthlyTotals}

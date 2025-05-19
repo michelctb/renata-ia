@@ -21,12 +21,14 @@ interface MonthlyTotalsChartProps {
   data: MonthlyTotalItem[];
   height?: number;
   showSaldo?: boolean;
+  highlightFilteredMonths?: boolean;
 }
 
 export function MonthlyTotalsChart({
   data,
   height = 300,
-  showSaldo = true
+  showSaldo = true,
+  highlightFilteredMonths = false
 }: MonthlyTotalsChartProps) {
   const isMobile = useIsMobile();
 
@@ -39,6 +41,18 @@ export function MonthlyTotalsChart({
     ) * 1.1; // 10% acima do máximo para melhor visualização
   }, [data]);
 
+  // Preparar dados para visualização com opacidades diferentes
+  const processedData = useMemo(() => {
+    if (!highlightFilteredMonths || !data) return data;
+    
+    return data.map(item => ({
+      ...item,
+      // Definir a opacidade para as barras de acordo com o filtro
+      entradas_fill: item.isInDateRange ? "#22c55e" : "#22c55e80", // Verde com 50% de opacidade se não estiver no filtro
+      saidas_fill: item.isInDateRange ? "#ef4444" : "#ef444480"    // Vermelho com 50% de opacidade se não estiver no filtro
+    }));
+  }, [data, highlightFilteredMonths]);
+
   // Não há dados para mostrar
   if (!data?.length) {
     return <MonthlyTotalsEmpty />;
@@ -46,7 +60,7 @@ export function MonthlyTotalsChart({
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <ComposedChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+      <ComposedChart data={processedData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
         <XAxis 
           dataKey="month"
@@ -75,14 +89,18 @@ export function MonthlyTotalsChart({
           dataKey="entradas" 
           fill="#22c55e" 
           radius={[4, 4, 0, 0]} 
-          barSize={isMobile ? 12 : 20} 
+          barSize={isMobile ? 12 : 20}
+          fillOpacity={highlightFilteredMonths ? 0.99 : 0.8} // Opacidade base
+          fill={(entry) => entry.entradas_fill || "#22c55e"} // Usar cor personalizada se disponível
         />
         <Bar 
           name="Saídas" 
           dataKey="saidas" 
           fill="#ef4444" 
           radius={[4, 4, 0, 0]} 
-          barSize={isMobile ? 12 : 20} 
+          barSize={isMobile ? 12 : 20}
+          fillOpacity={highlightFilteredMonths ? 0.99 : 0.8} // Opacidade base
+          fill={(entry) => entry.saidas_fill || "#ef4444"} // Usar cor personalizada se disponível
         />
         {showSaldo && (
           <Line 
@@ -93,6 +111,7 @@ export function MonthlyTotalsChart({
             strokeWidth={2}
             dot={{ r: 4 }}
             activeDot={{ r: 6 }}
+            strokeOpacity={highlightFilteredMonths ? 0.7 : 1} // Ajustar a opacidade da linha de saldo
           />
         )}
       </ComposedChart>

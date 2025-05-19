@@ -14,6 +14,7 @@ export interface MonthlyTotalItem {
   entradas: number;
   saidas: number;
   saldo: number;
+  isInDateRange?: boolean; // Nova propriedade para indicar se está no filtro
 }
 
 /**
@@ -39,50 +40,43 @@ export function normalizeOperationType(operation: string): 'entrada' | 'saída' 
 }
 
 /**
- * Filtra transações pelo intervalo de datas
+ * Verifica se uma data está dentro do intervalo de datas
  */
-function filterTransactionsByDateRange(
-  transactions: Transaction[],
+function isDateInFilterRange(
+  dateSaoPaulo: Date,
   dateRange: DateRange | null
-): Transaction[] {
-  if (!transactions.length || !dateRange?.from) return transactions;
+): boolean {
+  if (!dateRange?.from) return false;
   
-  return transactions.filter(transaction => {
-    try {
-      // Converter para o fuso horário de São Paulo
-      const transactionDateStr = transaction.data;
-      const transactionDate = toZonedTime(parseISO(transactionDateStr), TIMEZONE);
-      
-      // Início e fim do intervalo
-      const fromDate = dateRange.from ? toZonedTime(dateRange.from, TIMEZONE) : null;
-      const toDate = dateRange.to ? toZonedTime(dateRange.to, TIMEZONE) : fromDate;
-      
-      if (fromDate && toDate) {
-        return isWithinInterval(transactionDate, {
-          start: fromDate,
-          end: toDate
-        });
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Erro ao processar data para filtro:', transaction.data, error);
-      return false;
-    }
+  const fromDate = toZonedTime(dateRange.from, TIMEZONE);
+  const toDate = dateRange.to ? toZonedTime(dateRange.to, TIMEZONE) : fromDate;
+  
+  return isWithinInterval(dateSaoPaulo, {
+    start: fromDate,
+    end: toDate
   });
 }
 
 /**
- * Processa os dados para o gráfico de totais mensais
+ * Processa os dados para o gráfico de totais mensais, sem filtrar por período
+ * mas marcando quais meses estão dentro do filtro
  */
-function processMonthlyTotals(transactions: Transaction[]): MonthlyTotalItem[] {
+function processMonthlyTotals(
+  transactions: Transaction[], 
+  dateRange: DateRange | null,
+  respectDateFilter: boolean
+): MonthlyTotalItem[] {
   const monthlyDataMap = new Map<string, MonthlyTotalItem>();
   
+  // Processar todas as transações para obter todos os meses com dados
   transactions.forEach(transaction => {
     try {
       // Converter para o fuso horário de São Paulo
       const dateUTC = parseISO(transaction.data);
       const dateSaoPaulo = toZonedTime(dateUTC, TIMEZONE);
+      
+      // Verificar se a data está dentro do filtro
+      const isInFilter = isDateInFilterRange(dateSaoPaulo, dateRange);
       
       // Formatar como "MMM/yyyy" (exemplo: "jan/2023")
       const monthYear = format(dateSaoPaulo, 'MMM/yyyy', { locale: ptBR });
@@ -92,22 +86,34 @@ function processMonthlyTotals(transactions: Transaction[]): MonthlyTotalItem[] {
           month: monthYear, 
           entradas: 0, 
           saidas: 0,
-          saldo: 0
+          saldo: 0,
+          isInDateRange: isInFilter
         });
       }
       
       const monthData = monthlyDataMap.get(monthYear)!;
-      const operationType = normalizeOperationType(transaction.operação);
-      const value = Number(transaction.valor || 0);
       
-      if (operationType === 'entrada') {
-        monthData.entradas += value;
-      } else {
-        monthData.saidas += value;
+      // Se já marcado como dentro do filtro, manter essa marcação
+      if (isInFilter) {
+        monthData.isInDateRange = true;
       }
       
-      // Calcular o saldo (entradas - saídas)
-      monthData.saldo = monthData.entradas - monthData.saidas;
+      // Apenas adicionar valores se:
+      // 1. Não estamos respeitando o filtro de data (mostrar todos os meses) OU
+      // 2. A data está dentro do filtro E estamos respeitando o filtro
+      if (!respectDateFilter || (respectDateFilter && isInFilter)) {
+        const operationType = normalizeOperationType(transaction.operação);
+        const value = Number(transaction.valor || 0);
+        
+        if (operationType === 'entrada') {
+          monthData.entradas += value;
+        } else {
+          monthData.saidas += value;
+        }
+        
+        // Recalcular o saldo
+        monthData.saldo = monthData.entradas - monthData.saidas;
+      }
     } catch (error) {
       console.error('Erro ao processar dados mensais:', transaction, error);
     }
@@ -154,17 +160,15 @@ function getMonthNumberFromName(monthName: string): string {
  */
 export function useMonthlyTotalsData(
   transactions: Transaction[] = [],
-  dateRange: DateRange | null
+  dateRange: DateRange | null,
+  respectDateFilter: boolean = false
 ) {
   const monthlyTotals = useMemo(() => {
     if (!transactions?.length) return [];
     
-    // Filtrar transações pelo intervalo de datas
-    const filteredTransactions = filterTransactionsByDateRange(transactions, dateRange);
-    
     // Processar os dados para o gráfico
-    return processMonthlyTotals(filteredTransactions);
-  }, [transactions, dateRange]);
+    return processMonthlyTotals(transactions, dateRange, respectDateFilter);
+  }, [transactions, dateRange, respectDateFilter]);
   
   return {
     monthlyTotals,
