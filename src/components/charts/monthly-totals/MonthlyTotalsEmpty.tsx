@@ -3,7 +3,7 @@ import { CalendarIcon } from "lucide-react";
 
 export function MonthlyTotalsEmpty() {
   return (
-    <div className="flex flex-col items-center justify-center h-[200px] bg-background/50 rounded-md p-4 border border-dashed border-border/50">
+    <div className="flex flex-col items-center justify-center h-full w-full bg-background/50 rounded-md p-4 border border-dashed border-border/50">
       <div className="text-muted-foreground p-3 rounded-full bg-muted/50">
         <CalendarIcon className="h-6 w-6" />
       </div>

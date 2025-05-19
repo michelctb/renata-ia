@@ -35,7 +35,12 @@ export function MonthlyTotalsChart({
   // Verificar se temos dados válidos
   if (!Array.isArray(data) || data.length === 0) {
     console.log("MonthlyTotalsChart: Nenhum dado para exibir");
-    return <MonthlyTotalsEmpty />;
+    // Retorna um componente vazio com a mesma altura para manter o layout consistente
+    return (
+      <div style={{ height: `${height}px` }} className="w-full">
+        <MonthlyTotalsEmpty />
+      </div>
+    );
   }
   
   console.log(`MonthlyTotalsChart: Renderizando com ${data.length} meses de dados`, data);

@@ -26,8 +26,9 @@ export function MonthlyTotalsChartCard({
   // Estado para controlar a exibição da linha de saldo
   const [showSaldo, setShowSaldo] = useState(true);
   
-  // Estado para destacar meses dentro do filtro - sempre ativado
-  const [highlightFilteredMonths, setHighlightFilteredMonths] = useState(true);
+  // Sempre destacar meses dentro do filtro - sempre ativado
+  // Modificado para ser sempre true e não permitir mudança
+  const highlightFilteredMonths = true;
 
   // Renderizar o conteúdo com base no estado
   const renderContent = () => {
@@ -43,15 +44,14 @@ export function MonthlyTotalsChartCard({
       return <MonthlyTotalsError message={errorMessage} />;
     }
 
-    if (!data?.length) {
-      return <MonthlyTotalsEmpty />;
-    }
-
+    // Mesmo se não houver dados, o MonthlyTotalsChart lidará com isso
+    // e manterá a altura consistente
     return (
       <MonthlyTotalsChart 
         data={data} 
         showSaldo={showSaldo}
-        highlightFilteredMonths={highlightFilteredMonths} 
+        highlightFilteredMonths={highlightFilteredMonths}
+        height={300} // Definindo uma altura fixa para consistência
       />
     );
   };
@@ -76,7 +76,7 @@ export function MonthlyTotalsChartCard({
         </div>
       </CardHeader>
       
-      <CardContent className="pb-6">
+      <CardContent className="pb-6 h-[350px]">
         {renderContent()}
       </CardContent>
     </Card>
