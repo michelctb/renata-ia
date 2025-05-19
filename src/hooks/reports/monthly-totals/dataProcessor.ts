@@ -7,7 +7,8 @@ import { getMonthKeyFromDate, formatMonthForDisplay, sortMonthlyData, isDateInFi
 export const processMonthlyTotals = (
   transactions: any[],
   dateRange: DateRange | undefined | null,
-  respectDateFilter: boolean
+  respectDateFilter: boolean = true,
+  compareToPreviousPeriod: boolean = false
 ): MonthlyTotalItem[] => {
   try {
     if (!transactions || transactions.length === 0) {

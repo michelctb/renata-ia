@@ -87,9 +87,17 @@ export const processMonthlyData = (filteredData: any[]): MonthlyDataItem[] => {
       const dateSaoPaulo = toZonedTime(dateUTC, TIMEZONE);
       
       const monthYear = format(dateSaoPaulo, 'MMM/yyyy', { locale: ptBR });
+      const monthKey = `${format(dateSaoPaulo, 'yyyy-MM')}`;
       
       if (!monthlyDataMap.has(monthYear)) {
-        monthlyDataMap.set(monthYear, { month: monthYear, receitas: 0, despesas: 0 });
+        monthlyDataMap.set(monthYear, { 
+          month: monthYear,
+          monthKey,
+          receitas: 0, 
+          despesas: 0,
+          balance: 0,
+          isInDateRange: true 
+        });
       }
       
       const monthData = monthlyDataMap.get(monthYear)!;
@@ -98,6 +106,8 @@ export const processMonthlyData = (filteredData: any[]): MonthlyDataItem[] => {
       } else if (item.operação === 'saída') {
         monthData.despesas += Number(item.valor || 0);
       }
+      
+      monthData.balance = monthData.receitas - monthData.despesas;
     } catch (error) {
       console.error('Erro ao processar dados mensais:', item, error);
     }
@@ -123,36 +133,45 @@ export const sortMonthlyData = (monthlyData: MonthlyDataItem[]): MonthlyDataItem
 
 // Processa dados por categoria
 export const processCategoryData = (filteredData: any[]): CategoryDataItem[] => {
-  const categoryDataMap = new Map<string, number>();
+  const categoryMap = new Map<string, { total: number, count: number }>();
   
   filteredData.forEach(item => {
     if (item.operação === 'saída' && item.categoria) {
-      if (!categoryDataMap.has(item.categoria)) {
-        categoryDataMap.set(item.categoria, 0);
+      if (!categoryMap.has(item.categoria)) {
+        categoryMap.set(item.categoria, { total: 0, count: 0 });
       }
-      categoryDataMap.set(item.categoria, categoryDataMap.get(item.categoria)! + Number(item.valor || 0));
+      const categoryData = categoryMap.get(item.categoria)!;
+      categoryData.total += Number(item.valor || 0);
+      categoryData.count += 1;
     }
   });
   
-  return Array.from(categoryDataMap.entries())
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value);
+  const totalValue = Array.from(categoryMap.values()).reduce((sum, item) => sum + item.total, 0);
+  
+  return Array.from(categoryMap.entries())
+    .map(([category, data]) => ({
+      category,
+      amount: data.total,
+      percentage: totalValue > 0 ? (data.total / totalValue * 100) : 0,
+      count: data.count
+    }))
+    .sort((a, b) => b.amount - a.amount);
 };
 
 // Gera dados simulados para metas
-export const generateSimulatedMetasData = () => {
+export const generateSimulatedMetasData = (): any[] => {
   return [
     { 
-      meta: { categoria: 'Alimentação', valor_meta: 1000 },
-      valor_atual: 500,
-      porcentagem: 0.5,
-      status: 'em_andamento'
+      categoria: 'Alimentação', 
+      atual: 500,
+      meta: 1000,
+      percentual: 0.5
     },
     { 
-      meta: { categoria: 'Transporte', valor_meta: 500 },
-      valor_atual: 450,
-      porcentagem: 0.9,
-      status: 'em_andamento'
+      categoria: 'Transporte',
+      atual: 450,
+      meta: 500,
+      percentual: 0.9
     }
   ];
 };

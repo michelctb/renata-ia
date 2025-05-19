@@ -53,7 +53,7 @@ export function MonthlyTrendsChart({ data, isLoading, error, className = '' }: M
   }
 
   if (error) {
-    return <ChartErrorDisplay error={error} />;
+    return <ChartErrorDisplay errorMessage={error.message} />;
   }
 
   if (!data || data.length === 0) {
@@ -89,7 +89,7 @@ export function MonthlyTrendsChart({ data, isLoading, error, className = '' }: M
             <XAxis dataKey="name" />
             <YAxis tickFormatter={(value) => formatCurrency(value, 0)} />
             <Tooltip 
-              formatter={(value: number) => [formatCurrency(value), '']} 
+              formatter={(value) => [formatCurrency(value), '']}
               labelFormatter={(label) => `Período: ${label}`}
             />
             <Legend 

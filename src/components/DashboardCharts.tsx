@@ -14,6 +14,7 @@ import { useDashboardIntegration } from './charts/hooks/useDashboardIntegration'
 import { useDashboardData } from './charts/hooks/useDashboardData';
 import { useDashboardUI } from './charts/hooks/useDashboardUI';
 import { useTrendsData } from '@/hooks/useTrendsData';
+import { useReportData, MonthlyDataItem } from '@/hooks/reports/useReportData';
 
 type DashboardChartsProps = {
   transactions?: Transaction[];
@@ -86,6 +87,15 @@ export default function DashboardCharts({
     onCategoryFilterChange: onCategorySelect
   });
   
+  // Carregar dados de relatórios
+  const userId = clientId || user?.id;
+  const validUserId = userId || null;
+  const reportData = useReportData(
+    validUserId, 
+    validDateRange || { from: new Date(), to: new Date() }, 
+    compareMode
+  );
+
   // Preparação de dados para o dashboard
   const {
     filteredTransactions,
@@ -102,7 +112,6 @@ export default function DashboardCharts({
   });
 
   // Carregar dados de tendências
-  const userId = clientId || user?.id;
   const { trendsData, isLoading: isLoadingTrends } = useTrendsData(userId || null);
   
   // Componentes de UI do dashboard
@@ -122,6 +131,10 @@ export default function DashboardCharts({
       porCategoria: Array.isArray(filteredByCategory) ? filteredByCategory.length : 0
     });
   }, [safeTransactions, filteredTransactions, filteredByCategory]);
+
+  // Acessar os dados mensais processados
+  const monthlyData: MonthlyDataItem[] = reportData.monthlyData || [];
+  const comparisonData: MonthlyDataItem[] = reportData.comparisonData || [];
 
   return (
     <div className="grid grid-cols-1 gap-4 md:gap-6 mb-6 animate-fade-in">
@@ -148,11 +161,8 @@ export default function DashboardCharts({
         
         {/* Gráfico de Comparação Mensal */}
         <MonthlyComparisonChart 
-          currentData={filteredTransactions ? 
-            filteredTransactions.filter(t => t.isInDateRange).slice(0, 6) : 
-            []
-          }
-          previousData={compareMode ? filteredTransactions?.filter(t => !t.isInDateRange).slice(0, 6) : undefined}
+          currentData={monthlyData.filter(item => item.isInDateRange)}
+          previousData={compareMode ? comparisonData.filter(item => !item.isInDateRange) : undefined}
           className="col-span-1 lg:col-span-1"
         />
       </div>

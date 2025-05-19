@@ -83,7 +83,7 @@ export function MonthlyComparisonChart({
             <XAxis dataKey="name" />
             <YAxis tickFormatter={(value) => formatCurrency(value, 0)} />
             <Tooltip 
-              formatter={(value: number) => [formatCurrency(value), '']} 
+              formatter={(value) => [formatCurrency(value), '']}
               labelFormatter={(label) => `Mês: ${label}`}
             />
             <Legend />
