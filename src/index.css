@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -88,27 +87,40 @@
 }
 
 @keyframes fadeIn {
-  from { opacity:.0; }
-  to { opacity: 1; }
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }
 
 @keyframes fadeUp {
-  from { 
-    opacity: 0; 
+  0% {
+    opacity: 0;
     transform: translateY(20px);
   }
-  to { 
-    opacity: 1; 
+  100% {
+    opacity: 1;
     transform: translateY(0);
   }
 }
 
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
 .animate-fade-in {
-  animation: fadeIn 0.5s ease-out forwards;
+  animation: fadeIn 0.5s ease forwards;
 }
 
 .animate-fade-up {
-  animation: fadeUp 0.7s ease-out forwards;
+  animation: fadeUp 0.5s ease forwards;
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 /* Custom Styles */
@@ -211,4 +223,24 @@
 
 .dark .category-actions-btn:hover {
   background-color: rgba(55, 65, 81, 0.8);
+}
+
+/* Estilos para texto colorido */
+.text-income {
+  @apply text-emerald-600 dark:text-emerald-400;
+}
+
+.text-expense {
+  @apply text-red-600 dark:text-red-400;
+}
+
+/* Media queries para melhorar responsividade */
+@media (max-width: 640px) {
+  .chart-container {
+    height: 200px !important;
+  }
+  
+  .dashboard-card {
+    @apply p-3;
+  }
 }

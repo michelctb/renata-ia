@@ -3,23 +3,25 @@ import { DateRange } from 'react-day-picker';
 
 export interface MonthlyDataItem {
   month: string;
+  monthKey: string;
   receitas: number;
   despesas: number;
+  balance: number;
+  isInDateRange: boolean;
 }
 
 export interface CategoryDataItem {
-  name: string;
-  value: number;
+  category: string;
+  amount: number;
+  percentage: number;
+  count: number;
 }
 
 export interface MetaProgressItem {
-  meta: {
-    categoria: string;
-    valor_meta: number;
-  };
-  valor_atual: number;
-  porcentagem: number;
-  status: string;
+  categoria: string;
+  atual: number;
+  meta: number;
+  percentual: number;
 }
 
 export interface ReportData {
@@ -28,4 +30,5 @@ export interface ReportData {
   categoryData: CategoryDataItem[];
   metasComProgresso: MetaProgressItem[];
   isLoading: boolean;
+  comparisonData?: MonthlyDataItem[];
 }
