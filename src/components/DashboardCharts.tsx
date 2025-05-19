@@ -121,7 +121,7 @@ export default function DashboardCharts({
       {/* Mostrar filtros ativos */}
       {renderActiveFilters()}
       
-      {/* Novo gráfico de totais mensais */}
+      {/* Gráfico de totais mensais - Agora posicionado primeiro, antes dos gráficos de categoria */}
       <div className="grid grid-cols-1 gap-4">
         <MonthlyTotalsChartCard
           data={monthlyTotals}
