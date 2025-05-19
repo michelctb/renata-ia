@@ -9,6 +9,8 @@ import { useDashboardState } from './charts/hooks/useDashboardState';
 import { useDashboardIntegration } from './charts/hooks/useDashboardIntegration';
 import { useDashboardData } from './charts/hooks/useDashboardData';
 import { useDashboardUI } from './charts/hooks/useDashboardUI';
+import { useMonthlyTotalsData } from '@/hooks/reports/useMonthlyTotalsData';
+import { MonthlyTotalsChartCard } from './charts/monthly-totals/MonthlyTotalsChartCard';
 
 type DashboardChartsProps = {
   transactions?: Transaction[];
@@ -108,12 +110,28 @@ export default function DashboardCharts({
     });
   }, [filteredTransactions, filteredByCategory]);
 
+  // Obter dados para o gráfico de totais mensais
+  const { monthlyTotals, isLoading: isLoadingMonthlyTotals, hasData: hasMonthlyTotalsData } = useMonthlyTotalsData(
+    safeTransactions,
+    validDateRange
+  );
+
   return (
     <div className="grid grid-cols-1 gap-4 md:gap-6 mb-6">
       {/* Mostrar filtros ativos */}
       {renderActiveFilters()}
       
-      {/* Category Charts (Pie Chart and Ranking) - Ocupando espaço total após remoção do MonthlyChart */}
+      {/* Novo gráfico de totais mensais */}
+      <div className="grid grid-cols-1 gap-4">
+        <MonthlyTotalsChartCard
+          data={monthlyTotals}
+          isLoading={isLoadingMonthlyTotals}
+          hasError={false}
+          className="col-span-1"
+        />
+      </div>
+      
+      {/* Category Charts (Pie Chart and Ranking) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 col-span-1">
         <CategoryChartsContainer 
           categoryData={categoryData || []}
