@@ -105,69 +105,6 @@ export type Database = {
         }
         Relationships: []
       }
-      dashboard_preferences: {
-        Row: {
-          created_at: string | null
-          favorites: Json | null
-          id: string
-          layout: Json | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          favorites?: Json | null
-          id?: string
-          layout?: Json | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          favorites?: Json | null
-          id?: string
-          layout?: Json | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      financas_historicas: {
-        Row: {
-          ano: number
-          created_at: string | null
-          despesas: number | null
-          id: string
-          mes: number
-          receitas: number | null
-          tipo: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          ano: number
-          created_at?: string | null
-          despesas?: number | null
-          id?: string
-          mes: number
-          receitas?: number | null
-          tipo: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          ano?: number
-          created_at?: string | null
-          despesas?: number | null
-          id?: string
-          mes?: number
-          receitas?: number | null
-          tipo?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       "Informações Clientes": {
         Row: {
           ativo: boolean | null
@@ -314,16 +251,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      calcular_tendencia_financeira: {
-        Args: { p_user_id: string; p_meses?: number }
-        Returns: {
-          mes: number
-          ano: number
-          receitas: number
-          despesas: number
-          balanco: number
-        }[]
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never

@@ -1,7 +1,5 @@
 
-import React from 'react';
-
-export interface ChartErrorDisplayProps {
+interface ChartErrorDisplayProps {
   errorMessage: string;
 }
 

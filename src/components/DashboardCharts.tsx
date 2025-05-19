@@ -1,20 +1,14 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Transaction } from '@/lib/supabase';
 import { DateRange } from 'react-day-picker';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useAuth } from '@/contexts/AuthContext';
 import { CategoryChartsContainer } from './charts/CategoryChartsContainer';
 import { MetaProgressDisplay } from './charts/MetaProgressDisplay';
-import { MonthlyTrendsChart } from './charts/monthly-chart/MonthlyTrendsChart';
-import { MonthlyComparisonChart } from './charts/monthly-chart/MonthlyComparisonChart';
-import { ComparisonToggle } from './charts/ComparisonToggle';
 import { useDashboardState } from './charts/hooks/useDashboardState';
 import { useDashboardIntegration } from './charts/hooks/useDashboardIntegration';
 import { useDashboardData } from './charts/hooks/useDashboardData';
 import { useDashboardUI } from './charts/hooks/useDashboardUI';
-import { useTrendsData } from '@/hooks/useTrendsData';
-import { useReportData, MonthlyDataItem } from '@/hooks/reports/useReportData';
 
 type DashboardChartsProps = {
   transactions?: Transaction[];
@@ -35,10 +29,6 @@ export default function DashboardCharts({
 }: DashboardChartsProps) {
   // Detector de dispositivo móvel
   const isMobile = useIsMobile();
-  const { user } = useAuth();
-  
-  // Estado para comparação entre períodos
-  const [compareMode, setCompareMode] = useState(false);
   
   // Garantir que propTransactions é sempre um array
   const safeTransactions = Array.isArray(propTransactions) ? propTransactions : [];
@@ -51,8 +41,7 @@ export default function DashboardCharts({
       hasDateRange: !!dateRange,
       isMobile: isMobile,
       hasSetDateRange: !!setDateRange,
-      hasOnCategorySelect: !!onCategorySelect,
-      compareMode
+      hasOnCategorySelect: !!onCategorySelect
     });
     
     if (dateRange) {
@@ -61,7 +50,7 @@ export default function DashboardCharts({
         to: dateRange.to?.toISOString()
       });
     }
-  }, [safeTransactions, dateRange, isMobile, setDateRange, onCategorySelect, compareMode]);
+  }, [safeTransactions, dateRange, isMobile, setDateRange, onCategorySelect]);
   
   // Estado base do dashboard
   const {
@@ -87,15 +76,6 @@ export default function DashboardCharts({
     onCategoryFilterChange: onCategorySelect
   });
   
-  // Carregar dados de relatórios
-  const userId = clientId || user?.id;
-  const validUserId = userId || null;
-  const reportData = useReportData(
-    validUserId, 
-    validDateRange || { from: new Date(), to: new Date() }, 
-    compareMode
-  );
-
   // Preparação de dados para o dashboard
   const {
     filteredTransactions,
@@ -110,9 +90,6 @@ export default function DashboardCharts({
     selectedCategory,
     transactionType
   });
-
-  // Carregar dados de tendências
-  const { trendsData, isLoading: isLoadingTrends } = useTrendsData(userId || null);
   
   // Componentes de UI do dashboard
   const {
@@ -132,40 +109,10 @@ export default function DashboardCharts({
     });
   }, [safeTransactions, filteredTransactions, filteredByCategory]);
 
-  // Acessar os dados mensais processados
-  const monthlyData: MonthlyDataItem[] = reportData.monthlyData || [];
-  const comparisonData: MonthlyDataItem[] = reportData.comparisonData || [];
-
   return (
-    <div className="grid grid-cols-1 gap-4 md:gap-6 mb-6 animate-fade-in">
+    <div className="grid grid-cols-1 gap-4 md:gap-6 mb-6">
       {/* Mostrar filtros ativos */}
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2">
-        {renderActiveFilters()}
-        
-        {/* Adicionar toggle para comparação com período anterior */}
-        <ComparisonToggle 
-          enabled={compareMode}
-          onToggle={setCompareMode}
-          className="ml-auto"
-        />
-      </div>
-      
-      {/* Grid responsivo para gráficos */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-        {/* Gráfico de Tendências */}
-        <MonthlyTrendsChart 
-          data={trendsData}
-          isLoading={isLoadingTrends}
-          className="col-span-1 lg:col-span-1"
-        />
-        
-        {/* Gráfico de Comparação Mensal */}
-        <MonthlyComparisonChart 
-          currentData={monthlyData.filter(item => item.isInDateRange)}
-          previousData={compareMode ? comparisonData.filter(item => !item.isInDateRange) : undefined}
-          className="col-span-1 lg:col-span-1"
-        />
-      </div>
+      {renderActiveFilters()}
       
       {/* Category Charts (Pie Chart and Ranking) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 col-span-1">

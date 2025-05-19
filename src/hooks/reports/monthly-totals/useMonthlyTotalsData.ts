@@ -10,8 +10,7 @@ import { UseMonthlyTotalsResult } from './types';
 export function useMonthlyTotalsData(
   transactions: any[],
   dateRange: DateRange | undefined | null,
-  respectDateFilter: boolean = true,
-  compareToPreviousPeriod: boolean = false
+  respectDateFilter: boolean = true
 ): UseMonthlyTotalsResult {
   const [result, setResult] = useState<UseMonthlyTotalsResult>({
     monthlyTotals: [],
@@ -35,8 +34,7 @@ export function useMonthlyTotalsData(
       const processedData = processMonthlyTotals(
         transactions,
         dateRange,
-        respectDateFilter,
-        compareToPreviousPeriod
+        respectDateFilter
       );
       
       // Atualizar o estado com os dados processados
@@ -53,7 +51,7 @@ export function useMonthlyTotalsData(
         error: error instanceof Error ? error : new Error('Erro desconhecido')
       });
     }
-  }, [transactions, dateRange, respectDateFilter, compareToPreviousPeriod]);
+  }, [transactions, dateRange, respectDateFilter]);
   
   return result;
 }

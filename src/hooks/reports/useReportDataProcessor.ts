@@ -7,7 +7,7 @@ import {
   processCategoryData,
   generateSimulatedMetasData
 } from './reportDataUtils';
-import { ReportData, MetaProgressItem } from './types';
+import { ReportData } from './types';
 
 /**
  * Hook para processar dados de transações para relatórios
@@ -53,14 +53,7 @@ export function useReportDataProcessor(
     const categoryData = processCategoryData(filteredData);
     
     // Dados simulados para metas (em um sistema real, buscaríamos do banco)
-    // Garantindo que os dados correspondam ao formato MetaProgressItem
-    const metas = generateSimulatedMetasData();
-    const metasComProgresso: MetaProgressItem[] = metas.map(meta => ({
-      categoria: meta.categoria,
-      atual: meta.atual,
-      meta: meta.meta,
-      percentual: meta.percentual
-    }));
+    const metasComProgresso = generateSimulatedMetasData();
     
     setReportData({
       transactions: filteredData,
