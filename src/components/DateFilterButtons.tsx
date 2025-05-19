@@ -5,7 +5,6 @@ import { DateRange } from 'react-day-picker';
 import { Button } from '@/components/ui/button';
 import DateRangePicker from '@/components/DateRangePicker';
 import { Plus, CalendarRange } from 'lucide-react';
-import { useEffect } from 'react';
 
 interface DateFilterButtonsProps {
   dateRange: DateRange | undefined;
@@ -62,62 +61,68 @@ export function DateFilterButtons({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2 ml-auto">
-      <div className="flex flex-col gap-2">
-        <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-          <CalendarRange className="h-3 w-3" /> 
-          Período rápido:
+    <div className="flex flex-col gap-4 w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+            <CalendarRange className="h-3 w-3" /> 
+            Período rápido:
+          </div>
+          <div className="flex flex-wrap gap-1">
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={handleTodayClick}
+              className="text-xs"
+            >
+              Hoje
+            </Button>
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={handleThisWeekClick}
+              className="text-xs"
+            >
+              Esta Semana
+            </Button>
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={handleThisMonthClick}
+              className="text-xs"
+            >
+              Mês Atual
+            </Button>
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={handleLastMonthClick}
+              className="text-xs"
+            >
+              Mês Passado
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-1">
-          <Button 
-            variant="outline"
-            size="sm"
-            onClick={handleTodayClick}
-            className="text-xs"
-          >
-            Hoje
-          </Button>
-          <Button 
-            variant="outline"
-            size="sm"
-            onClick={handleThisWeekClick}
-            className="text-xs"
-          >
-            Esta Semana
-          </Button>
-          <Button 
-            variant="outline"
-            size="sm"
-            onClick={handleThisMonthClick}
-            className="text-xs"
-          >
-            Mês Atual
-          </Button>
-          <Button 
-            variant="outline"
-            size="sm"
-            onClick={handleLastMonthClick}
-            className="text-xs"
-          >
-            Mês Passado
-          </Button>
+        
+        <div>
+          <DateRangePicker 
+            dateRange={dateRange}
+            onDateRangeChange={onDateRangeChange}
+          />
         </div>
       </div>
       
-      <DateRangePicker 
-        dateRange={dateRange}
-        onDateRangeChange={onDateRangeChange}
-      />
-      
       {onAddNew && !isReadOnly && (
-        <Button 
-          onClick={onAddNew} 
-          disabled={!isUserActive}
-          className="whitespace-nowrap ml-2"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Nova Transação
-        </Button>
+        <div className="flex justify-end mt-2">
+          <Button 
+            onClick={onAddNew} 
+            disabled={!isUserActive}
+            className="whitespace-nowrap"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Nova Transação
+          </Button>
+        </div>
       )}
     </div>
   );
