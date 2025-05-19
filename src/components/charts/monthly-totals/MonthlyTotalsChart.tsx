@@ -90,8 +90,11 @@ export function MonthlyTotalsChart({
           fill="#22c55e" 
           radius={[4, 4, 0, 0]} 
           barSize={isMobile ? 12 : 20}
-          fillOpacity={highlightFilteredMonths ? 0.99 : 0.8} // Opacidade base
-          fill={(entry) => entry.entradas_fill || "#22c55e"} // Usar cor personalizada se disponível
+          fillOpacity={0.8}
+          // Condicional para cor dinamicamente
+          style={entry => ({
+            fill: highlightFilteredMonths && entry.entradas_fill ? entry.entradas_fill : "#22c55e"
+          })}
         />
         <Bar 
           name="Saídas" 
@@ -99,8 +102,11 @@ export function MonthlyTotalsChart({
           fill="#ef4444" 
           radius={[4, 4, 0, 0]} 
           barSize={isMobile ? 12 : 20}
-          fillOpacity={highlightFilteredMonths ? 0.99 : 0.8} // Opacidade base
-          fill={(entry) => entry.saidas_fill || "#ef4444"} // Usar cor personalizada se disponível
+          fillOpacity={0.8}
+          // Condicional para cor dinamicamente
+          style={entry => ({
+            fill: highlightFilteredMonths && entry.saidas_fill ? entry.saidas_fill : "#ef4444"
+          })}
         />
         {showSaldo && (
           <Line 
@@ -111,7 +117,7 @@ export function MonthlyTotalsChart({
             strokeWidth={2}
             dot={{ r: 4 }}
             activeDot={{ r: 6 }}
-            strokeOpacity={highlightFilteredMonths ? 0.7 : 1} // Ajustar a opacidade da linha de saldo
+            strokeOpacity={highlightFilteredMonths ? 0.7 : 1}
           />
         )}
       </ComposedChart>
