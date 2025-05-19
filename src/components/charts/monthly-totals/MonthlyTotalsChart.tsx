@@ -87,14 +87,12 @@ export function MonthlyTotalsChart({
         <Bar 
           name="Entradas" 
           dataKey="entradas" 
-          fill="#22c55e" 
+          fill="#22c55e"
+          fillOpacity={0.8}
           radius={[4, 4, 0, 0]} 
           barSize={isMobile ? 12 : 20}
-          fillOpacity={0.8}
-          // Condicional para cor dinamicamente
-          style={entry => ({
-            fill: highlightFilteredMonths && entry.entradas_fill ? entry.entradas_fill : "#22c55e"
-          })}
+          // Usar dataKey condicional para a cor se estivermos em modo de destaque
+          {...(highlightFilteredMonths ? { fill: "entradas_fill" } : {})}
         />
         <Bar 
           name="Saídas" 
@@ -103,10 +101,8 @@ export function MonthlyTotalsChart({
           radius={[4, 4, 0, 0]} 
           barSize={isMobile ? 12 : 20}
           fillOpacity={0.8}
-          // Condicional para cor dinamicamente
-          style={entry => ({
-            fill: highlightFilteredMonths && entry.saidas_fill ? entry.saidas_fill : "#ef4444"
-          })}
+          // Usar dataKey condicional para a cor se estivermos em modo de destaque
+          {...(highlightFilteredMonths ? { fill: "saidas_fill" } : {})}
         />
         {showSaldo && (
           <Line 
