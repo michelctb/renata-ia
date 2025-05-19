@@ -32,6 +32,31 @@ export function MonthlyTotalsChart({
 }: MonthlyTotalsChartProps) {
   const isMobile = useIsMobile();
 
+  // Sempre calcular o maxValue e processedData, independente de termos dados ou não
+  // Isso garante que o mesmo número de hooks seja usado em todas renderizações
+  const maxValue = useMemo(() => {
+    if (!Array.isArray(data) || data.length === 0) return 1000;
+    
+    return Math.max(
+      ...data.map(item => Math.max(item.entradas, item.saidas, Math.abs(item.saldo)))
+    ) * 1.1; // 10% acima do máximo para melhor visualização
+  }, [data]);
+
+  // Preparar dados para visualização com opacidades diferentes
+  // Esse hook agora é sempre executado, mesmo com dados vazios
+  const processedData = useMemo(() => {
+    if (!Array.isArray(data) || data.length === 0) return [];
+    
+    if (!highlightFilteredMonths) return data;
+    
+    return data.map(item => ({
+      ...item,
+      // Definir a opacidade para as barras de acordo com o filtro
+      entradas_fill: item.isInDateRange ? "#22c55e" : "#22c55e80", // Verde com 50% de opacidade se não estiver no filtro
+      saidas_fill: item.isInDateRange ? "#ef4444" : "#ef444480"    // Vermelho com 50% de opacidade se não estiver no filtro
+    }));
+  }, [data, highlightFilteredMonths]);
+
   // Verificar se temos dados válidos
   if (!Array.isArray(data) || data.length === 0) {
     console.log("MonthlyTotalsChart: Nenhum dado para exibir");
@@ -44,27 +69,6 @@ export function MonthlyTotalsChart({
   }
   
   console.log(`MonthlyTotalsChart: Renderizando com ${data.length} meses de dados`, data);
-
-  // Calcular valor máximo para ajuste do domínio do gráfico
-  const maxValue = useMemo(() => {
-    if (!data?.length) return 1000;
-    
-    return Math.max(
-      ...data.map(item => Math.max(item.entradas, item.saidas, Math.abs(item.saldo)))
-    ) * 1.1; // 10% acima do máximo para melhor visualização
-  }, [data]);
-
-  // Preparar dados para visualização com opacidades diferentes
-  const processedData = useMemo(() => {
-    if (!highlightFilteredMonths || !data) return data;
-    
-    return data.map(item => ({
-      ...item,
-      // Definir a opacidade para as barras de acordo com o filtro
-      entradas_fill: item.isInDateRange ? "#22c55e" : "#22c55e80", // Verde com 50% de opacidade se não estiver no filtro
-      saidas_fill: item.isInDateRange ? "#ef4444" : "#ef444480"    // Vermelho com 50% de opacidade se não estiver no filtro
-    }));
-  }, [data, highlightFilteredMonths]);
 
   return (
     <ResponsiveContainer width="100%" height={height}>
