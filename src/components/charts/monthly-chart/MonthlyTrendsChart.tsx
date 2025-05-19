@@ -89,7 +89,7 @@ export function MonthlyTrendsChart({ data, isLoading, error, className = '' }: M
             <XAxis dataKey="name" />
             <YAxis tickFormatter={(value) => formatCurrency(value, 0)} />
             <Tooltip 
-              formatter={(value) => [formatCurrency(value), '']}
+              formatter={(value) => [formatCurrency(value as number), '']}
               labelFormatter={(label) => `Período: ${label}`}
             />
             <Legend 
