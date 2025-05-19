@@ -9,8 +9,6 @@ import { useDashboardState } from './charts/hooks/useDashboardState';
 import { useDashboardIntegration } from './charts/hooks/useDashboardIntegration';
 import { useDashboardData } from './charts/hooks/useDashboardData';
 import { useDashboardUI } from './charts/hooks/useDashboardUI';
-import { useMonthlyTotalsData } from '@/hooks/reports/useMonthlyTotalsData';
-import { MonthlyTotalsChartCard } from './charts/monthly-totals/MonthlyTotalsChartCard';
 
 type DashboardChartsProps = {
   transactions?: Transaction[];
@@ -111,37 +109,10 @@ export default function DashboardCharts({
     });
   }, [safeTransactions, filteredTransactions, filteredByCategory]);
 
-  // Obter dados para o gráfico de totais mensais
-  // Usamos safeTransactions ao invés de filteredTransactions para mostrar TODOS os meses
-  // e definimos o respectDateFilter como false para sempre mostrar todos os meses
-  const { monthlyTotals, isLoading: isLoadingMonthlyTotals } = useMonthlyTotalsData(
-    safeTransactions,
-    validDateRange,
-    false // IMPORTANTE: SEMPRE false para mostrar todos os meses, destacando os do filtro
-  );
-  
-  // Adicionar logs para debug do gráfico de totais mensais
-  useEffect(() => {
-    console.log('DashboardCharts - Dados do gráfico mensal:', {
-      mesesDisponíveis: monthlyTotals?.length || 0,
-      isLoading: isLoadingMonthlyTotals
-    });
-  }, [monthlyTotals, isLoadingMonthlyTotals]);
-
   return (
     <div className="grid grid-cols-1 gap-4 md:gap-6 mb-6">
       {/* Mostrar filtros ativos */}
       {renderActiveFilters()}
-      
-      {/* Gráfico de totais mensais - Sempre visível com altura consistente */}
-      <div className="grid grid-cols-1 gap-4">
-        <MonthlyTotalsChartCard
-          data={monthlyTotals}
-          isLoading={isLoadingMonthlyTotals}
-          hasError={false}
-          className="col-span-1"
-        />
-      </div>
       
       {/* Category Charts (Pie Chart and Ranking) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 col-span-1">
