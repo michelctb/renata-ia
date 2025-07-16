@@ -52,9 +52,21 @@ export function useMonthlyChartData(transactions: Transaction[], dateRange?: Dat
       .sort((a, b) => {
         // Ordenar por data (mais antigo primeiro)
         try {
-          const dateA = new Date(a.month.split(' ').reverse().join('-'));
-          const dateB = new Date(b.month.split(' ').reverse().join('-'));
-          return dateA.getTime() - dateB.getTime();
+          // Extrair mês e ano do formato "jan 2024"
+          const [monthA, yearA] = a.month.split(' ');
+          const [monthB, yearB] = b.month.split(' ');
+          
+          // Converter mês abreviado para número
+          const monthNames = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 
+                             'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+          const monthNumA = monthNames.indexOf(monthA.toLowerCase());
+          const monthNumB = monthNames.indexOf(monthB.toLowerCase());
+          
+          // Primeiro comparar por ano, depois por mês
+          const yearComparison = parseInt(yearA) - parseInt(yearB);
+          if (yearComparison !== 0) return yearComparison;
+          
+          return monthNumA - monthNumB;
         } catch {
           return a.month.localeCompare(b.month);
         }

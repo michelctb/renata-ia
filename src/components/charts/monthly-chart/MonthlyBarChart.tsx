@@ -84,13 +84,13 @@ export function MonthlyBarChart({ transactions, dateRange }: MonthlyBarChartProp
               <Bar 
                 dataKey="entradas" 
                 name="Entradas"
-                fill="hsl(var(--chart-2))"
+                fill="#22c55e"
                 radius={[4, 4, 0, 0]}
               />
               <Bar 
                 dataKey="saidas" 
                 name="Saídas"
-                fill="hsl(var(--chart-1))"
+                fill="#ef4444"
                 radius={[4, 4, 0, 0]}
               />
             </BarChart>

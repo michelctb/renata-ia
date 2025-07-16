@@ -115,6 +115,12 @@ export default function DashboardCharts({
       {/* Mostrar filtros ativos */}
       {renderActiveFilters()}
       
+      {/* Monthly Bar Chart */}
+      <MonthlyBarChart 
+        transactions={safeTransactions}
+        dateRange={validDateRange}
+      />
+      
       {/* Category Charts (Pie Chart and Ranking) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 col-span-1">
         <CategoryChartsContainer 
@@ -125,12 +131,6 @@ export default function DashboardCharts({
           selectedCategory={selectedCategory}
         />
       </div>
-      
-      {/* Monthly Bar Chart */}
-      <MonthlyBarChart 
-        transactions={safeTransactions}
-        dateRange={validDateRange}
-      />
       
       {/* Meta Progress Display */}
       <MetaProgressDisplay metasComProgresso={metasComProgresso || []} />
