@@ -5,6 +5,7 @@ import { DateRange } from 'react-day-picker';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CategoryChartsContainer } from './charts/CategoryChartsContainer';
 import { MetaProgressDisplay } from './charts/MetaProgressDisplay';
+import { MonthlyBarChart } from './charts/monthly-chart/MonthlyBarChart';
 import { useDashboardState } from './charts/hooks/useDashboardState';
 import { useDashboardIntegration } from './charts/hooks/useDashboardIntegration';
 import { useDashboardData } from './charts/hooks/useDashboardData';
@@ -124,6 +125,12 @@ export default function DashboardCharts({
           selectedCategory={selectedCategory}
         />
       </div>
+      
+      {/* Monthly Bar Chart */}
+      <MonthlyBarChart 
+        transactions={safeTransactions}
+        dateRange={validDateRange}
+      />
       
       {/* Meta Progress Display */}
       <MetaProgressDisplay metasComProgresso={metasComProgresso || []} />
