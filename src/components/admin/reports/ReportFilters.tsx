@@ -37,6 +37,7 @@ const ReportFilters: React.FC<ReportFiltersProps> = ({
           <DateFilterButtons 
             dateRange={dateRange}
             onDateRangeChange={onDateRangeChange}
+            viewMode="admin"
           />
         </div>
         <div>

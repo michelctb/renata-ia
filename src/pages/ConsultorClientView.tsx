@@ -139,20 +139,22 @@ export default function ConsultorClientView() {
           </button>
         </div>
         
-        <div className="flex flex-col sm:flex-row sm:items-center mb-6 justify-between">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="animate-fade-in">
-            <TabsList className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm shadow-sm">
-              <TabsTrigger value="transactions" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                Transações
-              </TabsTrigger>
-              <TabsTrigger value="categories" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                Categorias
-              </TabsTrigger>
-              <TabsTrigger value="lembretes" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                Lembretes
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+        <div className="flex flex-col gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="animate-fade-in">
+              <TabsList className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm shadow-sm">
+                <TabsTrigger value="transactions" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  Transações
+                </TabsTrigger>
+                <TabsTrigger value="categories" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  Categorias
+                </TabsTrigger>
+                <TabsTrigger value="lembretes" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  Lembretes
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
           
           <DateFilterButtons
             dateRange={dateRange}

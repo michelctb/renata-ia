@@ -61,19 +61,19 @@ export function DateFilterButtons({
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+    <div className="flex flex-col gap-3 w-full">
+      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
+        <div className="flex-1">
+          <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
             <CalendarRange className="h-3 w-3" /> 
             Período rápido:
           </div>
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-2">
             <Button 
               variant="outline"
               size="sm"
               onClick={handleTodayClick}
-              className="text-xs"
+              className="text-xs px-3 py-1 h-8"
             >
               Hoje
             </Button>
@@ -81,7 +81,7 @@ export function DateFilterButtons({
               variant="outline"
               size="sm"
               onClick={handleThisWeekClick}
-              className="text-xs"
+              className="text-xs px-3 py-1 h-8"
             >
               Esta Semana
             </Button>
@@ -89,7 +89,7 @@ export function DateFilterButtons({
               variant="outline"
               size="sm"
               onClick={handleThisMonthClick}
-              className="text-xs"
+              className="text-xs px-3 py-1 h-8"
             >
               Mês Atual
             </Button>
@@ -97,33 +97,33 @@ export function DateFilterButtons({
               variant="outline"
               size="sm"
               onClick={handleLastMonthClick}
-              className="text-xs"
+              className="text-xs px-3 py-1 h-8"
             >
               Mês Passado
             </Button>
           </div>
         </div>
         
-        <div>
+        <div className="flex-1 lg:max-w-md">
           <DateRangePicker 
             dateRange={dateRange}
             onDateRangeChange={onDateRangeChange}
           />
         </div>
+        
+        {onAddNew && !isReadOnly && (
+          <div className="flex items-end">
+            <Button 
+              onClick={onAddNew} 
+              disabled={!isUserActive}
+              className="whitespace-nowrap h-9"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Nova Transação
+            </Button>
+          </div>
+        )}
       </div>
-      
-      {onAddNew && !isReadOnly && (
-        <div className="flex justify-end mt-2">
-          <Button 
-            onClick={onAddNew} 
-            disabled={!isUserActive}
-            className="whitespace-nowrap"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Nova Transação
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

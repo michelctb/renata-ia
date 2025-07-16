@@ -79,7 +79,7 @@ export default function DateRangePicker({
 
   return (
     <div className={cn("grid gap-2", className)}>
-      <div className="flex flex-col sm:flex-row gap-2">
+      <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-end">
         <div className="flex-1">
           <div className="text-xs text-muted-foreground mb-1">Data inicial:</div>
           <Popover open={fromOpen} onOpenChange={setFromOpen}>
@@ -89,7 +89,7 @@ export default function DateRangePicker({
                 id="date-from"
                 variant={"outline"}
                 className={cn(
-                  "w-full justify-start text-left font-normal",
+                  "w-full justify-start text-left font-normal h-9",
                   !dateRange?.from && "text-muted-foreground"
                 )}
               >
@@ -119,7 +119,7 @@ export default function DateRangePicker({
                 id="date-to"
                 variant={"outline"}
                 className={cn(
-                  "w-full justify-start text-left font-normal",
+                  "w-full justify-start text-left font-normal h-9",
                   !dateRange?.to && "text-muted-foreground"
                 )}
               >
