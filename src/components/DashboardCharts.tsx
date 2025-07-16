@@ -118,7 +118,6 @@ export default function DashboardCharts({
       {/* Monthly Bar Chart */}
       <MonthlyBarChart 
         transactions={safeTransactions}
-        dateRange={validDateRange}
       />
       
       {/* Category Charts (Pie Chart and Ranking) */}

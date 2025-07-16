@@ -2,11 +2,9 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMonthlyChartData } from '../hooks/useMonthlyChartData';
 import { Transaction } from '@/lib/supabase';
-import { DateRange } from 'react-day-picker';
 
 interface MonthlyBarChartProps {
   transactions: Transaction[];
-  dateRange?: DateRange | null;
 }
 
 interface MonthlyData {
@@ -15,8 +13,8 @@ interface MonthlyData {
   saidas: number;
 }
 
-export function MonthlyBarChart({ transactions, dateRange }: MonthlyBarChartProps) {
-  const monthlyData = useMonthlyChartData(transactions, dateRange);
+export function MonthlyBarChart({ transactions }: MonthlyBarChartProps) {
+  const monthlyData = useMonthlyChartData(transactions);
 
   // Tooltip customizado
   const CustomTooltip = ({ active, payload, label }: any) => {

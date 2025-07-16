@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { Transaction } from '@/lib/supabase';
-import { DateRange } from 'react-day-picker';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -10,7 +9,7 @@ interface MonthlyData {
   saidas: number;
 }
 
-export function useMonthlyChartData(transactions: Transaction[], dateRange?: DateRange | null) {
+export function useMonthlyChartData(transactions: Transaction[]) {
   return useMemo(() => {
     if (!transactions || transactions.length === 0) {
       return [];
@@ -73,5 +72,5 @@ export function useMonthlyChartData(transactions: Transaction[], dateRange?: Dat
       });
 
     return monthlyData;
-  }, [transactions, dateRange]);
+  }, [transactions]);
 }
