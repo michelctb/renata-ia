@@ -19,10 +19,10 @@ export async function createSubscription({ customer, plan }: SubscriptionData): 
       description: "Renata.ia - Plano Mensal"
     };
     
-    console.log("Subscription data:", JSON.stringify(subscriptionData));
+    console.log("Subscription request prepared");
     
     const subscription = await asaasRequest<SubscriptionResponse>("/subscriptions", "POST", subscriptionData);
-    console.log("Subscription created successfully:", subscription);
+    console.log("Subscription created successfully with id:", subscription?.id);
     return subscription;
   } catch (error) {
     console.error("Error creating subscription:", error);

@@ -41,7 +41,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
-        console.log('Retrieved user from localStorage:', parsedUser);
+        console.log('Retrieved user from localStorage for id:', parsedUser?.id);
         
         // Fetch client's data from the database
         if (parsedUser && parsedUser.id) {

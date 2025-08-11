@@ -22,10 +22,10 @@ export async function createInstallment({ customer, plan, installmentCount }: In
       description
     };
     
-    console.log("Installment data:", JSON.stringify(installmentData));
+    console.log("Installment request prepared");
     
     const installment = await asaasRequest<InstallmentResponse>("/installments", "POST", installmentData);
-    console.log("Installment created successfully:", installment);
+    console.log("Installment created successfully with id:", installment?.id);
     return installment;
   } catch (error) {
     console.error("Error creating installment:", error);

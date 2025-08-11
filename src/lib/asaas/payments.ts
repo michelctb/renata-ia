@@ -11,13 +11,13 @@ export async function getInvoiceUrl({ id, type }: InvoiceUrlData): Promise<strin
     console.log("Query parameter:", queryParam);
     
     const response = await asaasRequest<{ data: PaymentResponse[] }>(`/payments?${queryParam}`, "GET");
-    console.log("Payments data:", response);
+    console.log("Payments fetched:", Array.isArray(response.data) ? response.data.length : 0);
     
     if (response.data && response.data.length > 0 && response.data[0].invoiceUrl) {
-      console.log("Invoice URL found:", response.data[0].invoiceUrl);
+      console.log("Invoice URL found");
       return response.data[0].invoiceUrl;
     } else {
-      console.error("No invoice URL found in response:", response);
+      console.warn("No invoice URL found in response");
       return null;
     }
   } catch (error) {

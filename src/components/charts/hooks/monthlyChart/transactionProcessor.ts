@@ -4,6 +4,8 @@ import { toZonedTime } from 'date-fns-tz';
 import { MonthlyChartDataPoint } from './types';
 import { DEFAULT_TIMEZONE, generateMonthKey } from './dateUtils';
 
+const ENABLE_DEBUG = false;
+
 /**
  * Processa uma transação individual e atualiza o mapa de meses
  */
@@ -21,7 +23,7 @@ export function processTransaction(
     const dateStr = String(transaction.data || '');
     const shouldLog = index < 5 || index % 20 === 0;
     
-    if (shouldLog) {
+    if (ENABLE_DEBUG && shouldLog) {
       console.log(`Processando transação #${index}, data: ${dateStr}`);
     }
     
@@ -44,7 +46,7 @@ export function processTransaction(
       operationType = String(transaction.operação).toLowerCase();
     }
     
-    if (shouldLog) {
+    if (ENABLE_DEBUG && shouldLog) {
       console.log(`Data processada para transação #${index}: ${monthKey}, operação: ${operationType}`);
     }
     
